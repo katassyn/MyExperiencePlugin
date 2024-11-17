@@ -1,0 +1,23 @@
+name: MyExperiencePlugin
+version: '${project.version}'
+main: com.maks.myexperienceplugin.MyExperiencePlugin
+api-version: '1.20'
+commands:
+  exp:
+    description: Wyświetla poziom i doświadczenie gracza.
+  exp_table:
+    description: "Reloads the experience table"
+    usage: "/exp_table reload"
+    permission: "myplugin.exp_table.reload"
+    permission-message: "You don't have permission to use this command!"
+  top:
+    description: "Displays the top 10 players by level."
+    usage: "/top"
+  exp_money:
+    description: "Reloads the exp_money configuration."
+    usage: "/exp_money reload"
+    permission: "myplugin.exp_money.reload"
+    permission-message: "You don't have permission to use this command!"
+  party:
+    description: Manage your party
+    usage: /party <inv|accept|decline|leave|info> [player]

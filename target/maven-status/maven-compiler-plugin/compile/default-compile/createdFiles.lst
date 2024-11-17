@@ -1,0 +1,13 @@
+com\maks\myexperienceplugin\MyExperiencePlugin.class
+com\maks\myexperienceplugin\PlayerDisconnectListener.class
+com\maks\myexperienceplugin\TopCommand.class
+com\maks\myexperienceplugin\PartyInvite.class
+com\maks\myexperienceplugin\MythicMobXPHandler.class
+com\maks\myexperienceplugin\MoneyRewardHandler.class
+com\maks\myexperienceplugin\ChatLevelHandler.class
+com\maks\myexperienceplugin\DatabaseManager.class
+com\maks\myexperienceplugin\ExpTableCommand.class
+com\maks\myexperienceplugin\Party.class
+com\maks\myexperienceplugin\PlayerJoinListener.class
+com\maks\myexperienceplugin\PartyManager.class
+com\maks\myexperienceplugin\PartyCommand.class
