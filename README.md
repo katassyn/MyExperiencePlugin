@@ -1,4 +1,3 @@
-
 # MyExperiencePlugin
 
 A robust Minecraft plugin designed to enhance gameplay with a custom experience and level system. The plugin integrates with external systems such as Vault, MythicMobs, and BeautyQuests to create a rewarding and interactive environment for players. With features like party XP sharing, configurable XP tables, monetary rewards, and a database-backed leveling system, this plugin is ideal for any server.
@@ -64,6 +63,11 @@ xp_per_mob:
 
 Mobs are identified by their **MythicMobs** ID.
 
+### **7. Bonus XP Event**
+- Enable a server-wide XP bonus event via the configuration file:
+  - Multiply all XP rewards by a configurable percentage.
+  - Example: `Value: 200` means all players gain **200% additional XP**.
+
 ---
 
 ## Commands
@@ -85,6 +89,9 @@ Mobs are identified by their **MythicMobs** ID.
 
 - `/exp_money reload`  
   Reloads monetary rewards settings (`exp_money.yml`).
+
+- `/reload_bonus`  
+  Reloads the plugin's configuration, including the bonus XP event settings.
 
 - `/get_lvl <level>`  
   Sets the level and XP of the command executor to the specified `<level>`.  
@@ -112,6 +119,10 @@ database:
   name: minecraft
   user: root
   password: password
+
+Bonus_exp:
+  Enabled: false # Whether the bonus XP event is active
+  Value: 100     # Percentage bonus to XP (100 = no bonus, 200 = double XP)
 \`\`\`
 
 ### **2. exp_table.yml**
