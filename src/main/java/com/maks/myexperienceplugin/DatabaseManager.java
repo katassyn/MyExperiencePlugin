@@ -76,13 +76,19 @@ public class DatabaseManager {
                             double xp = rs.getDouble("xp");
 
                             Bukkit.getScheduler().runTask(MyExperiencePlugin.getInstance(), () -> {
+                                // Załaduj dane gracza do pamięci
                                 MyExperiencePlugin.getInstance().playerLevels.put(player.getUniqueId(), level);
                                 MyExperiencePlugin.getInstance().playerCurrentXP.put(player.getUniqueId(), xp);
-                                MyExperiencePlugin.getInstance().updatePlayerXPBar(player);
+                                MyExperiencePlugin.getInstance().updatePlayerXPBar(player); // Aktualizuj pasek XP
                             });
                         } else {
-                            // Jeśli gracz nie istnieje w bazie danych, dodaj go
+                            // Gracz nie istnieje w bazie, ustaw dane domyślne
                             savePlayerData(player, 1, 0.0);
+                            Bukkit.getScheduler().runTask(MyExperiencePlugin.getInstance(), () -> {
+                                MyExperiencePlugin.getInstance().playerLevels.put(player.getUniqueId(), 1);
+                                MyExperiencePlugin.getInstance().playerCurrentXP.put(player.getUniqueId(), 0.0);
+                                MyExperiencePlugin.getInstance().updatePlayerXPBar(player); // Aktualizuj pasek XP
+                            });
                         }
                     }
                 }
@@ -91,5 +97,6 @@ public class DatabaseManager {
             }
         });
     }
+
 }
 

@@ -54,8 +54,8 @@ public class MythicMobXPHandler implements Listener {
             }
 
             // Inform killer about XP received (optional)
-            killer.sendMessage("§aYou received §6" + MyExperiencePlugin.formatNumber(finalXpReward)
-                    + " XP §afrom killing " + mobName + "!");
+//            killer.sendMessage("§aYou received §6" + MyExperiencePlugin.formatNumber(finalXpReward)
+//                    + " XP §afrom killing " + mobName + "!");
         }
     }
 }
