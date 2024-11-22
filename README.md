@@ -14,10 +14,18 @@ A robust Minecraft plugin designed to enhance gameplay with a custom experience 
 - Supports a maximum level of **100**.
 - Level progression and XP requirements are fully configurable via `exp_table.yml`.
 
-### **2. Custom Chat Formatting**
-- Player chat messages display their current level:
-  - Max-level players (level 100) show a special tag: `[MAX LEVEL]`.
-  - Other players display their level in a `[ X ]` format.
+### **2. Custom Chat and Tab Formatting**
+
+- **Chat:**
+  - Player chat messages display their current level:
+    - Max-level players (level 100) show a special tag: `[MAX LEVEL]`.
+    - Other players display their level in a `[ X ]` format.
+
+- **Tab:**
+  - Player levels are displayed next to their names in the server's player list (Tab):
+    - Format: `[ X ] PlayerName`
+    - Levels update dynamically as players level up.
+
 
 ### **3. Database Integration**
 - Player data (levels and XP) is stored in a MySQL database.
