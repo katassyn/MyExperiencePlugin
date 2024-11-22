@@ -71,8 +71,24 @@ Mobs are identified by their **MythicMobs** ID.
   - `/party info`: View party details.
 
 ### **Admin Commands**
-- `/exp_table reload`: Reloads the XP table configuration (`exp_table.yml`).
-- `/exp_money reload`: Reloads monetary rewards settings (`exp_money.yml`).
+
+- `/exp_table reload`  
+  Reloads the XP table configuration (`exp_table.yml`).
+
+- `/exp_money reload`  
+  Reloads monetary rewards settings (`exp_money.yml`).
+
+- `/get_lvl <level>`  
+  Sets the level and XP of the command executor to the specified `<level>`.  
+  **Example:** `/get_lvl 10` sets your level to 10 and resets XP for that level.
+
+- `/exp_give <amount> <player>`  
+  Grants the specified `<amount>` of XP to the targeted `<player>`.  
+  **Example:** `/exp_give 500 Steve` gives 500 XP to the player named Steve.
+
+- `/exp_give_p <percentage> <player>`  
+  Grants the specified `<percentage>` of the XP required for the current level to the targeted `<player>`.  
+  **Example:** `/exp_give_p 10 Steve` gives Steve 10% of the XP required to reach their next level.
 
 ---
 
