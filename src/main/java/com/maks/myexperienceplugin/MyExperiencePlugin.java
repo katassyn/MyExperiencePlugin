@@ -28,7 +28,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private final Map<String, Double> xpPerMob = new HashMap<>();
     private static MyExperiencePlugin instance;
     private PartyManager partyManager; // Added PartyManager
-
+    private PlayerLevelDisplayHandler playerLevelDisplayHandler;
     private final int maxLevel = 100;
 
     public MoneyRewardHandler getMoneyRewardHandler() {
@@ -104,6 +104,8 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("get_lvl").setExecutor(experienceCommandHandler);
         getCommand("exp_give").setExecutor(experienceCommandHandler);
         getCommand("exp_give_p").setExecutor(experienceCommandHandler);
+        playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
+        getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
     }
 
     @Override
@@ -173,6 +175,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
             // Zapisz nowy poziom i XP do bazy danych
             MyExperiencePlugin.getInstance().getDatabaseManager().savePlayerData(player, currentLevel, currentXP);
+
+            // Odśwież wyświetlanie nicku w tabie i nad głową
+            updatePlayerDisplay(player);
         }
 
         // Zaktualizuj XP gracza w mapach
@@ -185,6 +190,21 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         // Zapisz dane gracza do bazy danych
         MyExperiencePlugin.getInstance().getDatabaseManager().savePlayerData(player, currentLevel, currentXP);
     }
+
+    private void updatePlayerDisplay(Player player) {
+        int level = playerLevels.getOrDefault(player.getUniqueId(), 1);
+
+        // Ustaw nick w Tab
+        player.setPlayerListName(String.format("§b[ %d ] §r%s", level, player.getName()));
+
+        // Ustaw nick nad głową
+        player.setCustomName(String.format("§b[ %d ] §r%s", level, player.getName()));
+        player.setCustomNameVisible(true);
+        Bukkit.getLogger().info("Updating display for " + player.getName() + " with level " + level);
+
+    }
+
+
 
 
     public int getPlayerLevel(Player player) {
@@ -314,5 +334,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     public HashMap<Integer, Double> getXpPerLevel() {
         return xpPerLevel;
     }
-
+    public PlayerLevelDisplayHandler getPlayerLevelDisplayHandler() {
+        return playerLevelDisplayHandler;
+    }
 }
