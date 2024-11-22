@@ -23,10 +23,14 @@ public class MythicMobXPHandler implements Listener {
 
             // Get mob's XP value
             String mobName = event.getMobType().getInternalName();
-            double xpReward = plugin.getXpForMob(mobName);
+            double baseXpReward = plugin.getXpForMob(mobName);
+
+            // Apply bonus XP multiplier if enabled
+            double bonusMultiplier = plugin.isBonusExpEnabled() ? plugin.getBonusExpValue() / 100.0 : 1.0;
+            double finalXpReward = baseXpReward * bonusMultiplier;
 
             // Give full XP to killer
-            plugin.addXP(killer, xpReward);
+            plugin.addXP(killer, finalXpReward);
 
             // Share XP with party members
             Party party = plugin.getPartyManager().getParty(killer);
@@ -36,15 +40,22 @@ public class MythicMobXPHandler implements Listener {
                         Player member = Bukkit.getPlayer(memberId);
                         if (member != null && member.getWorld().equals(killer.getWorld())) {
                             if (member.getLocation().distance(killer.getLocation()) <= 25) {
-                                // Give 30% of XP to party member
-                                plugin.addXP(member, xpReward * 0.3);
-                                member.sendMessage("§aYou received §6" + MyExperiencePlugin.formatNumber(xpReward * 0.3)
-                                        + " XP §afrom " + killer.getName() + "'s kill.");
+                                // Give 30% of XP to party member, with bonus applied
+                                double partyXpReward = finalXpReward * 0.3;
+                                plugin.addXP(member, partyXpReward);
+
+                                // Inform party member (optional)
+//                                member.sendMessage("§aYou received §6" + MyExperiencePlugin.formatNumber(partyXpReward)
+//                                        + " XP §afrom " + killer.getName() + "'s kill.");
                             }
                         }
                     }
                 }
             }
+
+            // Inform killer about XP received (optional)
+            killer.sendMessage("§aYou received §6" + MyExperiencePlugin.formatNumber(finalXpReward)
+                    + " XP §afrom killing " + mobName + "!");
         }
     }
 }

@@ -4,3 +4,8 @@ database:
   name: "minecraft_experience"
   user: "root"
   password: ""
+# Bonus Experience Event Configuration
+Bonus_exp:
+  Enabled: false # Czy event jest włączony
+  Value: 100     # Procentowy wzrost doświadczenia (100 = 100% dodatkowego expa, 200 = 200% dodatkowego expa)
+

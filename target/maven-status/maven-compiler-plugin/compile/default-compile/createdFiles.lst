@@ -12,4 +12,6 @@ com\maks\myexperienceplugin\PlayerLevelDisplayHandler.class
 com\maks\myexperienceplugin\Party.class
 com\maks\myexperienceplugin\PlayerJoinListener.class
 com\maks\myexperienceplugin\PartyManager.class
+com\maks\myexperienceplugin\BonusExpCommand.class
 com\maks\myexperienceplugin\PartyCommand.class
+com\maks\myexperienceplugin\ReloadBonusCommand.class

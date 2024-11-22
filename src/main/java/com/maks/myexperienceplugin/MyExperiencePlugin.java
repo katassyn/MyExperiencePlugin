@@ -98,6 +98,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("exp_money").setTabCompleter(moneyRewardHandler);
 
         getCommand("exp").setExecutor(this); // Assuming the main class handles /exp command
+        getCommand("reload_bonus").setExecutor(new ReloadBonusCommand(this));
 
         getCommand("top").setExecutor(new TopCommand(this));
         ExperienceCommandHandler experienceCommandHandler = new ExperienceCommandHandler(this);
@@ -106,6 +107,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("exp_give_p").setExecutor(experienceCommandHandler);
         playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
         getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
+        getCommand("bonus_exp").setExecutor(new BonusExpCommand(this));
     }
 
     @Override
@@ -337,4 +339,12 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     public PlayerLevelDisplayHandler getPlayerLevelDisplayHandler() {
         return playerLevelDisplayHandler;
     }
+    public boolean isBonusExpEnabled() {
+        return getConfig().getBoolean("Bonus_exp.Enabled", false);
+    }
+
+    public double getBonusExpValue() {
+        return getConfig().getDouble("Bonus_exp.Value", 100.0);
+    }
+
 }

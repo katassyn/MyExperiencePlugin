@@ -36,3 +36,11 @@ commands:
     usage: /exp_give_p <percentage> <player>
     permission: "myplugin.exp_money.reload"
     permission-message: "You don't have permission to use this command!"
+  bonus_exp:
+    description: Manages the Bonus XP event.
+    usage: /bonus_exp <enable|disable|set> [value]
+    permission: myplugin.bonusexp
+  reload_bonus:
+    description: Reloads the Bonus XP configuration.
+    usage: /reload_bonus
+    permission: myplugin.reloadbonus
