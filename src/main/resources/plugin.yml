@@ -20,4 +20,19 @@ commands:
     permission-message: "You don't have permission to use this command!"
   party:
     description: Manage your party
-    usage: /party <inv|accept|decline|leave|info> [player]
+    usage: /party < inv | accept | decline | leave | info > [player]
+  get_lvl:
+    description: Set the level and XP of the player.
+    usage: /get_lvl <level>
+    permission: "myplugin.exp_money.reload"
+    permission-message: "You don't have permission to use this command!"
+  exp_give:
+    description: Give XP to a player.
+    usage: /exp_give <amount> <player>
+    permission: "myplugin.exp_money.reload"
+    permission-message: "You don't have permission to use this command!"
+  exp_give_p:
+    description: Give a percentage of required XP to a player.
+    usage: /exp_give_p <percentage> <player>
+    permission: "myplugin.exp_money.reload"
+    permission-message: "You don't have permission to use this command!"

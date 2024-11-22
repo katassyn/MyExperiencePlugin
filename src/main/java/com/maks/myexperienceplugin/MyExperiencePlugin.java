@@ -100,6 +100,10 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("exp").setExecutor(this); // Assuming the main class handles /exp command
 
         getCommand("top").setExecutor(new TopCommand(this));
+        ExperienceCommandHandler experienceCommandHandler = new ExperienceCommandHandler(this);
+        getCommand("get_lvl").setExecutor(experienceCommandHandler);
+        getCommand("exp_give").setExecutor(experienceCommandHandler);
+        getCommand("exp_give_p").setExecutor(experienceCommandHandler);
     }
 
     @Override
@@ -295,4 +299,20 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             return String.format("%.2f", number);
         }
     }
+    public int getMaxLevel() {
+        return maxLevel;
+    }
+
+    public HashMap<UUID, Integer> getPlayerLevels() {
+        return playerLevels;
+    }
+
+    public HashMap<UUID, Double> getPlayerCurrentXP() {
+        return playerCurrentXP;
+    }
+
+    public HashMap<Integer, Double> getXpPerLevel() {
+        return xpPerLevel;
+    }
+
 }
