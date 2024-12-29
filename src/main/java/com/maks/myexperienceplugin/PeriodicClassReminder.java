@@ -6,11 +6,15 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class PeriodicClassReminder extends BukkitRunnable {
 
     private final MyExperiencePlugin plugin;
+
+    // How long (in ticks) to keep the permission
+    private final long PERMISSION_DURATION = 200L; // e.g. 200 ticks = 10 seconds
 
     public PeriodicClassReminder(MyExperiencePlugin plugin) {
         this.plugin = plugin;
@@ -35,9 +39,14 @@ public class PeriodicClassReminder extends BukkitRunnable {
     }
 
     private void sendNoClassMessage(Player player) {
+        // 1) Temporarily grant "myplugin.class"
+        //    so that /chose_class won't say "Unknown command."
+        PermissionAttachment attachment = player.addAttachment(plugin, "myplugin.class", true);
+
         player.sendMessage("§e=============== §6[§aCLASS§6] §e===============");
         player.sendMessage("§cYou haven't selected your base class yet!");
 
+        // Build clickable [CLICK HERE] => "/chose_class"
         TextComponent clickHere = new TextComponent("[CLICK HERE]");
         clickHere.setColor(ChatColor.YELLOW);
         clickHere.setHoverEvent(new HoverEvent(
@@ -53,13 +62,23 @@ public class PeriodicClassReminder extends BukkitRunnable {
         line.addExtra(clickHere);
         line.addExtra("§a!");
         player.spigot().sendMessage(line);
-        player.sendMessage("§e================================");
+
+        player.sendMessage("§e======================================");
+
+        // 2) Schedule removal of the permission after PERMISSION_DURATION ticks
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            player.removeAttachment(attachment);
+        }, PERMISSION_DURATION);
     }
 
     private void sendNoAscendancyMessage(Player player, String baseClass) {
+        // 1) Temporarily grant "myplugin.class"
+        PermissionAttachment attachment = player.addAttachment(plugin, "myplugin.class", true);
+
         player.sendMessage("§e=============== §6[§aASCENDANCY§6] §e===============");
         player.sendMessage("§cYou haven't chosen an ascendancy yet for: §e" + baseClass);
 
+        // Build clickable => "/chose_ascendancy"
         TextComponent clickHere = new TextComponent("[CLICK HERE]");
         clickHere.setColor(ChatColor.AQUA);
         clickHere.setHoverEvent(new HoverEvent(
@@ -75,6 +94,12 @@ public class PeriodicClassReminder extends BukkitRunnable {
         line.addExtra(clickHere);
         line.addExtra("§a!");
         player.spigot().sendMessage(line);
-        player.sendMessage("§e================================");
+
+        player.sendMessage("§e======================================");
+
+        // 2) Remove permission after a delay
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            player.removeAttachment(attachment);
+        }, PERMISSION_DURATION);
     }
 }

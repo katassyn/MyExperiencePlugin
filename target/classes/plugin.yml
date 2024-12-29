@@ -47,6 +47,7 @@ commands:
   skilltree:
     description: Opens the skill tree GUI or info
     usage: /skilltree
+    permission: myplugin.skilltree
   class:
     description: Force-change your class (OP-only)
     permission: myplugin.class
