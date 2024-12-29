@@ -6,7 +6,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.UUID;
 
+/**
+ * Minimal version: we do NOT automatically open GUIs or do /class commands here,
+ * because PeriodicClassReminder handles that now.
+ */
 public class PlayerJoinListener implements Listener {
+
     private final MyExperiencePlugin plugin;
 
     public PlayerJoinListener(MyExperiencePlugin plugin) {
@@ -17,12 +22,13 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         UUID playerId = event.getPlayer().getUniqueId();
 
-        // Ustaw dane domyślne przed załadowaniem z bazy
-        plugin.playerLevels.put(playerId, 1); // Domyślny poziom
-        plugin.playerCurrentXP.put(playerId, 0.0); // Domyślne XP
-        plugin.updatePlayerXPBar(event.getPlayer()); // Aktualizacja paska XP
+        plugin.playerLevels.put(playerId, 1);
+        plugin.playerCurrentXP.put(playerId, 0.0);
+        plugin.updatePlayerXPBar(event.getPlayer());
 
-        // Załaduj dane z bazy
+        // Load XP from DB
         plugin.getDatabaseManager().loadPlayerData(event.getPlayer());
+        // Load class data from DB
+        plugin.getClassManager().loadPlayerClassData(event.getPlayer());
     }
 }

@@ -44,3 +44,18 @@ commands:
     description: Reloads the Bonus XP configuration.
     usage: /reload_bonus
     permission: myplugin.reloadbonus
+  skilltree:
+    description: Opens the skill tree GUI or info
+    usage: /skilltree
+  class:
+    description: Force-change your class (OP-only)
+    permission: myplugin.class
+    usage: /class
+  chose_class:
+    description: Manually open the base class GUI
+    permission: myplugin.class
+    usage: /chose_class
+  chose_ascendancy:
+    description: Manually open the ascendancy GUI
+    permission: myplugin.class
+    usage: /chose_ascendancy

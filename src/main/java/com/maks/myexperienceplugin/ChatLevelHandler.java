@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 public class ChatLevelHandler implements Listener {
 
     private final MyExperiencePlugin plugin;
-    private final int maxLevel = 100; // Maximum level
+    private final int maxLevel = 100;
 
     public ChatLevelHandler(MyExperiencePlugin plugin) {
         this.plugin = plugin;
@@ -19,22 +19,52 @@ public class ChatLevelHandler implements Listener {
         Player player = event.getPlayer();
         int level = plugin.getPlayerLevel(player);
 
-        String levelTag;
+        String levelTag = (level >= maxLevel)
+                ? "§4§l[MAX LEVEL]§r"
+                : String.format("§b[%d]§r", level);
 
-        // Determine the level tag to prepend
-        if (level >= maxLevel) {
-            levelTag = "§4§l[MAX LEVEL]§r";
+        String baseClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
+
+        String classTag;
+        if ("NoClass".equalsIgnoreCase(baseClass)) {
+            classTag = "NoClass";
+        } else if (!ascendancy.isEmpty()) {
+            classTag = ascendancy;
         } else {
-            levelTag = String.format("§b[ %d ]§r", level);
+            classTag = baseClass;
         }
+        classTag = colorizeClassTag(classTag);
 
-        // Get the player's display name (preserves prefixes/suffixes from other plugins)
+        String bracketedClass = "§3[" + classTag + "§3]§r";
         String displayName = player.getDisplayName();
+        String formatted = String.format(
+                "%s %s %s: %s",
+                levelTag,
+                bracketedClass,
+                displayName,
+                event.getMessage()
+        );
+        event.setFormat(formatted);
+    }
 
-        // Combine the level tag, display name, and message
-        String formattedMessage = String.format("%s %s: %s", levelTag, displayName, event.getMessage());
-
-        // Set the formatted message as the chat output
-        event.setFormat(formattedMessage);
+    private String colorizeClassTag(String raw) {
+        switch (raw.toLowerCase()) {
+            case "ranger": return "§aRanger";
+            case "dragonknight": return "§cDragonknight";
+            case "spellweaver": return "§5Spellweaver";
+            case "beastmaster": return "§2Beastmaster";
+            case "shadowstalker": return "§8Shadowstalker";
+            case "earthwarden": return "§2Earthwarden";
+            case "flame warden": return "§6Flame Warden";
+            case "scale guardian": return "§bScale Guardian";
+            case "berserker": return "§4Berserker";
+            case "elementalist": return "§dElementalist";
+            case "chronomancer": return "§9Chronomancer";
+            case "arcane protector": return "§3Arcane Protector";
+            case "noclass": return "§7NoClass";
+            default:
+                return raw;
+        }
     }
 }
