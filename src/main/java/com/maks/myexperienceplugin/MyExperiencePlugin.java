@@ -57,7 +57,14 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         String username = getConfig().getString("database.user");
         String password = getConfig().getString("database.password");
 
-        databaseManager = new DatabaseManager(host, port, database, username, password);
+        try {
+            databaseManager = new DatabaseManager(this, host, port, database, username, password);
+        } catch (Exception e) {
+            getLogger().severe("Failed to initialize database connection pool: " + e.getMessage());
+            e.printStackTrace();
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         partyManager = new PartyManager(this);
 
         if (!setupEconomy()) {
@@ -121,6 +128,15 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (databaseManager != null) {
+            try {
+                databaseManager.shutdown();
+            } catch (Exception e) {
+                getLogger().severe("Error while shutting down database connection pool: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
         Bukkit.getLogger().info("MyExperiencePlugin has been disabled!");
     }
 

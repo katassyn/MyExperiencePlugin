@@ -20,54 +20,46 @@ public class TopCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                try (Connection connection = plugin.getDatabaseManager().getConnection()) {
-                    String query = "SELECT name, level FROM players ORDER BY level DESC LIMIT 10";
-                    try (PreparedStatement stmt = connection.prepareStatement(query);
-                         ResultSet rs = stmt.executeQuery()) {
-
-                        StringBuilder message = new StringBuilder();
-                        message.append("§6===== §aTop 10 Players by Level§6 =====\n");
-
-                        int rank = 1;
-                        while (rs.next()) {
-                            String name = rs.getString("name");
-                            int level = rs.getInt("level");
-
-                            message.append(String.format("§6#%d: §a%s §7- Level §b%d\n", rank, name, level));
-                            rank++;
-                        }
-
-                        message.append("§6=============================");
-
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.sendMessage(message.toString());
-                        });
-
-                    } catch (SQLException e) {
-                        plugin.getLogger().severe("Error fetching top players: " + e.getMessage());
-                        e.printStackTrace();
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.sendMessage("§cAn error occurred while fetching the top players.");
-                        });
-                    }
-                } catch (SQLException e) {
-                    plugin.getLogger().severe("Could not connect to the database: " + e.getMessage());
-                    e.printStackTrace();
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        player.sendMessage("§cCould not connect to the database.");
-                    });
-                }
-            });
-
-            return true;
-        } else {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("This command is only available for players.");
-            return false;
+            return true;
         }
+
+        Player player = (Player) sender;
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection connection = plugin.getDatabaseManager().getConnection();
+                 PreparedStatement stmt = connection.prepareStatement(
+                         "SELECT name, level FROM players ORDER BY level DESC, xp DESC LIMIT 10");
+                 ResultSet rs = stmt.executeQuery()) {
+
+                StringBuilder message = new StringBuilder();
+                message.append("§6===== §aTop 10 Players by Level§6 =====\n");
+
+                int rank = 1;
+                while (rs.next()) {
+                    String name = rs.getString("name");
+                    int level = rs.getInt("level");
+                    message.append(String.format("§6#%d: §a%s §7- Level §b%d\n",
+                            rank++, name, level));
+                }
+
+                message.append("§6=============================");
+
+                // Send message on main thread
+                Bukkit.getScheduler().runTask(plugin, () ->
+                        player.sendMessage(message.toString()));
+
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error fetching top players: " + e.getMessage());
+                e.printStackTrace();
+
+                // Send error message on main thread
+                Bukkit.getScheduler().runTask(plugin, () ->
+                        player.sendMessage("§cAn error occurred while fetching the top players."));
+            }
+        });
+
+        return true;
     }
 }
-

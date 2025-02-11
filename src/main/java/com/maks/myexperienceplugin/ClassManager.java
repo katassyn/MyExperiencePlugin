@@ -11,10 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ClassManager {
-
     private final MyExperiencePlugin plugin;
-
-    // Caches (must never store null values in a ConcurrentHashMap)
     private final ConcurrentHashMap<UUID, String> playerClassCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, String> playerAscendancyCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Integer> playerSkillPointsCache = new ConcurrentHashMap<>();
@@ -27,77 +24,72 @@ public class ClassManager {
         UUID uuid = player.getUniqueId();
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Connection conn = plugin.getDatabaseManager().getConnection()) {
-                String sql = "SELECT class, ascendancy, skill_points FROM player_classes WHERE uuid = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, uuid.toString());
-                    try (ResultSet rs = stmt.executeQuery()) {
-                        if (rs.next()) {
-                            String clazz = rs.getString("class");
-                            String ascend = rs.getString("ascendancy");
-                            int points = rs.getInt("skill_points");
+            try (Connection conn = plugin.getDatabaseManager().getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "SELECT class, ascendancy, skill_points FROM player_classes WHERE uuid = ?")) {
 
-                            // Convert null to "NoClass" or "" so we never store null in a CHM
-                            if (clazz == null) {
-                                clazz = "NoClass";
-                            }
-                            if (ascend == null) {
-                                ascend = "";
-                            }
+                stmt.setString(1, uuid.toString());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        String clazz = rs.getString("class");
+                        String ascend = rs.getString("ascendancy");
+                        int points = rs.getInt("skill_points");
 
-                            playerClassCache.put(uuid, clazz);
-                            playerAscendancyCache.put(uuid, ascend);
-                            playerSkillPointsCache.put(uuid, points);
-                        } else {
-                            // Insert default
-                            insertDefaultClassRow(uuid);
-                            playerClassCache.put(uuid, "NoClass");
-                            playerAscendancyCache.put(uuid, "");
-                            playerSkillPointsCache.put(uuid, 0);
-                        }
+                        // Convert null to "NoClass" or "" so we never store null in a CHM
+                        if (clazz == null) clazz = "NoClass";
+                        if (ascend == null) ascend = "";
+
+                        playerClassCache.put(uuid, clazz);
+                        playerAscendancyCache.put(uuid, ascend);
+                        playerSkillPointsCache.put(uuid, points);
+                    } else {
+                        // Insert default
+                        insertDefaultClassRow(uuid);
+                        playerClassCache.put(uuid, "NoClass");
+                        playerAscendancyCache.put(uuid, "");
+                        playerSkillPointsCache.put(uuid, 0);
                     }
                 }
             } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to load class data for player " + player.getName() + ": " + e.getMessage());
                 e.printStackTrace();
             }
         });
     }
 
     private void insertDefaultClassRow(UUID uuid) {
-        try (Connection conn = plugin.getDatabaseManager().getConnection()) {
-            String sql = "INSERT INTO player_classes (uuid) VALUES (?)";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, uuid.toString());
-                stmt.executeUpdate();
-            }
+        try (Connection conn = plugin.getDatabaseManager().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "INSERT INTO player_classes (uuid) VALUES (?)")) {
+
+            stmt.setString(1, uuid.toString());
+            stmt.executeUpdate();
         } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to insert default class row for UUID " + uuid + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     public void savePlayerClassData(UUID uuid, String clazz, String ascendancy, int skillPoints) {
         // Convert any null to valid non-null
-        if (clazz == null) {
-            clazz = "NoClass";
-        }
-        if (ascendancy == null) {
-            ascendancy = "";
-        }
+        if (clazz == null) clazz = "NoClass";
+        if (ascendancy == null) ascendancy = "";
 
         final String finalClass = clazz;
         final String finalAscendancy = ascendancy;
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            try (Connection conn = plugin.getDatabaseManager().getConnection()) {
-                String sql = "REPLACE INTO player_classes (uuid, class, ascendancy, skill_points) VALUES (?, ?, ?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, uuid.toString());
-                    stmt.setString(2, finalClass);
-                    stmt.setString(3, finalAscendancy);
-                    stmt.setInt(4, skillPoints);
-                    stmt.executeUpdate();
-                }
+            try (Connection conn = plugin.getDatabaseManager().getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "REPLACE INTO player_classes (uuid, class, ascendancy, skill_points) VALUES (?, ?, ?, ?)")) {
+
+                stmt.setString(1, uuid.toString());
+                stmt.setString(2, finalClass);
+                stmt.setString(3, finalAscendancy);
+                stmt.setInt(4, skillPoints);
+                stmt.executeUpdate();
             } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to save class data for UUID " + uuid + ": " + e.getMessage());
                 e.printStackTrace();
             }
         });
