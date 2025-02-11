@@ -1,184 +1,153 @@
 # MyExperiencePlugin
 
-A robust Minecraft plugin designed to enhance gameplay with a custom experience and level system. The plugin integrates with external systems such as Vault, MythicMobs, and BeautyQuests to create a rewarding and interactive environment for players. With features like party XP sharing, configurable XP tables, monetary rewards, and a database-backed leveling system, this plugin is ideal for any server.
-
----
+Advanced leveling and class system plugin for Minecraft servers with party system, custom experience tables, and class-based progression.
 
 ## Features
 
-### **1. Dynamic XP and Level System**
-- Players earn XP through:
-  - Killing mobs (with **MythicMobs** integration).
-  - Completing quests (with **BeautyQuests** integration).
-- Supports a maximum level of **100**.
-- Level progression and XP requirements are fully configurable via `exp_table.yml`.
+### Experience System
+- Custom leveling system with configurable experience requirements
+- Experience gain from MythicMobs
+- Party system with shared experience
+- Experience boost events
+- Money rewards for leveling up
+- Level display in chat and tab list
+- Top players leaderboard
 
-### **2. Custom Chat and Tab Formatting**
+### Class System
+- Three base classes:
+  - **Ranger**: Guardian of the wilds, excels at taming beasts and stealth
+  - **Dragonknight**: Mighty frontline fighter with strong defensive capabilities
+  - **Spellweaver**: Master of arcane arts, focuses on ranged spell damage
 
-- **Chat:**
-  - Player chat messages display their current level:
-    - Max-level players (level 100) show a special tag: `[MAX LEVEL]`.
-    - Other players display their level in a `[ X ]` format.
+### Ascendancy System
+Each base class has three specialized ascendancy options:
 
-- **Tab:**
-  - Player levels are displayed next to their names in the server's player list (Tab):
-    - Format: `[ X ] PlayerName`
-    - Levels update dynamically as players level up.
+#### Ranger Ascendancies
+- **Beastmaster**: Empowers pets and wild nature-based abilities
+- **Shadowstalker**: Masters stealth, surprise, and high mobility
+- **Earthwarden**: Harnesses nature's power for support & defense
 
+#### Dragonknight Ascendancies
+- **Flame Warden**: Focuses on fire power, burning, and melee strength
+- **Scale Guardian**: A living shield with high defense & taunts
+- **Berserker**: Draconic rage, growing stronger in battle
 
-### **3. Database Integration**
-- Player data (levels and XP) is stored in a MySQL database.
-- Automatically loads and saves data for each player.
-- Ensures persistence across server restarts.
-
-### **4. Party System**
-- Players can form parties with up to **3 members**.
-- XP sharing:
-  - 100% XP for the player who kills a mob.
-  - 30% XP shared with party members within a **25-block radius**.
-
-### **5. Monetary Rewards**
-- Players receive in-game currency rewards upon leveling up (requires Vault).
-- Rewards are defined in `exp_money.yml`:
-
-\`\`\`yaml
-rewards:
-  1: 50
-  2: 100
-  3: 150
-  4: 200
-  5: 250
-  # Add more levels as needed
-\`\`\`
-
-### **6. Configurable XP Values for Mobs**
-Define XP values for specific mob types in `exp_table.yml`:
-
-\`\`\`yaml
-xp_per_mob:
-  serpent_fighter: 10
-  undead_villager: 10
-  # Add more mobs as needed
-\`\`\`
-
-Mobs are identified by their **MythicMobs** ID.
-
-### **7. Bonus XP Event**
-- Enable a server-wide XP bonus event via the configuration file:
-  - Multiply all XP rewards by a configurable percentage.
-  - Example: `Value: 200` means all players gain **200% additional XP**.
-
----
+#### Spellweaver Ascendancies
+- **Elementalist**: Masters elemental power, unleashing deadly spells
+- **Chronomancer**: Manipulates time for unique offense & support
+- **Arcane Protector**: Shields allies with arcane magic & protective spells
 
 ## Commands
 
-### **Player Commands**
-- `/exp`: Displays your XP, level, and progress toward the next level.
-- `/top`: Shows the top 10 players by level.
-- `/party`: Manage party-related actions:
-  - `/party inv <player>`: Invite a player to your party.
-  - `/party accept`: Accept a party invite.
-  - `/party decline`: Decline a party invite.
-  - `/party leave`: Leave your current party.
-  - `/party info`: View party details.
+### Experience Commands
+- `/exp` - Display your current level and experience
+- `/exp_give <amount> <player>` - Give experience to a player
+- `/exp_give_p <percentage> <player>` - Give percentage of required XP to level up
+- `/get_lvl <level>` - Set player level (Admin only)
+- `/top` - Display top 10 players by level
+- `/bonus_exp <enable|disable|set> [value]` - Manage bonus XP events
+- `/exp_table reload` - Reload experience configuration
 
-### **Admin Commands**
+### Party Commands
+- `/party inv <player>` - Invite player to party
+- `/party accept` - Accept party invitation
+- `/party decline` - Decline party invitation
+- `/party leave` - Leave current party
+- `/party info` - Display party information
 
-- `/exp_table reload`  
-  Reloads the XP table configuration (`exp_table.yml`).
+### Class Commands
+- `/chose_class` - Open base class selection GUI
+- `/chose_ascendancy` - Open ascendancy selection GUI (requires level 20)
+- `/skilltree` - View available skill points
+- `/class set <className>` - Force-change class (Admin only)
 
-- `/exp_money reload`  
-  Reloads monetary rewards settings (`exp_money.yml`).
+## Configuration
 
-- `/reload_bonus`  
-  Reloads the plugin's configuration, including the bonus XP event settings.
-
-- `/get_lvl <level>`  
-  Sets the level and XP of the command executor to the specified `<level>`.  
-  **Example:** `/get_lvl 10` sets your level to 10 and resets XP for that level.
-
-- `/exp_give <amount> <player>`  
-  Grants the specified `<amount>` of XP to the targeted `<player>`.  
-  **Example:** `/exp_give 500 Steve` gives 500 XP to the player named Steve.
-
-- `/exp_give_p <percentage> <player>`  
-  Grants the specified `<percentage>` of the XP required for the current level to the targeted `<player>`.  
-  **Example:** `/exp_give_p 10 Steve` gives Steve 10% of the XP required to reach their next level.
-
----
-
-## Configuration Files
-
-### **1. config.yml**
-Define database and plugin settings:
-
-\`\`\`yaml
+### config.yml
+```yaml
 database:
-  host: localhost
-  port: 3306
-  name: minecraft
-  user: root
-  password: password
+  host: "localhost"
+  port: "3307"
+  name: "minecraft_experience"
+  user: "root"
+  password: ""
 
 Bonus_exp:
-  Enabled: false # Whether the bonus XP event is active
-  Value: 100     # Percentage bonus to XP (100 = no bonus, 200 = double XP)
-\`\`\`
+  Enabled: false  # Whether bonus XP event is active
+  Value: 100      # Bonus XP percentage (100 = double XP)
+```
 
-### **2. exp_table.yml**
-Define XP requirements and mob XP values:
-
-\`\`\`yaml
+### exp_table.yml
+Configure experience rewards for different mob types:
+```yaml
 xp_per_mob:
   serpent_fighter: 10
   undead_villager: 10
-  # Add more mobs as needed
-\`\`\`
+  # Add more mobs here
+```
 
-### **3. exp_money.yml**
-Define monetary rewards for leveling up:
-
-\`\`\`yaml
+### exp_money.yml
+Configure money rewards for reaching certain levels:
+```yaml
 rewards:
-  1: 50
-  2: 100
-  3: 150
-  4: 200
-  5: 250
-  # Add more levels as needed
-\`\`\`
+  1: 50    # 50 money at level 1
+  2: 100   # 100 money at level 2
+  # Add more levels
+```
 
----
+## Dependencies
+- Vault - For economy integration
+- MythicMobs - For custom mob experience
 
-## Integration with Other Plugins
-
-### **Required Plugins**
-- **Vault**: Handles monetary rewards.
-- **MythicMobs**: Provides XP rewards for killing custom mobs.
-- **BeautyQuests**: Assigns quests for XP rewards.
-
----
+## Permissions
+- `myplugin.exp_table.reload` - Permission to reload exp tables
+- `myplugin.exp_money.reload` - Permission to reload money rewards
+- `myplugin.bonusexp` - Permission to manage bonus XP events
+- `myplugin.reloadbonus` - Permission to reload bonus XP config
+- `myplugin.skilltree` - Permission to use skill tree
+- `myplugin.class` - Permission to use class commands
+- `myplugin.choseclass.others` - Permission to open class GUI for others
 
 ## Installation
+1. Place the plugin JAR in your server's `plugins` folder
+2. Configure database settings in `config.yml`
+3. Configure experience tables in `exp_table.yml`
+4. Configure level rewards in `exp_money.yml`
+5. Restart your server
+6. Give appropriate permissions to players/groups
 
-1. Place the plugin's JAR file in your server's plugins folder.
-2. Start or reload the server.
-3. Configure the database in `config.yml`.
-4. Add custom XP values in `exp_table.yml`.
-5. Define monetary rewards in `exp_money.yml`.
-6. Restart the server to apply changes.
+## Database Schema
+The plugin uses MySQL/MariaDB with the following tables:
 
----
+### players
+```sql
+CREATE TABLE players (
+    uuid VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(16),
+    level INT,
+    xp DOUBLE
+);
+```
 
-## Future Features
+### player_classes
+```sql
+CREATE TABLE player_classes (
+    uuid VARCHAR(36) PRIMARY KEY,
+    class VARCHAR(32),
+    ascendancy VARCHAR(32),
+    skill_points INT
+);
+```
 
-- **Dungeon Integration**: XP rewards for dungeon completion.
-- **Custom Events**: Trigger XP rewards based on special events.
-- **Enhanced Party System**: Support for more members and party-specific bonuses.
-- **Leaderboard System**: Track top players across various metrics.
-
----
+## Features Coming Soon
+- Skill tree implementation
+- Class-specific abilities
+- More ascendancy options
+- Custom class quests
+- Advanced party features
 
 ## Support
+If you encounter any issues or need help, please create an issue on the GitHub repository.
 
-If you encounter issues or have feature requests, feel free to open an issue in the repository or contact the developer.
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
