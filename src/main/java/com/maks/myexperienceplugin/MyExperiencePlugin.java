@@ -1,13 +1,17 @@
 package com.maks.myexperienceplugin;
 
+import com.maks.myexperienceplugin.alchemy.AlchemyItemListener;
+import com.maks.myexperienceplugin.alchemy.AlchemyLevelConfig;
+import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -30,7 +34,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private PartyManager partyManager;
     private PlayerLevelDisplayHandler playerLevelDisplayHandler;
     private final int maxLevel = 100;
-
+    private AlchemyLevelConfig alchemyLevelConfig;
     // Class system references
     private ClassManager classManager;
     private ClassGUI classGUI;
@@ -85,7 +89,11 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new ChatLevelHandler(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDisconnectListener(partyManager), this);
-
+        getServer().getPluginManager().registerEvents(new TotemEffectListener(), this);
+        getServer().getPluginManager().registerEvents(new LifestealListener(), this);
+        getServer().getPluginManager().registerEvents(new ImmunityListener(), this);
+        alchemyLevelConfig = new AlchemyLevelConfig(this);
+        getServer().getPluginManager().registerEvents(new AlchemyItemListener(this, alchemyLevelConfig), this);
         // Class system
         classManager = new ClassManager(this);
         classGUI = new ClassGUI(this);
@@ -308,7 +316,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     public int getMaxLevel() {
         return maxLevel;
     }
-
+    public AlchemyLevelConfig getAlchemyLevelConfig() {
+        return alchemyLevelConfig;
+    }
     public HashMap<UUID, Integer> getPlayerLevels() {
         return playerLevels;
     }
@@ -335,5 +345,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
     public double getBonusExpValue() {
         return getConfig().getDouble("Bonus_exp.Value", 100.0);
+    }
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        PhysisExpManager.getInstance().clearPlayerBonus(event.getPlayer().getUniqueId());
     }
 }
