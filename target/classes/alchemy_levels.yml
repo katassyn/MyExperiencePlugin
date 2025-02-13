@@ -1,0 +1,86 @@
+level_requirements:
+  # Podstawowe mikstury
+  potion5hp: 1
+  potion10hp: 1
+  potion15hp: 1
+
+  # Mikstury [I] tier (INFINITE)
+  potionheal_inf: 50
+  potionlasting_inf: 50
+  potionimmun_inf: 50
+  potionms_inf: 50
+  potiononeluck_inf: 50
+  potionabsorption_inf: 50
+  potionbersek_inf: 50
+
+  # Mikstury [II] tier (HELL)
+  potionheal_hell: 65
+  potionlasting_hell: 65
+  potionimmun_hell: 65
+  potionms_hell: 65
+  potionnoneluck_hell: 65
+  potionabsorption_hell: 65
+  potionabersek_hell: 65
+
+  # Mikstury [III] tier (BLOOD)
+  potionheal_blood: 80
+  potionlasting_blood: 80
+  potionimmun_blood: 80
+  potionms_blood: 80
+  potionnoneluck_blood: 80
+  potionabsorption_blood: 80
+  potionbersek_blood: 80
+
+  # Tonics [I] tier
+  tonicdmg_inf: 50
+  tonichp_inf: 50
+  tonicexp_inf: 50
+  tonicms_inf: 50
+  tonictotem_inf: 50
+  tonicnight_inf: 50
+  tonicluck_inf: 50
+
+  # Tonics [II] tier
+  tonicdmg_hell: 65
+  tonichp_hell: 65
+  tonicexp_hell: 65
+  tonicms_hell: 65
+  tonictotem_hell: 65
+  tonicnight_hell: 65
+  tonicluck_hell: 65
+
+  # Tonics [III] tier
+  tonicdmg_blood: 80
+  tonichp_blood: 80
+  tonicexp_blood: 80
+  tonicms_blood: 80
+  tonictotem_blood: 80
+  tonicnight_blood: 80
+  tonicluck_blood: 80
+
+  # Phycis [I] tier
+  phycisdmg_inf: 50
+  phycishp_inf: 50
+  phycisexp_inf: 50
+  phycisms_inf: 50
+  phycismagnes_inf: 50
+  phycissteal_inf: 50
+  phycisluck_inf: 50
+
+  # Phycis [II] tier
+  phycisdmg_hell: 65
+  phycishp_hell: 65
+  phycisexp_hell: 65
+  phycisms_hell: 65
+  phycismagnes_hell: 65
+  phycissteal_hell: 65
+  phycisluck_hell: 65
+
+  # Phycis [III] tier
+  phycisdmg_blood: 80
+  phycishp_blood: 80
+  phycisexp_blood: 80
+  phycisms_blood: 80
+  phycismagnes_blood: 80
+  phycissteal_blood: 80
+  phycisluck_blood: 80
