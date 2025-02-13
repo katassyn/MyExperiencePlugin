@@ -68,7 +68,7 @@ public class TopCommand implements CommandExecutor {
                 plugin.getLogger().severe("Błąd przy pobieraniu danych top graczy: " + e.getMessage());
                 e.printStackTrace();
                 Bukkit.getScheduler().runTask(plugin, () ->
-                        player.sendMessage("§cWystąpił błąd przy pobieraniu top graczy."));
+                        player.sendMessage("§cError"));
                 return;
             }
             Bukkit.getScheduler().runTask(plugin, () -> {
@@ -89,7 +89,7 @@ public class TopCommand implements CommandExecutor {
                 }
 
                 StringBuilder message = new StringBuilder();
-                message.append("§6===== §aTop 10 Graczy wg Levela§6 =====\n");
+                message.append("§6===== §aTop 10 Players§6 =====\n");
                 for (String line : topPlayers) {
                     message.append(line).append("\n");
                 }
