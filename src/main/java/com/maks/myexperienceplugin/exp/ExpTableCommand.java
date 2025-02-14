@@ -1,5 +1,6 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.exp;
 
+import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

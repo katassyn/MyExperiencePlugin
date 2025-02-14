@@ -1,8 +1,13 @@
 package com.maks.myexperienceplugin;
 
+import com.maks.myexperienceplugin.Class.*;
 import com.maks.myexperienceplugin.alchemy.AlchemyItemListener;
 import com.maks.myexperienceplugin.alchemy.AlchemyLevelConfig;
 import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
+import com.maks.myexperienceplugin.exp.*;
+import com.maks.myexperienceplugin.listener.*;
+import com.maks.myexperienceplugin.party.PartyCommand;
+import com.maks.myexperienceplugin.party.PartyManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;

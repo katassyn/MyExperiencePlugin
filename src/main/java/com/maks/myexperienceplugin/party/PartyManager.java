@@ -1,5 +1,6 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.party;
 
+import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -8,8 +9,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 
 import java.util.*;
-
-import net.md_5.bungee.api.chat.*;
 
 public class PartyManager {
     private final MyExperiencePlugin plugin;

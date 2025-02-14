@@ -1,5 +1,6 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.Class;
 
+import com.maks.myexperienceplugin.MyExperiencePlugin;
 import net.md_5.bungee.api.ChatColor;              // Bungee ChatColor
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;

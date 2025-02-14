@@ -1,4 +1,4 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.party;
 
 import org.bukkit.entity.Player;
 

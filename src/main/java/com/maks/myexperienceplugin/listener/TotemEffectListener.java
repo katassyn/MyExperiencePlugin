@@ -1,4 +1,4 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.listener;
 
 import com.maks.myexperienceplugin.alchemy.TotemManager;
 import org.bukkit.event.EventHandler;

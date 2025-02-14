@@ -1,4 +1,4 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.exp;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.command.Command;

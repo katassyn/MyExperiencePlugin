@@ -1,5 +1,6 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.party;
 
+import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;

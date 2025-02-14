@@ -37,6 +37,10 @@
   </build>
   <repositories>
     <repository>
+      <id>papermc-repo</id>
+      <url>https://repo.papermc.io/repository/maven-public/</url>
+    </repository>
+    <repository>
       <id>nexus</id>
       <name>Lumine Releases</name>
       <url>https://mvn.lumine.io/repository/maven-public/</url>
@@ -48,10 +52,6 @@
     <repository>
       <id>sonatype</id>
       <url>https://oss.sonatype.org/content/groups/public/</url>
-    </repository>
-    <repository>
-      <id>papermc-repo</id>
-      <url>https://repo.papermc.io/repository/maven-public/</url>
     </repository>
   </repositories>
   <dependencies>

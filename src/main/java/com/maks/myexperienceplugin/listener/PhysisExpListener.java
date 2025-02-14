@@ -1,4 +1,4 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.listener;
 
 import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
 import org.bukkit.entity.Player;

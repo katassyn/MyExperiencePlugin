@@ -1,4 +1,4 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.listener;
 
 import com.maks.myexperienceplugin.alchemy.LifestealManager;
 import org.bukkit.entity.Player;
@@ -6,7 +6,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.event.entity.EntityDamageEvent;
 
 public class LifestealListener implements Listener {
     @EventHandler

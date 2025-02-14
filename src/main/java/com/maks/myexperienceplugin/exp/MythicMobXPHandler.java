@@ -1,5 +1,7 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.exp;
 
+import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.party.Party;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

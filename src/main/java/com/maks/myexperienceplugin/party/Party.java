@@ -1,5 +1,6 @@
-package com.maks.myexperienceplugin;
+package com.maks.myexperienceplugin.party;
 
+import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
