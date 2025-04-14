@@ -8,22 +8,21 @@ public class AlchemyEffectFactory {
         switch (key.toLowerCase()) {
             // Potions (Elixiry)
             case "potion5hp":
-                return new InstantHealingEffect(player, 0.5, 10 * 1000, "Small Healing Potion");
+                return new InstantHealingEffect(player, 5.0, 10 * 1000L, "Small Healing Potion");
             case "potion10hp":
-                return new InstantHealingEffect(player, 1.0, 10 * 1000, "Medium Healing Potion");
+                return new InstantHealingEffect(player, 10.0, 10 * 1000L, "Medium Healing Potion");
             case "potion15hp":
-                return new InstantHealingEffect(player, 1.5, 10 * 1000, "Large Healing Potion");
-
+                return new InstantHealingEffect(player, 15.0, 10 * 1000L, "Large Healing Potion");
             case "potionheal_inf":
-                return new InstantHealingEffect(player, 0.5, 30 * 1000, "Small Healing Potion [I]");
+                return new InstantHealingEffect(player, 50.0, 30 * 1000L, "Small Healing Potion [I]", true);
             case "potionlasting_inf":
                 return new OverTimeHealingEffect(player, 0.10, 5 * 1000, 30 * 1000, "Small Lasting Healing Potion [I]");
             case "potionheal_hell":
-                return new InstantHealingEffect(player, 0.75, 30 * 1000, "Medium Healing Potion [II]");
+                return new InstantHealingEffect(player, 75.0, 30 * 1000L, "Medium Healing Potion [II]", true);
             case "potionlasting_hell":
                 return new OverTimeHealingEffect(player, 0.15, 5 * 1000, 30 * 1000, "Medium Lasting Healing Potion [II]");
             case "potionheal_blood":
-                return new InstantHealingEffect(player, 1.0, 30 * 1000, "Large Healing Potion [III]");
+                return new InstantHealingEffect(player, 100.0, 30 * 1000L, "Large Healing Potion [III]", true);
             case "potionlasting_blood":
                 return new OverTimeHealingEffect(player, 0.20, 5 * 1000, 30 * 1000, "Large Lasting Healing Potion [III]");
 

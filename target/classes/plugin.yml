@@ -60,3 +60,48 @@ commands:
     description: Manually open the ascendancy GUI
     permission: myplugin.class
     usage: /chose_ascendancy
+  alchemy_reset:
+    description: Reset all alchemy effects and cooldowns
+    usage: /alchemy_reset [player]
+    permission: myplugin.alchemy.reset
+    aliases: [ alch_reset, areset ]
+  permissions:
+    myplugin.alchemy.reset:
+      description: Allows resetting alchemy effects and cooldowns
+      default: op
+  skillstats:
+    description: Check your skill stats and effects
+    usage: /skillstats
+    aliases: [ stats ]
+
+  skilltree2:
+    description: Open the ascendancy skill tree
+    usage: /skilltree2
+    aliases: [ st2, asctree ]
+
+  playerattributes:
+    description: Shows all player attributes and skill bonuses
+    usage: /playerattributes
+    aliases: [pattr, attributes]
+    permission: myplugin.playerattributes
+
+  resetattributes:
+    description: Resets player attributes to default values
+    usage: /resetattributes [player] [all|vanilla]
+    aliases: [resetattr, attreset]
+    permission: myplugin.resetattributes
+
+# Add these permissions to your plugin.yml (if you have a permissions section)
+
+permissions:
+  myplugin.playerattributes:
+    description: Allows checking player attributes
+    default: true
+
+  myplugin.resetattributes:
+    description: Allows resetting own attributes
+    default: op
+
+  myplugin.resetattributes.others:
+    description: Allows resetting other players' attributes
+    default: op

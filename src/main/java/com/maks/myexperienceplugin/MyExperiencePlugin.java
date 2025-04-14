@@ -1,8 +1,11 @@
 package com.maks.myexperienceplugin;
 
 import com.maks.myexperienceplugin.Class.*;
+import com.maks.myexperienceplugin.Class.skills.*;
+import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUIListener;
 import com.maks.myexperienceplugin.alchemy.AlchemyItemListener;
 import com.maks.myexperienceplugin.alchemy.AlchemyLevelConfig;
+import com.maks.myexperienceplugin.alchemy.AlchemyResetCommand;
 import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
 import com.maks.myexperienceplugin.exp.*;
 import com.maks.myexperienceplugin.listener.*;
@@ -19,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUI;
 
 import java.io.File;
 import java.util.*;
@@ -27,7 +31,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
     private DatabaseManager databaseManager;
     private Economy economy;
-    private MoneyRewardHandler moneyRewardHandler;
+    public MoneyRewardHandler moneyRewardHandler;
     public final HashMap<UUID, Integer> playerLevels = new HashMap<>();
     private final HashMap<UUID, Double> playerRequiredXP = new HashMap<>();
     public final HashMap<UUID, Double> playerCurrentXP = new HashMap<>();
@@ -43,13 +47,16 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     // Class system references
     private ClassManager classManager;
     private ClassGUI classGUI;
-
+    private SkillTreeManager skillTreeManager;
+    private SkillTreeGUI skillTreeGUI;
+    private SkillEffectsHandler skillEffectsHandler;
     public ClassManager getClassManager() {
         return classManager;
     }
     public ClassGUI getClassGUI() {
         return classGUI;
     }
+    private AscendancySkillTreeGUI ascendancySkillTreeGUI; // Add this field
 
     public static MyExperiencePlugin getInstance() {
         return instance;
@@ -98,8 +105,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new LifestealListener(), this);
         getServer().getPluginManager().registerEvents(new ImmunityListener(), this);
         alchemyLevelConfig = new AlchemyLevelConfig(this);
+        // In MyExperiencePlugin.onEnable():
         getServer().getPluginManager().registerEvents(new AlchemyItemListener(this, alchemyLevelConfig), this);
-        // Class system
+        getServer().getPluginManager().registerEvents(new PhysisExpListener(this), this);
         classManager = new ClassManager(this);
         classGUI = new ClassGUI(this);
         getServer().getPluginManager().registerEvents(new ClassGUIListener(this), this);
@@ -133,12 +141,35 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         // Our new class system commands
         getCommand("chose_class").setExecutor(new ChoseClassCommand(this));
         getCommand("chose_ascendancy").setExecutor(new ChoseAscendancyCommand(this));
-        getCommand("skilltree").setExecutor(new SkillTreeCommand(this));
-
+        getCommand("alchemy_reset").setExecutor(new AlchemyResetCommand());
         // Start the periodic reminder every 60 seconds
         new PeriodicClassReminder(this).runTaskTimer(this, 20L, 1200L); // 20L = 1s, 1200L = 60s
-    }
+        skillTreeManager = new SkillTreeManager(this);
+        skillTreeGUI = new SkillTreeGUI(this, skillTreeManager);
+        skillEffectsHandler = new SkillEffectsHandler(this, skillTreeManager);
+        ascendancySkillTreeGUI = new AscendancySkillTreeGUI(this, skillTreeManager);
+        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
+        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI), this);
+        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI), this);
 
+        // Register skill commands
+        getCommand("skilltree").setExecutor(new SkillTreeCommand(this, skillTreeGUI));
+        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI), this);
+        getCommand("skillstats").setExecutor(new SkillStatsCommand(this, skillEffectsHandler));
+        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI), this);
+        getCommand("skilltree2").setExecutor(new AscendancySkillTreeCommand(this, ascendancySkillTreeGUI));
+        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
+        getCommand("playerattributes").setExecutor(new PlayerAttributesCommand(this, skillEffectsHandler));
+
+// Register reset attributes command
+        ResetAttributesCommand resetAttributesCommand = new ResetAttributesCommand(this, skillEffectsHandler);
+        getCommand("resetattributes").setExecutor(resetAttributesCommand);
+        getCommand("resetattributes").setTabCompleter(resetAttributesCommand);
+
+        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI), this);
+        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI), this);
+        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
+    }
     @Override
     public void onDisable() {
         if (databaseManager != null) {
@@ -252,7 +283,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
             // Add 1 skill point on every level up
             classManager.addSkillPoints(player, 1);
-
+            skillTreeManager.updateSkillPoints(player);
             databaseManager.savePlayerData(player, currentLevel, currentXP);
             updatePlayerDisplay(player);
         }
@@ -354,5 +385,11 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         PhysisExpManager.getInstance().clearPlayerBonus(event.getPlayer().getUniqueId());
+    }
+    public SkillTreeManager getSkillTreeManager() {
+        return skillTreeManager;
+    }
+    public SkillEffectsHandler getSkillEffectsHandler() {
+        return skillEffectsHandler;
     }
 }

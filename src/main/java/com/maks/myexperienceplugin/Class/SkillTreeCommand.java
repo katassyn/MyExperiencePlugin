@@ -1,6 +1,8 @@
 package com.maks.myexperienceplugin.Class;
 
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.Class.skills.SkillTreeGUI;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,23 +11,31 @@ import org.bukkit.entity.Player;
 public class SkillTreeCommand implements CommandExecutor {
 
     private final MyExperiencePlugin plugin;
+    private final SkillTreeGUI skillTreeGUI;
 
-    public SkillTreeCommand(MyExperiencePlugin plugin) {
+    public SkillTreeCommand(MyExperiencePlugin plugin, SkillTreeGUI skillTreeGUI) {
         this.plugin = plugin;
+        this.skillTreeGUI = skillTreeGUI;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Only players can open the Skill Tree.");
+            sender.sendMessage(ChatColor.RED + "Only players can open the Skill Tree.");
             return true;
         }
 
         Player player = (Player) sender;
-        int points = plugin.getClassManager().getPlayerSkillPoints(player.getUniqueId());
-        player.sendMessage("§aYou have §e" + points + " §askill points to spend. (GUI coming soon!)");
+        String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
 
-        // Future expansion: open a skill tree GUI, etc.
+        if ("NoClass".equalsIgnoreCase(playerClass)) {
+            player.sendMessage(ChatColor.RED + "You need to choose a class first!");
+            return true;
+        }
+
+        // Open the skill tree GUI
+        skillTreeGUI.openSkillTreeGUI(player);
+
         return true;
     }
 }

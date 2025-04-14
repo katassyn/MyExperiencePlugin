@@ -2,6 +2,7 @@ package com.maks.myexperienceplugin.Class;
 
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.sql.Connection;
@@ -137,9 +138,85 @@ public class ClassManager {
 
     public void resetClassData(Player player) {
         UUID uuid = player.getUniqueId();
+
+        // For debugging
+        int debuggingFlag = 1;
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Resetting class data for player: " + player.getName());
+            plugin.getLogger().info("Current level: " + plugin.getPlayerLevel(player));
+        }
+
+        // Reset class and ascendancy in cache
         playerClassCache.put(uuid, "NoClass");
         playerAscendancyCache.put(uuid, "");
         playerSkillPointsCache.put(uuid, 0);
-        savePlayerClassData(uuid, "NoClass", "", 0);
-    }
-}
+
+        // Reset purchased skills in database
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection conn = plugin.getDatabaseManager().getConnection()) {
+                // Delete purchased skills
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "DELETE FROM player_purchased_skills WHERE uuid = ?")) {
+                    stmt.setString(1, uuid.toString());
+                    stmt.executeUpdate();
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Deleted purchased skills for " + player.getName());
+                    }
+                }
+
+                // Reset skill points table but DON'T set to 0
+                // Instead of setting points to 0, we'll recalculate them later
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "DELETE FROM player_skill_points WHERE uuid = ?")) {
+                    stmt.setString(1, uuid.toString());
+                    stmt.executeUpdate();
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Deleted skill points entry for " + player.getName());
+                    }
+                }
+
+                // Save reset class
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "REPLACE INTO player_classes (uuid, class, ascendancy, skill_points) VALUES (?, ?, ?, ?)")) {
+                    stmt.setString(1, uuid.toString());
+                    stmt.setString(2, "NoClass");
+                    stmt.setString(3, "");
+                    stmt.setInt(4, 0);
+                    stmt.executeUpdate();
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Saved NoClass status for " + player.getName());
+                    }
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to reset player data for " + player.getName() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+
+        // Clear caches in SkillTreeManager
+        if (plugin.getSkillTreeManager() != null) {
+            plugin.getSkillTreeManager().clearPlayerSkillData(uuid);
+
+            // THIS IS THE KEY FIX - recalculate skill points based on player level
+            plugin.getSkillTreeManager().updateSkillPoints(player);
+
+            if (debuggingFlag == 1) {
+                int basicPoints = plugin.getSkillTreeManager().getBasicSkillPoints(uuid);
+                int ascendancyPoints = plugin.getSkillTreeManager().getAscendancySkillPoints(uuid);
+                plugin.getLogger().info("After reset - recalculated skill points for " + player.getName() +
+                        ": basic=" + basicPoints + ", ascendancy=" + ascendancyPoints);
+            }
+        }
+
+        // Refresh player stats
+        if (plugin.getSkillEffectsHandler() != null) {
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+        }
+
+        // Inform player
+        player.sendMessage(ChatColor.RED + "Your class has been reset!");
+        player.sendMessage(ChatColor.GREEN + "Your skill points have been recalculated based on your level.");
+    }}

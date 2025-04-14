@@ -179,4 +179,22 @@ public class PartyManager {
         removePlayerFromParty(player);
         player.sendMessage("§aYou have left the party.");
     }
+    /**
+     * Sends a message to all members of a player's party
+     */
+    public void sendPartyMessage(Player sender, String message) {
+        Party party = getParty(sender);
+        if (party == null) {
+            sender.sendMessage("§cYou are not in a party.");
+            return;
+        }
+
+        String formattedMessage = "§9[Party] §7" + sender.getName() + ": §f" + message;
+        for (UUID memberId : party.getMembers()) {
+            Player member = Bukkit.getPlayer(memberId);
+            if (member != null) {
+                member.sendMessage(formattedMessage);
+            }
+        }
+    }
 }

@@ -62,7 +62,23 @@ public class PartyCommand implements CommandExecutor, TabCompleter {
             case "leave":
                 partyManager.leaveParty(player);
                 break;
+            // Add this inside your switch (subCommand) { ... } block in onCommand method
+            case "chat":
+            case "c":
+                if (args.length < 2) {
+                    player.sendMessage("§cUsage: /party chat <message>");
+                    return true;
+                }
 
+                // Combine all arguments after "chat" into one message
+                StringBuilder message = new StringBuilder();
+                for (int i = 1; i < args.length; i++) {
+                    if (i > 1) message.append(" ");
+                    message.append(args[i]);
+                }
+
+                partyManager.sendPartyMessage(player, message.toString());
+                return true;
             case "info":
                 Party party = partyManager.getParty(player);
                 if (party == null) {
@@ -96,7 +112,8 @@ public class PartyCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1) {
-            List<String> subCommands = Arrays.asList("inv", "accept", "decline", "leave", "info");
+// Update your subCommands list in onTabComplete method
+            List<String> subCommands = Arrays.asList("inv", "accept", "decline", "leave", "info", "chat", "c");
             List<String> completions = new ArrayList<>();
             for (String sc : subCommands) {
                 if (sc.startsWith(args[0].toLowerCase())) {

@@ -31,5 +31,6 @@ public class PlayerJoinListener implements Listener {
         plugin.getDatabaseManager().loadPlayerData(event.getPlayer());
         // Load class data from DB
         plugin.getClassManager().loadPlayerClassData(event.getPlayer());
+        plugin.getSkillTreeManager().loadPlayerSkillData(event.getPlayer());
     }
 }

@@ -32,27 +32,35 @@ public class AlchemyManager {
         long now = System.currentTimeMillis();
         Map<AlchemyCategory, Long> playerCooldowns = cooldowns.getOrDefault(player.getUniqueId(), new HashMap<>());
         long availableAt = playerCooldowns.getOrDefault(category, 0L);
-        return now >= availableAt;
+        boolean canApply = now >= availableAt;
+
+        if (!canApply) {
+            long remaining = (availableAt - now) / 1000;
+            player.sendMessage("§cCooldown: " + remaining + " seconds remaining");
+        }
+
+        return canApply;
     }
 
     /**
      * Próbuje zastosować efekt. Jeśli gracz ma już aktywny efekt w danej kategorii lub cooldown nie minął,
      * wysyłamy odpowiedni komunikat i efekt nie zostaje zastosowany.
+     * @return true if effect was applied, false otherwise
      */
-    public void applyEffect(Player player, AlchemyCategory category, AlchemyEffect effect) {
+    public boolean applyEffect(Player player, AlchemyCategory category, AlchemyEffect effect) {
         UUID uuid = player.getUniqueId();
 
         // Jeśli już mamy aktywny efekt w tej kategorii, nie pozwalamy na nałożenie kolejnego.
         Map<AlchemyCategory, AlchemyEffect> playerEffects = activeEffects.get(uuid);
         if (playerEffects != null && playerEffects.containsKey(category)) {
             player.sendMessage("§cYou already have an active effect in this category. Wait until it ends.");
-            return;
+            return false;
         }
 
         // Sprawdzamy cooldown
         if (!canApplyEffect(player, category)) {
             player.sendMessage("§cYou must wait for the cooldown before using another effect in this category.");
-            return;
+            return false;
         }
 
         // Zapisujemy i aktywujemy efekt
@@ -67,6 +75,8 @@ public class AlchemyManager {
         Map<AlchemyCategory, Long> playerCooldowns = cooldowns.getOrDefault(uuid, new HashMap<>());
         playerCooldowns.put(category, System.currentTimeMillis() + effect.getCooldownMillis());
         cooldowns.put(uuid, playerCooldowns);
+
+        return true;
     }
 
     /** Usuwa efekt z danej kategorii dla gracza (np. po zakończeniu działania) */
@@ -78,5 +88,21 @@ public class AlchemyManager {
             effect.remove();
             playerEffects.remove(category);
         }
+    }
+
+    public void clearEffect(Player player, AlchemyCategory category) {
+        UUID uuid = player.getUniqueId();
+        Map<AlchemyCategory, AlchemyEffect> playerEffects = activeEffects.get(uuid);
+        if (playerEffects != null) {
+            playerEffects.remove(category);
+        }
+    }
+
+    /**
+     * Clears all cooldowns for a player
+     */
+    public void clearCooldowns(Player player) {
+        UUID uuid = player.getUniqueId();
+        cooldowns.remove(uuid);
     }
 }

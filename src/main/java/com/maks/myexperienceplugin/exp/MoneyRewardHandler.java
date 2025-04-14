@@ -83,4 +83,9 @@ public class MoneyRewardHandler implements CommandExecutor, TabCompleter {
         }
         return suggestions;
     }
+    public void depositMoney(Player player, double amount) {
+        if (economy != null) {
+            economy.depositPlayer(player, amount);
+        }
+    }
 }

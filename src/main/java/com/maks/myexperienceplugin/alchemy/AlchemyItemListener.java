@@ -31,7 +31,7 @@ public class AlchemyItemListener implements Listener {
         int playerLevel = plugin.getPlayerLevel(player);
 
         if (playerLevel < requiredLevel) {
-            player.sendMessage("§cWymagany poziom: " + requiredLevel + " aby użyć tego przedmiotu!");
+            player.sendMessage("§cThis item requires: " + requiredLevel + " to use!");
             event.setCancelled(true);
             return;
         }
@@ -53,15 +53,19 @@ public class AlchemyItemListener implements Listener {
         }
 
         // Spróbuj nałożyć efekt
-        AlchemyManager.getInstance().applyEffect(player, category, effect);
+        boolean applied = AlchemyManager.getInstance().applyEffect(player, category, effect);
 
-        // Zużyj jedną sztukę przedmiotu
-        int amount = item.getAmount();
-        if (amount > 1) {
-            item.setAmount(amount - 1);
-        } else {
-            player.getInventory().setItemInMainHand(null);
+        // Only consume the item if the effect was successfully applied
+        if (applied) {
+            // Zużyj jedną sztukę przedmiotu
+            int amount = item.getAmount();
+            if (amount > 1) {
+                item.setAmount(amount - 1);
+            } else {
+                player.getInventory().setItemInMainHand(null);
+            }
         }
+
         event.setCancelled(true);
     }
 }
