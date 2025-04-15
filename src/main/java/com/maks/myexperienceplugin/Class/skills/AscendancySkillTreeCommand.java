@@ -6,9 +6,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-public class AscendancySkillTreeCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class AscendancySkillTreeCommand implements CommandExecutor, TabCompleter {
 
     private final MyExperiencePlugin plugin;
     private final AscendancySkillTreeGUI ascendancySkillTreeGUI;
@@ -49,30 +55,47 @@ public class AscendancySkillTreeCommand implements CommandExecutor {
             return true;
         }
 
-        // Determine which page to open
-        int page = 1;
+        // Determine which branch to open (1, 2, or 3)
+        int branch = 1;
         if (args.length > 0) {
             try {
-                page = Integer.parseInt(args[0]);
-                if (page < 1 || page > 3) {
-                    page = 1;
+                branch = Integer.parseInt(args[0]);
+                if (branch < 1 || branch > 3) {
+                    branch = 1;
                 }
             } catch (NumberFormatException e) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().warning("Invalid page number: " + args[0]);
+                    plugin.getLogger().warning("Invalid branch number: " + args[0]);
                 }
             }
         }
 
-        // Open ascendancy skill tree GUI
-        ascendancySkillTreeGUI.openAscendancySkillTreeGUI(player, page);
+        // Open ascendancy skill tree GUI for the selected branch
+        ascendancySkillTreeGUI.openAscendancySkillTreeGUI(player, branch);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Opened ascendancy skill tree GUI for " + player.getName() +
                     ", class: " + playerClass + ", ascendancy: " + playerAscendancy +
-                    ", page: " + page);
+                    ", branch: " + branch);
         }
 
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            List<String> branchOptions = Arrays.asList("1", "2", "3");
+
+            if (args[0].isEmpty()) {
+                return branchOptions;
+            }
+
+            return branchOptions.stream()
+                    .filter(option -> option.startsWith(args[0]))
+                    .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>();
     }
 }

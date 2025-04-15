@@ -23,7 +23,6 @@ C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\events\SkillPurchasedEvent.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\PlayerJoinListener.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\PhysisExpManager.java
-C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\AscendancySkillTreeGUIListener.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyEffectFactory.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\exp\ExperienceCommandHandler.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\AscendancySkillTreeCommand.java
@@ -67,7 +66,6 @@ C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\base\SkillNode.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\DatabaseManager.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\party\PartyInvite.java
-C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\AscendancySkillTreeGUI.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\exp\MoneyRewardHandler.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\BerserkerEffect.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\base\SkillTree.java
@@ -81,5 +79,4 @@ C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\InstantHealingEffect.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\TotemManager.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\ClassResetItemListener.java
-C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\SkillPurchasedEvent.java
 C:\Users\makss\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\ImmunityListener.java

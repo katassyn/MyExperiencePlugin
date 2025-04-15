@@ -26,113 +26,188 @@ public class AscendancySkillTreeGUI {
     private static final int INVENTORY_SIZE = 54; // 6 rows
     private static final String GUI_TITLE_PREFIX = ChatColor.DARK_BLUE + "Ascendancy Skills";
 
-    // Map to store node positions for each page of each ascendancy
-    private final Map<String, Map<Integer, Map<Integer, Integer>>> ascendancyNodePositions;
+    // Map to store the branch names for each ascendancy class
+    private final Map<String, List<String>> ascendancyBranches;
+
+    // Map to store the skill node positions for each branch of each ascendancy
+    private final Map<String, Map<String, Map<Integer, Integer>>> branchNodePositions;
+
+    // Map to store connection indicators (visual items that show connections between nodes)
+    private final Map<String, Map<String, List<Integer>>> branchConnectionSlots;
 
     public AscendancySkillTreeGUI(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager) {
         this.plugin = plugin;
         this.skillTreeManager = skillTreeManager;
-        this.ascendancyNodePositions = new HashMap<>();
+        this.ascendancyBranches = new HashMap<>();
+        this.branchNodePositions = new HashMap<>();
+        this.branchConnectionSlots = new HashMap<>();
 
-        // Initialize predefined positions for ascendancy skill nodes
+        // Initialize branch names and node positions
+        initializeBranchNames();
         initializeNodePositions();
+        initializeConnectionSlots();
+    }
+
+    private void initializeBranchNames() {
+        // For Beastmaster - define the three branches based on wolves, boars, and bears
+        List<String> beastmasterBranches = new ArrayList<>();
+        beastmasterBranches.add("Wolf Path");
+        beastmasterBranches.add("Boar Path");
+        beastmasterBranches.add("Bear Path");
+        ascendancyBranches.put("Beastmaster", beastmasterBranches);
+
+        // For Berserker - define branches based on the theme
+        List<String> berserkerBranches = new ArrayList<>();
+        berserkerBranches.add("Rage Path");
+        berserkerBranches.add("Critical Path");
+        berserkerBranches.add("Frenzy Path");
+        ascendancyBranches.put("Berserker", berserkerBranches);
+
+        // Add more ascendancies as needed
     }
 
     private void initializeNodePositions() {
-        // Example for Beastmaster (3 pages)
-        Map<Integer, Map<Integer, Integer>> beastmasterPages = new HashMap<>();
+        // Beastmaster - Wolf Path (showing vertical progression)
+        Map<String, Map<Integer, Integer>> beastmasterBranches = new HashMap<>();
 
-        // Page 1 (nodes 1-9)
-        Map<Integer, Integer> page1 = new HashMap<>();
-        page1.put(1, 10); // Node 1 at slot 10
-        page1.put(2, 12); // Node 2 at slot 12
-        page1.put(3, 14); // Node 3 at slot 14
-        page1.put(4, 19); // Node 4 at slot 19
-        page1.put(5, 21); // Node 5 at slot 21
-        page1.put(6, 23); // Node 6 at slot 23
-        page1.put(7, 28); // Node 7 at slot 28
-        page1.put(8, 30); // Node 8 at slot 30
-        page1.put(9, 32); // Node 9 at slot 32
+        // Wolf Path nodes - vertical layout
+        Map<Integer, Integer> wolfPathNodes = new HashMap<>();
+        wolfPathNodes.put(100001, 10);  // Wolf Summon at slot 10 (top)
+        wolfPathNodes.put(100004, 19);  // Wolf Speed at slot 19 (second row)
+        wolfPathNodes.put(100007, 28);  // Wolf Attack Speed at slot 28 (third row)
+        wolfPathNodes.put(100011, 37);  // Wolf Critical at slot 37 (fourth row)
+        wolfPathNodes.put(100012, 38);  // Wolf Vitality at slot 38 (fourth row)
+        wolfPathNodes.put(100017, 46);  // Wolf Healing at slot 46 (fifth row)
+        wolfPathNodes.put(100022, 47);  // Wolf Health at slot 47 (fifth row)
+        wolfPathNodes.put(100025, 49);  // Wolf Pack at slot 49 (bottom center)
+        beastmasterBranches.put("Wolf Path", wolfPathNodes);
 
-        // Page 2 (nodes 10-18)
-        Map<Integer, Integer> page2 = new HashMap<>();
-        page2.put(10, 10); // Node 10 at slot 10
-        page2.put(11, 12); // Node 11 at slot 12
-        page2.put(12, 14); // Node 12 at slot 14
-        page2.put(13, 19); // Node 13 at slot 19
-        page2.put(14, 21); // Node 14 at slot 21
-        page2.put(15, 23); // Node 15 at slot 23
-        page2.put(16, 28); // Node 16 at slot 28
-        page2.put(17, 30); // Node 17 at slot 30
-        page2.put(18, 32); // Node 18 at slot 32
+        // Boar Path nodes - vertical layout
+        Map<Integer, Integer> boarPathNodes = new HashMap<>();
+        boarPathNodes.put(100002, 12);  // Boar Summon at slot 12 (top)
+        boarPathNodes.put(100005, 21);  // Boar Damage at slot 21 (second row)
+        boarPathNodes.put(100008, 30);  // Boar Attack Speed at slot 30 (third row)
+        boarPathNodes.put(100009, 31);  // Pack Damage at slot 31 (third row)
+        boarPathNodes.put(100013, 39);  // Boar Critical at slot 39 (fourth row)
+        boarPathNodes.put(100014, 40);  // Pack Damage Plus at slot 40 (fourth row)
+        boarPathNodes.put(100019, 48);  // Boar Frenzy at slot 48 (fifth row)
+        boarPathNodes.put(100023, 50);  // Boar Speed at slot 50 (fifth row)
+        boarPathNodes.put(100026, 51);  // Boar Rage at slot 51 (bottom)
+        beastmasterBranches.put("Boar Path", boarPathNodes);
 
-        // Page 3 (nodes 19-27)
-        Map<Integer, Integer> page3 = new HashMap<>();
-        page3.put(19, 10); // Node 19 at slot 10
-        page3.put(20, 12); // Node 20 at slot 12
-        page3.put(21, 14); // Node 21 at slot 14
-        page3.put(22, 19); // Node 22 at slot 19
-        page3.put(23, 21); // Node 23 at slot 21
-        page3.put(24, 23); // Node 24 at slot 23
-        page3.put(25, 28); // Node 25 at slot 28
-        page3.put(26, 30); // Node 26 at slot 30
-        page3.put(27, 32); // Node 27 at slot 32
+        // Bear Path nodes - vertical layout
+        Map<Integer, Integer> bearPathNodes = new HashMap<>();
+        bearPathNodes.put(100003, 14);  // Bear Summon at slot 14 (top)
+        bearPathNodes.put(100006, 23);  // Bear Health at slot 23 (second row)
+        bearPathNodes.put(100010, 32);  // Bear Defense at slot 32 (third row)
+        bearPathNodes.put(100015, 41);  // Bear Guardian at slot 41 (fourth row)
+        bearPathNodes.put(100016, 42);  // Bear Vitality at slot 42 (fourth row)
+        bearPathNodes.put(100020, 50);  // Bear Regeneration at slot 50 (fifth row)
+        bearPathNodes.put(100021, 51);  // Pack Vitality at slot 51 (fifth row)
+        bearPathNodes.put(100024, 32);  // Pack Defense at slot 32 (fifth row)
+        bearPathNodes.put(100027, 53);  // Pack Healing at slot 53 (bottom)
+        beastmasterBranches.put("Bear Path", bearPathNodes);
 
-        beastmasterPages.put(1, page1);
-        beastmasterPages.put(2, page2);
-        beastmasterPages.put(3, page3);
+        branchNodePositions.put("Beastmaster", beastmasterBranches);
 
-        ascendancyNodePositions.put("Beastmaster", beastmasterPages);
+        // Similar structure for Berserker with its three branches
+        Map<String, Map<Integer, Integer>> berserkerBranches = new HashMap<>();
 
-        // Example for Berserker (3 pages)
-        Map<Integer, Map<Integer, Integer>> berserkerPages = new HashMap<>();
+        // Rage Path nodes
+        Map<Integer, Integer> ragePathNodes = new HashMap<>();
+        ragePathNodes.put(200001, 10);  // Unarmored Rage at slot 10 (top)
+        ragePathNodes.put(200004, 19);  // Kill Frenzy at slot 19 (second row)
+        ragePathNodes.put(200007, 28);  // Glass Cannon at slot 28 (third row)
+        ragePathNodes.put(200011, 37);  // Finishing Blow at slot 37 (fourth row)
+        ragePathNodes.put(200017, 46);  // Raw Power at slot 46 (fifth row)
+        ragePathNodes.put(200027, 49);  // Death Defiance at slot 49 (bottom center)
+        berserkerBranches.put("Rage Path", ragePathNodes);
 
-        // Page 1 (nodes 1-9)
-        Map<Integer, Integer> berserkPage1 = new HashMap<>();
-        berserkPage1.put(1, 10);
-        berserkPage1.put(2, 12);
-        berserkPage1.put(3, 14);
-        berserkPage1.put(4, 19);
-        berserkPage1.put(5, 21);
-        berserkPage1.put(6, 23);
-        berserkPage1.put(7, 28);
-        berserkPage1.put(8, 30);
-        berserkPage1.put(9, 32);
+        // Critical Path nodes
+        Map<Integer, Integer> criticalPathNodes = new HashMap<>();
+        criticalPathNodes.put(200002, 12);  // Berserker's Fury at slot 12 (top)
+        criticalPathNodes.put(200005, 21);  // Battle Rage at slot 21 (second row)
+        criticalPathNodes.put(200008, 30);  // Reckless Strike at slot 30 (third row)
+        criticalPathNodes.put(200009, 31);  // Critical Specialization at slot 31 (third row)
+        criticalPathNodes.put(200013, 39);  // Vitality at slot 39 (fourth row)
+        criticalPathNodes.put(200014, 40);  // Bleeding Strike at slot 40 (fourth row)
+        criticalPathNodes.put(200018, 48);  // Critical Mastery at slot 48 (fifth row)
+        criticalPathNodes.put(200020, 50);  // Critical Precision at slot 50 (fifth row)
+        berserkerBranches.put("Critical Path", criticalPathNodes);
 
-        // Page 2 (nodes 10-18)
-        Map<Integer, Integer> berserkPage2 = new HashMap<>();
-        berserkPage2.put(10, 10);
-        berserkPage2.put(11, 12);
-        berserkPage2.put(12, 14);
-        berserkPage2.put(13, 19);
-        berserkPage2.put(14, 21);
-        berserkPage2.put(15, 23);
-        berserkPage2.put(16, 28);
-        berserkPage2.put(17, 30);
-        berserkPage2.put(18, 32);
+        // Frenzy Path nodes
+        Map<Integer, Integer> frenzyPathNodes = new HashMap<>();
+        frenzyPathNodes.put(200003, 14);  // Combat Momentum at slot 14 (top)
+        frenzyPathNodes.put(200006, 23);  // Strength Boost at slot 23 (second row)
+        frenzyPathNodes.put(200010, 32);  // Attack Speed Frenzy at slot 32 (third row)
+        frenzyPathNodes.put(200012, 41);  // Tactical Defense at slot 41 (fourth row)
+        frenzyPathNodes.put(200015, 42);  // Agility at slot 42 (fourth row)
+        frenzyPathNodes.put(200019, 51);  // Reckless Power at slot 51 (fifth row)
+        berserkerBranches.put("Frenzy Path", frenzyPathNodes);
 
-        // Page 3 (nodes 19-27)
-        Map<Integer, Integer> berserkPage3 = new HashMap<>();
-        berserkPage3.put(19, 10);
-        berserkPage3.put(20, 12);
-        berserkPage3.put(21, 14);
-        berserkPage3.put(22, 19);
-        berserkPage3.put(23, 21);
-        berserkPage3.put(24, 23);
-        berserkPage3.put(25, 28);
-        berserkPage3.put(26, 30);
-        berserkPage3.put(27, 32);
+        branchNodePositions.put("Berserker", berserkerBranches);
 
-        berserkerPages.put(1, berserkPage1);
-        berserkerPages.put(2, berserkPage2);
-        berserkerPages.put(3, berserkPage3);
-
-        ascendancyNodePositions.put("Berserker", berserkerPages);
-
-        // Add positions for other ascendancies as needed
+        // Add more ascendancies as needed
     }
 
-    public void openAscendancySkillTreeGUI(Player player, int page) {
+    private void initializeConnectionSlots() {
+        // Define connections for Beastmaster Wolf Path
+        Map<String, List<Integer>> beastmasterConnections = new HashMap<>();
+
+        List<Integer> wolfConnections = new ArrayList<>();
+        // Vertical connections between nodes
+        wolfConnections.add(10+9);  // Connection between Wolf Summon and Wolf Speed
+        wolfConnections.add(19+9);  // Connection between Wolf Speed and Wolf Attack Speed
+        wolfConnections.add(28+9);  // Connection between Wolf Attack Speed and Wolf Critical/Vitality
+        wolfConnections.add(37+9);  // Connection between Wolf Critical and Wolf Healing
+        wolfConnections.add(38+9);  // Connection between Wolf Vitality and Wolf Health
+        wolfConnections.add(46+1);  // Connection between Wolf Healing and Wolf Pack
+        wolfConnections.add(47+2);  // Connection between Wolf Health and Wolf Pack
+        beastmasterConnections.put("Wolf Path", wolfConnections);
+
+        // Similar for other branches
+        List<Integer> boarConnections = new ArrayList<>();
+        boarConnections.add(12+9);  // Connection between Boar Summon and Boar Damage
+        boarConnections.add(21+9);  // Connection between Boar Damage and Boar Attack Speed/Pack Damage
+        boarConnections.add(30+9);  // Connection between Boar Attack Speed and Boar Critical
+        boarConnections.add(31+9);  // Connection between Pack Damage and Pack Damage Plus
+        boarConnections.add(39+9);  // Connection between Boar Critical and Boar Frenzy
+        boarConnections.add(40+9);  // Connection between Pack Damage Plus and Boar Speed
+        boarConnections.add(48+3);  // Connection between Boar Frenzy and Boar Rage
+        beastmasterConnections.put("Boar Path", boarConnections);
+
+        List<Integer> bearConnections = new ArrayList<>();
+        bearConnections.add(14+9);  // Connection between Bear Summon and Bear Health
+        bearConnections.add(23+9);  // Connection between Bear Health and Bear Defense
+        bearConnections.add(32+9);  // Connection between Bear Defense and Bear Guardian/Vitality
+        bearConnections.add(41+9);  // Connection between Bear Guardian and Bear Regeneration
+        bearConnections.add(42+9);  // Connection between Bear Vitality and Pack Vitality
+        bearConnections.add(50+3);  // Connection between Bear Regeneration and Pack Defense
+        bearConnections.add(51+2);  // Connection between Pack Vitality and Pack Healing
+        bearConnections.add(32+12); // Additional connection
+        beastmasterConnections.put("Bear Path", bearConnections);
+
+        branchConnectionSlots.put("Beastmaster", beastmasterConnections);
+
+        // Similar structure for Berserker connections
+        Map<String, List<Integer>> berserkerConnections = new HashMap<>();
+
+        List<Integer> rageConnections = new ArrayList<>();
+        rageConnections.add(10+9);  // Connection between Unarmored Rage and Kill Frenzy
+        rageConnections.add(19+9);  // Connection between Kill Frenzy and Glass Cannon
+        rageConnections.add(28+9);  // Connection between Glass Cannon and Finishing Blow
+        rageConnections.add(37+9);  // Connection between Finishing Blow and Raw Power
+        rageConnections.add(46+3);  // Connection between Raw Power and Death Defiance
+        berserkerConnections.put("Rage Path", rageConnections);
+
+        // Add other Berserker connections
+        berserkerConnections.put("Critical Path", new ArrayList<>());
+        berserkerConnections.put("Frenzy Path", new ArrayList<>());
+
+        branchConnectionSlots.put("Berserker", berserkerConnections);
+    }
+
+    public void openAscendancySkillTreeGUI(Player player, int branchIndex) {
         UUID uuid = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(uuid);
         String ascendancy = plugin.getClassManager().getPlayerAscendancy(uuid);
@@ -149,8 +224,23 @@ public class AscendancySkillTreeGUI {
             return;
         }
 
-        // Create inventory with page number
-        String title = GUI_TITLE_PREFIX + " - " + ascendancy + " (Page " + page + ")";
+        // Get branches for this ascendancy
+        List<String> branches = ascendancyBranches.get(ascendancy);
+        if (branches == null || branches.isEmpty()) {
+            player.sendMessage(ChatColor.RED + "Branch configuration not found for: " + ascendancy);
+            return;
+        }
+
+        // Make sure branchIndex is valid
+        if (branchIndex < 1 || branchIndex > branches.size()) {
+            branchIndex = 1;
+        }
+
+        // Get the current branch name
+        String currentBranch = branches.get(branchIndex - 1);
+
+        // Create inventory with branch name
+        String title = GUI_TITLE_PREFIX + " - " + ascendancy + " (" + currentBranch + ")";
         Inventory inventory = Bukkit.createInventory(null, INVENTORY_SIZE, title);
 
         // Get purchased skills
@@ -163,17 +253,23 @@ public class AscendancySkillTreeGUI {
         addSkillPointsInfo(inventory, player);
 
         // Add navigation buttons
-        addNavigationButtons(inventory, page, ascendancy);
+        addNavigationButtons(inventory, branchIndex, branches.size(), ascendancy);
 
-        // Add skill nodes for this page
-        addAscendancySkillNodes(inventory, player, tree, purchasedSkills, ascendancy, page);
+        // Add branch info
+        addBranchInfo(inventory, ascendancy, branchIndex, branches);
+
+        // Add connection indicators
+        addConnectionIndicators(inventory, ascendancy, currentBranch);
+
+        // Add skill nodes for this branch
+        addAscendancySkillNodes(inventory, player, tree, purchasedSkills, ascendancy, currentBranch);
 
         // Open the inventory
         player.openInventory(inventory);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Opened ascendancy skill tree GUI for " + player.getName() +
-                    ", ascendancy: " + ascendancy + ", page: " + page);
+                    ", ascendancy: " + ascendancy + ", branch: " + currentBranch);
         }
     }
 
@@ -207,50 +303,158 @@ public class AscendancySkillTreeGUI {
         inventory.setItem(4, pointsItem);
     }
 
-    private void addNavigationButtons(Inventory inventory, int currentPage, String ascendancy) {
-        // Previous page button (if not on first page)
-        if (currentPage > 1) {
+    private void addNavigationButtons(Inventory inventory, int currentBranchIndex, int totalBranches, String ascendancy) {
+        // Previous branch button (if not on first branch)
+        if (currentBranchIndex > 1) {
             ItemStack prevButton = new ItemStack(Material.ARROW);
             ItemMeta meta = prevButton.getItemMeta();
-            meta.setDisplayName(ChatColor.YELLOW + "Previous Page");
+            meta.setDisplayName(ChatColor.YELLOW + "Previous Branch");
             prevButton.setItemMeta(meta);
             inventory.setItem(45, prevButton);
         }
 
-        // Next page button (if not on last page)
-        // Assuming 3 pages for now - could be made dynamic
-        if (currentPage < 3) {
+        // Next branch button (if not on last branch)
+        if (currentBranchIndex < totalBranches) {
             ItemStack nextButton = new ItemStack(Material.ARROW);
             ItemMeta meta = nextButton.getItemMeta();
-            meta.setDisplayName(ChatColor.YELLOW + "Next Page");
+            meta.setDisplayName(ChatColor.YELLOW + "Next Branch");
             nextButton.setItemMeta(meta);
             inventory.setItem(53, nextButton);
         }
 
-        // Page indicator in the middle
-        ItemStack pageIndicator = new ItemStack(Material.PAPER);
-        ItemMeta meta = pageIndicator.getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Page " + currentPage + " of 3");
-        pageIndicator.setItemMeta(meta);
-        inventory.setItem(49, pageIndicator);
+        // Branch indicator in the middle bottom
+        ItemStack branchIndicator = new ItemStack(Material.PAPER);
+        ItemMeta meta = branchIndicator.getItemMeta();
+        meta.setDisplayName(ChatColor.GOLD + "Branch " + currentBranchIndex + " of " + totalBranches);
+
+        // Add description of what each branch focuses on
+        List<String> lore = new ArrayList<>();
+        if ("Beastmaster".equals(ascendancy)) {
+            if (currentBranchIndex == 1) {
+                lore.add(ChatColor.GRAY + "Wolf Path: Focus on wolves and their abilities");
+            } else if (currentBranchIndex == 2) {
+                lore.add(ChatColor.GRAY + "Boar Path: Focus on boars and damage");
+            } else if (currentBranchIndex == 3) {
+                lore.add(ChatColor.GRAY + "Bear Path: Focus on bears and defensive abilities");
+            }
+        } else if ("Berserker".equals(ascendancy)) {
+            if (currentBranchIndex == 1) {
+                lore.add(ChatColor.GRAY + "Rage Path: Focus on damage and power");
+            } else if (currentBranchIndex == 2) {
+                lore.add(ChatColor.GRAY + "Critical Path: Focus on critical hits");
+            } else if (currentBranchIndex == 3) {
+                lore.add(ChatColor.GRAY + "Frenzy Path: Focus on attack speed and combat bonuses");
+            }
+        }
+        meta.setLore(lore);
+
+        branchIndicator.setItemMeta(meta);
+        inventory.setItem(49, branchIndicator);
+    }
+
+    private void addBranchInfo(Inventory inventory, String ascendancy, int branchIndex, List<String> branches) {
+        String branchName = branches.get(branchIndex - 1);
+
+        ItemStack branchInfoItem = createBranchInfoItem(ascendancy, branchName);
+        inventory.setItem(0, branchInfoItem);
+    }
+
+    private ItemStack createBranchInfoItem(String ascendancy, String branchName) {
+        Material material;
+        List<String> lore = new ArrayList<>();
+
+        // Choose appropriate material and lore based on ascendancy and branch
+        if ("Beastmaster".equals(ascendancy)) {
+            if ("Wolf Path".equals(branchName)) {
+                material = Material.BONE;
+                lore.add(ChatColor.GRAY + "Focus on wolves and their abilities");
+                lore.add(ChatColor.GRAY + "• Wolf companions and synergies");
+                lore.add(ChatColor.GRAY + "• Healing and bonuses from wolves");
+                lore.add(ChatColor.GRAY + "• Pack tactics with multiple wolves");
+            } else if ("Boar Path".equals(branchName)) {
+                material = Material.PORKCHOP;
+                lore.add(ChatColor.GRAY + "Focus on boars and offensive power");
+                lore.add(ChatColor.GRAY + "• High damage boar companions");
+                lore.add(ChatColor.GRAY + "• Critical strikes and frenzy");
+                lore.add(ChatColor.GRAY + "• Pack damage improvements");
+            } else {
+                material = Material.HONEY_BOTTLE;
+                lore.add(ChatColor.GRAY + "Focus on bears and defensive abilities");
+                lore.add(ChatColor.GRAY + "• Tanky bear companions");
+                lore.add(ChatColor.GRAY + "• Defensive bonuses for your party");
+                lore.add(ChatColor.GRAY + "• Health regeneration and vitality");
+            }
+        } else if ("Berserker".equals(ascendancy)) {
+            if ("Rage Path".equals(branchName)) {
+                material = Material.REDSTONE;
+                lore.add(ChatColor.GRAY + "Focus on rage and raw power");
+                lore.add(ChatColor.GRAY + "• Sacrificing defense for damage");
+                lore.add(ChatColor.GRAY + "• Building power through combat");
+                lore.add(ChatColor.GRAY + "• Finishing moves and bonuses at low health");
+            } else if ("Critical Path".equals(branchName)) {
+                material = Material.DIAMOND_AXE;
+                lore.add(ChatColor.GRAY + "Focus on critical hits and precision");
+                lore.add(ChatColor.GRAY + "• Increased critical chance and damage");
+                lore.add(ChatColor.GRAY + "• Bleeding effects from critical hits");
+                lore.add(ChatColor.GRAY + "• Critical hit mastery abilities");
+            } else {
+                material = Material.SUGAR;
+                lore.add(ChatColor.GRAY + "Focus on attack speed and combat momentum");
+                lore.add(ChatColor.GRAY + "• Attack speed bonuses");
+                lore.add(ChatColor.GRAY + "• Movement and agility improvements");
+                lore.add(ChatColor.GRAY + "• Gaining power through continuous combat");
+            }
+        } else {
+            material = Material.PAPER;
+            lore.add(ChatColor.GRAY + "Branch information not available");
+        }
+
+        ItemStack infoItem = new ItemStack(material);
+        ItemMeta meta = infoItem.getItemMeta();
+        meta.setDisplayName(ChatColor.GOLD + branchName + " Information");
+        meta.setLore(lore);
+        infoItem.setItemMeta(meta);
+
+        return infoItem;
+    }
+
+    private void addConnectionIndicators(Inventory inventory, String ascendancy, String branchName) {
+        Map<String, List<Integer>> ascendancyConnections = branchConnectionSlots.get(ascendancy);
+        if (ascendancyConnections == null) {
+            return;
+        }
+
+        List<Integer> connections = ascendancyConnections.get(branchName);
+        if (connections == null) {
+            return;
+        }
+
+        ItemStack connectionItem = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = connectionItem.getItemMeta();
+        meta.setDisplayName(ChatColor.DARK_GRAY + "↓");
+        connectionItem.setItemMeta(meta);
+
+        for (int slot : connections) {
+            inventory.setItem(slot, connectionItem);
+        }
     }
 
     private void addAscendancySkillNodes(Inventory inventory, Player player, SkillTree tree,
-                                         Set<Integer> purchasedSkills, String ascendancy, int page) {
+                                         Set<Integer> purchasedSkills, String ascendancy, String branchName) {
         UUID uuid = player.getUniqueId();
 
-        Map<Integer, Map<Integer, Integer>> ascendancyPages = ascendancyNodePositions.get(ascendancy);
-        if (ascendancyPages == null) {
+        Map<String, Map<Integer, Integer>> ascendancyBranches = branchNodePositions.get(ascendancy);
+        if (ascendancyBranches == null) {
             if (debuggingFlag == 1) {
                 plugin.getLogger().warning("No node positions defined for ascendancy: " + ascendancy);
             }
             return;
         }
 
-        Map<Integer, Integer> positions = ascendancyPages.get(page);
+        Map<Integer, Integer> positions = ascendancyBranches.get(branchName);
         if (positions == null) {
             if (debuggingFlag == 1) {
-                plugin.getLogger().warning("No node positions defined for page " + page +
+                plugin.getLogger().warning("No node positions defined for branch " + branchName +
                         " of ascendancy: " + ascendancy);
             }
             return;

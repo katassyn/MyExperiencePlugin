@@ -16,6 +16,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SkillEffectsHandler implements Listener {
     private final MyExperiencePlugin plugin;
@@ -26,7 +27,7 @@ public class SkillEffectsHandler implements Listener {
     private final int debuggingFlag = 1;
 
     // Cached player stats
-    private final Map<UUID, PlayerSkillStats> playerStatsCache = new HashMap<>();
+    private final Map<UUID, PlayerSkillStats> playerStatsCache = new ConcurrentHashMap<>();
 
     // Constants for attribute modifier names
     private static final String ATTR_MAX_HEALTH = "skill.maxhealth";
@@ -34,6 +35,13 @@ public class SkillEffectsHandler implements Listener {
     private static final String ATTR_ATTACK_DAMAGE = "skill.attackdamage";
     private static final String ATTR_ARMOR = "skill.armor";
     private static final String ATTR_LUCK = "skill.luck";
+
+    // Flag to prevent stacking multiple damage bonus messages
+    private final Map<UUID, Long> lastDamageMessageTime = new HashMap<>();
+    private static final long DAMAGE_MESSAGE_COOLDOWN = 1000; // 1 second cooldown
+
+    // Add a field to track if the listener is currently handling an event
+    private boolean isHandlingSkillEvent = false;
 
     public SkillEffectsHandler(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager) {
         this.plugin = plugin;
@@ -44,12 +52,8 @@ public class SkillEffectsHandler implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        // First, clear any previously applied attribute modifiers
-        clearAllSkillModifiers(player);
-
-        // Then calculate and apply fresh stats
-        calculatePlayerStats(player);
-        applyPlayerStats(player);
+        // Completely recalculate all stats on join
+        recalculateAllStats(player);
 
         if (debuggingFlag == 1) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -57,11 +61,9 @@ public class SkillEffectsHandler implements Listener {
                 PlayerSkillStats stats = playerStatsCache.get(player.getUniqueId());
                 if (stats != null) {
                     plugin.getLogger().info("MaxHealthBonus: " + stats.getMaxHealthBonus());
+                    plugin.getLogger().info("BonusDamage: " + stats.getBonusDamage() + " (should be exactly 5 for Ranger)");
+                    plugin.getLogger().info("GoldPerKill: " + stats.getGoldPerKill() + " (should be exactly 3 for Ranger)");
                     plugin.getLogger().info("Current max health: " + player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-                    // Debug all modifiers on max health
-                    player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getModifiers().forEach(mod ->
-                            plugin.getLogger().info("Modifier: " + mod.getName() + " Amount: " + mod.getAmount())
-                    );
                 }
             }, 20L);
         }
@@ -72,15 +74,41 @@ public class SkillEffectsHandler implements Listener {
      */
     @EventHandler
     public void onSkillPurchased(SkillPurchasedEvent event) {
-        Player player = event.getPlayer();
-
-        if (debuggingFlag == 1) {
-            plugin.getLogger().info("SkillPurchasedEvent received for player " + player.getName() +
-                    ", skillId: " + event.getSkillId());
+        if (isHandlingSkillEvent) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("Recursive skill event detected! Ignoring to prevent loop.");
+            }
+            return;
         }
 
-        // Refresh player stats when a skill is purchased
-        refreshPlayerStats(player);
+        isHandlingSkillEvent = true;
+
+        try {
+            Player player = event.getPlayer();
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("SkillPurchasedEvent received for player " + player.getName() +
+                        ", skillId: " + event.getSkillId());
+            }
+
+            // Completely recalculate stats when a skill is purchased
+            recalculateAllStats(player);
+        } finally {
+            isHandlingSkillEvent = false;
+        }
+    }
+
+    /**
+     * Complete stats recalculation, cleaning everything first
+     */
+    private void recalculateAllStats(Player player) {
+        // First, clear all cached data and modifiers
+        clearAllSkillModifiers(player);
+
+        // Then calculate fresh stats
+        calculatePlayerStats(player);
+
+        // Then apply them
+        applyPlayerStats(player);
     }
 
     /**
@@ -105,9 +133,15 @@ public class SkillEffectsHandler implements Listener {
         AttributeInstance attr = player.getAttribute(attribute);
         if (attr != null) {
             // Create a copy of modifiers to avoid ConcurrentModificationException
-            attr.getModifiers().stream()
-                    .filter(mod -> mod.getName().startsWith(namePrefix))
-                    .forEach(mod -> attr.removeModifier(mod));
+            List<AttributeModifier> toRemove = new ArrayList<>();
+            attr.getModifiers().forEach(mod -> {
+                if (mod.getName().startsWith(namePrefix)) {
+                    toRemove.add(mod);
+                }
+            });
+
+            // Now remove them
+            toRemove.forEach(attr::removeModifier);
         }
     }
 
@@ -183,13 +217,21 @@ public class SkillEffectsHandler implements Listener {
         }
 
         Player player = (Player) event.getDamager();
+        UUID playerId = player.getUniqueId();
         PlayerSkillStats stats = getPlayerStats(player);
 
         // Apply bonus damage
         if (stats.getBonusDamage() > 0) {
             event.setDamage(event.getDamage() + stats.getBonusDamage());
-            if (debuggingFlag == 1) {
-                player.sendMessage(ChatColor.DARK_GRAY + "Skill bonus damage: +" + stats.getBonusDamage());
+
+            // Only show the message if cooldown has passed
+            long currentTime = System.currentTimeMillis();
+            if (!lastDamageMessageTime.containsKey(playerId) ||
+                    currentTime - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN) {
+                if (debuggingFlag == 1) {
+                    player.sendMessage(ChatColor.DARK_GRAY + "Skill bonus damage: +" + stats.getBonusDamage());
+                }
+                lastDamageMessageTime.put(playerId, currentTime);
             }
         }
 
@@ -197,8 +239,11 @@ public class SkillEffectsHandler implements Listener {
         if (stats.getDamageMultiplier() != 1.0) {
             double newDamage = event.getDamage() * stats.getDamageMultiplier();
             event.setDamage(newDamage);
-            if (debuggingFlag == 1) {
+            if (debuggingFlag == 1 &&
+                    (!lastDamageMessageTime.containsKey(playerId) ||
+                            System.currentTimeMillis() - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN)) {
                 player.sendMessage(ChatColor.DARK_GRAY + "Damage multiplier: x" + String.format("%.2f", stats.getDamageMultiplier()));
+                lastDamageMessageTime.put(playerId, System.currentTimeMillis());
             }
         }
     }
@@ -207,150 +252,200 @@ public class SkillEffectsHandler implements Listener {
     public void onEntityDeath(EntityDeathEvent event) {
         if (event.getEntity().getKiller() instanceof Player) {
             Player player = event.getEntity().getKiller();
+            UUID playerId = player.getUniqueId();
             PlayerSkillStats stats = getPlayerStats(player);
 
-            // Apply gold per kill bonus
+            // Apply gold per kill bonus - once
             if (stats.getGoldPerKill() > 0) {
                 plugin.moneyRewardHandler.depositMoney(player, stats.getGoldPerKill());
-                player.sendMessage("§6+" + stats.getGoldPerKill() + "$ from trophy hunter skill!");
+
+                // Only show the message if cooldown has passed
+                long currentTime = System.currentTimeMillis();
+                if (!lastDamageMessageTime.containsKey(playerId) ||
+                        currentTime - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN) {
+                    player.sendMessage("§6+" + stats.getGoldPerKill() + "$ from trophy hunter skill!");
+                    lastDamageMessageTime.put(playerId, currentTime);
+                }
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("DEBUG: Mob killed: " + event.getEntity().getType().name() +
+                            ", Gold reward: " + stats.getGoldPerKill());
+                }
             }
         }
     }
 
+    // Complete rewrite of calculatePlayerStats to ensure nothing is duplicated
     public void calculatePlayerStats(Player player) {
         UUID uuid = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(uuid);
         String ascendancy = plugin.getClassManager().getPlayerAscendancy(uuid);
 
+        // Initialize a completely new stats object
+        PlayerSkillStats stats = new PlayerSkillStats();
+
         if ("NoClass".equalsIgnoreCase(playerClass)) {
-            playerStatsCache.put(uuid, new PlayerSkillStats());
+            playerStatsCache.put(uuid, stats);
             return;
         }
 
-        PlayerSkillStats stats = new PlayerSkillStats();
+        // Create sets to track IDs we've already processed
+        Set<Integer> processedBaseSkills = new HashSet<>();
+        Set<Integer> processedAscendancySkills = new HashSet<>();
 
-        // Apply base class skills
+        // Get all purchased skills
         Set<Integer> purchasedSkills = skillTreeManager.getPurchasedSkills(uuid);
 
-        for (int skillId : purchasedSkills) {
-            // Check if this is a base class skill
-            if (skillTreeManager.getSkillTree(playerClass, "basic") != null &&
-                    skillTreeManager.getSkillTree(playerClass, "basic").getNode(skillId) != null) {
-
-                int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-
-                // Apply skill stats based on player's class
-                if ("Ranger".equalsIgnoreCase(playerClass)) {
+        // First process base class skills
+        if ("Ranger".equalsIgnoreCase(playerClass)) {
+            // Apply Ranger base skills - hardcoded with exact values
+            for (int skillId : purchasedSkills) {
+                if (skillId >= 1 && skillId <= 14 && !processedBaseSkills.contains(skillId)) {
+                    processedBaseSkills.add(skillId);
+                    int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
                     applyRangerSkillEffects(stats, skillId, purchaseCount);
-                } else if ("DragonKnight".equalsIgnoreCase(playerClass)) {
+                }
+            }
+        } else if ("DragonKnight".equalsIgnoreCase(playerClass)) {
+            // Apply DragonKnight base skills
+            for (int skillId : purchasedSkills) {
+                if (skillId >= 1 && skillId <= 14 && !processedBaseSkills.contains(skillId)) {
+                    processedBaseSkills.add(skillId);
+                    int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
                     applyDragonKnightSkillEffects(stats, skillId, purchaseCount);
                 }
-                // Add more class-specific implementations as needed
-            }
-
-            // Check if this is an ascendancy skill
-            else if (!ascendancy.isEmpty() &&
-                    skillTreeManager.getSkillTree(playerClass, "ascendancy", ascendancy) != null &&
-                    skillTreeManager.getSkillTree(playerClass, "ascendancy", ascendancy).getNode(skillId) != null) {
-
-                int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-
-                // Apply ascendancy skill stats
-                if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
-                    applyBeastmasterSkillEffects(stats, skillId, purchaseCount);
-                } else if ("Berserker".equalsIgnoreCase(ascendancy)) {
-                    applyBerserkerSkillEffects(stats, skillId, purchaseCount);
-                }
-                // Add more ascendancy-specific implementations as needed
             }
         }
 
+        // Then process ascendancy skills
+        if (!ascendancy.isEmpty()) {
+            if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
+                for (int skillId : purchasedSkills) {
+                    if (skillId >= 100000 && skillId < 200000 && !processedAscendancySkills.contains(skillId)) {
+                        processedAscendancySkills.add(skillId);
+                        int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
+                        applyBeastmasterSkillEffects(stats, skillId, purchaseCount);
+                    }
+                }
+            } else if ("Berserker".equalsIgnoreCase(ascendancy)) {
+                for (int skillId : purchasedSkills) {
+                    if (skillId >= 200000 && skillId < 300000 && !processedAscendancySkills.contains(skillId)) {
+                        processedAscendancySkills.add(skillId);
+                        int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
+                        applyBerserkerSkillEffects(stats, skillId, purchaseCount);
+                    }
+                }
+            }
+        }
+
+        // Store the final stats
         playerStatsCache.put(uuid, stats);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Calculated stats for player " + player.getName() + ": " +
                     "HP+" + stats.getMaxHealthBonus() + ", " +
                     "DMG+" + stats.getBonusDamage() + ", " +
-                    "MULT×" + stats.getDamageMultiplier());
+                    "MULT×" + stats.getDamageMultiplier() + ", " +
+                    "Gold/Kill: " + stats.getGoldPerKill());
         }
     }
 
+    /**
+     * Explicit implementation for Ranger skills with exact values
+     */
     private void applyRangerSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
         switch (skillId) {
             case 1: // +1% movement speed
-                stats.addMovementSpeedBonus(1 * purchaseCount);
+                stats.setMovementSpeedBonus(1 * purchaseCount);
                 break;
-            case 3: // +5 damage
-                stats.addBonusDamage(5 * purchaseCount);
+            case 3: // +5 damage - FIXED VALUE
+                stats.setBonusDamage(5);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("RANGER SKILL 3: Set bonus damage to EXACTLY 5");
+                }
                 break;
             case 4: // +2% evade chance
-                stats.addEvadeChance(2 * purchaseCount);
+                stats.setEvadeChance(2 * purchaseCount);
                 break;
             case 5: // +1 HP
-                stats.addMaxHealth(1 * purchaseCount);
+                stats.setMaxHealthBonus(1 * purchaseCount);
                 break;
-            case 6: // +3$ per killed mob
-                stats.addGoldPerKill(3 * purchaseCount);
+            case 6: // +3$ per killed mob - FIXED VALUE
+                stats.setGoldPerKill(3);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("RANGER SKILL 6: Set gold per kill to EXACTLY 3");
+                }
                 break;
             case 8: // +1% evade chance (1/2)
                 stats.addEvadeChance(1 * purchaseCount);
                 break;
             case 9: // +1% luck (1/2)
-                stats.addLuckBonus(1 * purchaseCount);
+                stats.setLuckBonus(1 * purchaseCount);
                 break;
             case 10: // each 3 hits deals +10 dmg - handled by a more complex system
                 break;
             case 11: // +1% dmg (1/3)
-                stats.addDamageMultiplier(0.01 * purchaseCount);
+                stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
                 break;
             case 13: // +1% def (1/2)
-                stats.addDefenseBonus(1 * purchaseCount);
+                stats.setDefenseBonus(1 * purchaseCount);
                 break;
             case 14: // +4% evade chance, -2% dmg
                 stats.addEvadeChance(4 * purchaseCount);
-                stats.addDamageMultiplier(-0.02 * purchaseCount);
+                stats.multiplyDamageMultiplier(1.0 - (0.02 * purchaseCount));
                 break;
-            // Add more Ranger skills as needed
+            default:
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().warning("Unknown Ranger skill ID: " + skillId);
+                }
+                break;
         }
     }
 
     private void applyDragonKnightSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
         switch (skillId) {
             case 1: // +3% def
-                stats.addDefenseBonus(3 * purchaseCount);
+                stats.setDefenseBonus(3 * purchaseCount);
                 break;
             case 3: // +1% dmg
-                stats.addDamageMultiplier(0.01 * purchaseCount);
+                stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
                 break;
             case 5: // +1% ms (1/2)
-                stats.addMovementSpeedBonus(1 * purchaseCount);
+                stats.setMovementSpeedBonus(1 * purchaseCount);
                 break;
             case 8: // +2hp (1/2)
-                stats.addMaxHealth(2 * purchaseCount);
+                stats.setMaxHealthBonus(2 * purchaseCount);
                 break;
             case 9: // +1% luck (1/2)
-                stats.addLuckBonus(1 * purchaseCount);
+                stats.setLuckBonus(1 * purchaseCount);
                 break;
-            case 10: // +7 dmg (1/2)
-                stats.addBonusDamage(7 * purchaseCount);
+            case 10: // +7 dmg (1/2) - FIXED VALUE
+                stats.setBonusDamage(7);
                 break;
             case 11: // +5% dmg, -2% ms
-                stats.addDamageMultiplier(0.05 * purchaseCount);
+                stats.setDamageMultiplier(1.0 + (0.05 * purchaseCount));
                 stats.addMovementSpeedBonus(-2 * purchaseCount);
                 break;
-            case 13: // +10 dmg
-                stats.addBonusDamage(10 * purchaseCount);
+            case 13: // +10 dmg - FIXED VALUE
+                stats.setBonusDamage(10);
                 break;
             case 14: // +5% shield block chance
-                stats.addShieldBlockChance(5 * purchaseCount);
+                stats.setShieldBlockChance(5 * purchaseCount);
                 break;
-            // Add more DragonKnight skills as needed
+            default:
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().warning("Unknown DragonKnight skill ID: " + skillId);
+                }
+                break;
         }
     }
 
     private void applyBeastmasterSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
+        // Remove the offset to get the original skill number
+        int originalId = skillId - 100000;
+
         // Example implementation - would be expanded for all skills
-        switch (skillId) {
+        switch (originalId) {
             case 9: // Pack Damage: All summons gain +5% damage
                 // This would affect companion damage, not player damage
                 break;
@@ -361,19 +456,32 @@ public class SkillEffectsHandler implements Listener {
                 stats.addDefenseBonus(10 * purchaseCount);
                 break;
             // ... other Beastmaster skills
+            default:
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Beastmaster skill " + originalId + " has no implemented effect");
+                }
+                break;
         }
     }
 
     private void applyBerserkerSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
+        // Remove the offset to get the original skill number
+        int originalId = skillId - 200000;
+
         // Example implementation - would be expanded for all skills
-        switch (skillId) {
+        switch (originalId) {
             case 1: // Cannot wear chestplate but gain +200% dmg
-                stats.addDamageMultiplier(2.0 * purchaseCount);
+                stats.multiplyDamageMultiplier(1.0 + (2.0 * purchaseCount));
                 break;
             case 2: // Each 10% hp lost gives +10% dmg
                 // This is a dynamic effect and would be handled in combat
                 break;
             // ... other Berserker skills
+            default:
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Berserker skill " + originalId + " has no implemented effect");
+                }
+                break;
         }
     }
 
@@ -387,13 +495,7 @@ public class SkillEffectsHandler implements Listener {
 
     // Method to recalculate stats when skills change
     public void refreshPlayerStats(Player player) {
-        clearAllSkillModifiers(player);
-        calculatePlayerStats(player);
-        applyPlayerStats(player);
-
-        if (debuggingFlag == 1) {
-            plugin.getLogger().info("Refreshed player stats for " + player.getName());
-        }
+        recalculateAllStats(player);
     }
 
     // Inner class to store player skill-based stats
@@ -445,7 +547,48 @@ public class SkillEffectsHandler implements Listener {
             return goldPerKill;
         }
 
-        // Adders
+        // Setters - use these instead of adders for most properties
+        public void setBonusDamage(double amount) {
+            this.bonusDamage = amount;
+        }
+
+        public void setDamageMultiplier(double amount) {
+            this.damageMultiplier = amount;
+        }
+
+        public void multiplyDamageMultiplier(double factor) {
+            this.damageMultiplier *= factor;
+        }
+
+        public void setEvadeChance(double amount) {
+            this.evadeChance = amount;
+        }
+
+        public void setShieldBlockChance(double amount) {
+            this.shieldBlockChance = amount;
+        }
+
+        public void setDefenseBonus(double amount) {
+            this.defenseBonus = amount;
+        }
+
+        public void setMaxHealthBonus(double amount) {
+            this.maxHealthBonus = amount;
+        }
+
+        public void setMovementSpeedBonus(double amount) {
+            this.movementSpeedBonus = amount;
+        }
+
+        public void setLuckBonus(double amount) {
+            this.luckBonus = amount;
+        }
+
+        public void setGoldPerKill(double amount) {
+            this.goldPerKill = amount;
+        }
+
+        // Adders - use these for incremental changes
         public void addBonusDamage(double amount) {
             this.bonusDamage += amount;
         }

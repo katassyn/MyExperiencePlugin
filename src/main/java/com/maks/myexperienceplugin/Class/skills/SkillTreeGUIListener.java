@@ -1,30 +1,38 @@
 package com.maks.myexperienceplugin.Class.skills;
 
-import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
-import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class SkillTreeGUIListener implements Listener {
     private final MyExperiencePlugin plugin;
     private final SkillTreeManager skillTreeManager;
     private final SkillTreeGUI skillTreeGUI;
+    private final SkillPurchaseManager purchaseManager;
 
     // Map to track node IDs in the GUI
     private final Map<String, Map<Integer, Integer>> nodeSlotMap;
 
-    public SkillTreeGUIListener(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager, SkillTreeGUI skillTreeGUI) {
+    // Debugging flag
+    private final int debuggingFlag = 1;
+
+    public SkillTreeGUIListener(MyExperiencePlugin plugin,
+                                SkillTreeManager skillTreeManager,
+                                SkillTreeGUI skillTreeGUI,
+                                SkillPurchaseManager purchaseManager) {
         this.plugin = plugin;
         this.skillTreeManager = skillTreeManager;
         this.skillTreeGUI = skillTreeGUI;
+        this.purchaseManager = purchaseManager;
         this.nodeSlotMap = new HashMap<>();
 
         // Initialize the reverse mapping of slots to node IDs
@@ -73,7 +81,7 @@ public class SkillTreeGUIListener implements Listener {
         // Add more slot mappings for other classes as needed
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) {
             return;
@@ -82,68 +90,67 @@ public class SkillTreeGUIListener implements Listener {
         Player player = (Player) event.getWhoClicked();
         String title = event.getView().getTitle();
 
+        // Check if it's our skill tree GUI
+        if (!title.equals(ChatColor.DARK_GREEN + "Skill Tree")) {
+            return;
+        }
+
+        // Always cancel the event first to prevent double-processing
+        event.setCancelled(true);
+
+        // Ignore certain inventory actions that aren't left-clicks
+        if (event.getAction() != InventoryAction.PICKUP_ALL &&
+                event.getAction() != InventoryAction.PICKUP_HALF) {
+            return;
+        }
+
+        if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) {
+            return;
+        }
+
+        String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
+        if ("NoClass".equalsIgnoreCase(playerClass)) {
+            return;
+        }
+
+        Map<Integer, Integer> slotMap = nodeSlotMap.get(playerClass);
+        if (slotMap == null) {
+            return;
+        }
+
+        int slot = event.getRawSlot();
+        if (!slotMap.containsKey(slot)) {
+            return;
+        }
+
+        int nodeId = slotMap.get(slot);
+
+        // Log the attempt for debugging
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("CLICK DETECTED: " + player.getName() +
+                    " clicked on skill " + nodeId);
+        }
+
+        // Hand off to the purchase manager
+        purchaseManager.requestSkillPurchase(player, nodeId);
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getPlayer();
+        String title = event.getView().getTitle();
+
+        // Check if it's our skill tree GUI
         if (title.equals(ChatColor.DARK_GREEN + "Skill Tree")) {
-            event.setCancelled(true);
+            purchaseManager.handleInventoryClose(player);
 
-            UUID playerUUID = player.getUniqueId();
-            String playerClass = plugin.getClassManager().getPlayerClass(playerUUID);
-
-            if ("NoClass".equalsIgnoreCase(playerClass)) {
-                return;
-            }
-
-            Map<Integer, Integer> slotMap = nodeSlotMap.get(playerClass);
-            if (slotMap == null) {
-                return;
-            }
-
-            int slot = event.getRawSlot();
-            if (slotMap.containsKey(slot)) {
-                int nodeId = slotMap.get(slot);
-
-                // Try to purchase the skill
-                if (skillTreeManager.canPurchaseSkill(player, nodeId)) {
-                    boolean success = skillTreeManager.purchaseSkill(player, nodeId);
-
-                    if (success) {
-                        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                        player.sendMessage(ChatColor.GREEN + "Skill purchased successfully!");
-
-                        // Refresh the GUI
-                        skillTreeGUI.openSkillTreeGUI(player);
-                    } else {
-                        player.sendMessage(ChatColor.RED + "Failed to purchase skill!");
-                    }
-                } else {
-                    // Check if the player has already purchased this skill
-                    if (skillTreeManager.getPurchasedSkills(playerUUID).contains(nodeId)) {
-                        SkillTree tree = skillTreeManager.getSkillTree(playerClass, "basic");
-                        SkillNode node = tree.getNode(nodeId);
-
-                        int purchaseCount = skillTreeManager.getSkillPurchaseCount(playerUUID, nodeId);
-
-                        // If the skill can be upgraded and the player has enough points
-                        if (purchaseCount < node.getMaxPurchases() && skillTreeManager.getUnusedBasicSkillPoints(playerUUID) >= node.getCost()) {
-                            boolean success = skillTreeManager.purchaseSkill(player, nodeId);
-
-                            if (success) {
-                                player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-                                player.sendMessage(ChatColor.GREEN + "Skill upgraded successfully!");
-
-                                // Refresh the GUI
-                                skillTreeGUI.openSkillTreeGUI(player);
-                            } else {
-                                player.sendMessage(ChatColor.RED + "Failed to upgrade skill!");
-                            }
-                        } else if (purchaseCount >= node.getMaxPurchases()) {
-                            player.sendMessage(ChatColor.RED + "This skill is already fully upgraded!");
-                        } else {
-                            player.sendMessage(ChatColor.RED + "You don't have enough skill points!");
-                        }
-                    } else {
-                        player.sendMessage(ChatColor.RED + "You need to unlock connected skills first!");
-                    }
-                }
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("INVENTORY CLOSED: " + player.getName() +
+                        " closed skill tree GUI");
             }
         }
     }

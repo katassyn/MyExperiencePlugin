@@ -35,7 +35,6 @@ com\maks\myexperienceplugin\alchemy\NightVisionEffect.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeGUIListener.class
 com\maks\myexperienceplugin\alchemy\AlchemyLevelConfig.class
 com\maks\myexperienceplugin\exp\BonusExpCommand.class
-com\maks\myexperienceplugin\Class\skills\SkillPurchasedEvent.class
 com\maks\myexperienceplugin\Class\skills\classes\dragonknight\DragonKnightSkillManager.class
 com\maks\myexperienceplugin\listener\PlayerDisconnectListener.class
 com\maks\myexperienceplugin\alchemy\TonicHealthEffect.class
@@ -73,6 +72,7 @@ com\maks\myexperienceplugin\listener\LifestealListener.class
 com\maks\myexperienceplugin\alchemy\TotemEffect.class
 com\maks\myexperienceplugin\alchemy\TonicMovementSpeedEffect.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeManager.class
+com\maks\myexperienceplugin\Class\skills\SkillPurchaseManager.class
 com\maks\myexperienceplugin\alchemy\LifestealManager.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager.class
 com\maks\myexperienceplugin\alchemy\TonicExpManager.class

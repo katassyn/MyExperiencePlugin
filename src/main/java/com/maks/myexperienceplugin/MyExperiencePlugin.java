@@ -57,6 +57,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         return classGUI;
     }
     private AscendancySkillTreeGUI ascendancySkillTreeGUI; // Add this field
+    private SkillPurchaseManager skillPurchaseManager;
 
     public static MyExperiencePlugin getInstance() {
         return instance;
@@ -67,6 +68,8 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         instance = this;
 
         saveDefaultConfig();
+
+        // Database initialization
         String host = getConfig().getString("database.host");
         String port = getConfig().getString("database.port");
         String database = getConfig().getString("database.name");
@@ -81,97 +84,109 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        partyManager = new PartyManager(this);
 
+        // Economy setup
         if (!setupEconomy()) {
             getLogger().severe("Disabled due to no Vault dependency found!");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        moneyRewardHandler = new MoneyRewardHandler(economy, this);
 
         Bukkit.getLogger().info("MyExperiencePlugin has been enabled!");
-        getServer().getPluginManager().registerEvents(this, this);
 
+        // Initialize core managers and handlers
+        partyManager = new PartyManager(this);
+        moneyRewardHandler = new MoneyRewardHandler(economy, this);
+        playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
+        alchemyLevelConfig = new AlchemyLevelConfig(this);
+        classManager = new ClassManager(this);
+        classGUI = new ClassGUI(this);
+
+        // Initialize XP system
         initializeXPLevels();
         loadExpTable();
 
-        // Register event listeners
+        // Initialize skill system
+        skillTreeManager = new SkillTreeManager(this);
+        skillEffectsHandler = new SkillEffectsHandler(this, skillTreeManager);
+        skillTreeGUI = new SkillTreeGUI(this, skillTreeManager);
+        ascendancySkillTreeGUI = new AscendancySkillTreeGUI(this, skillTreeManager);
+
+        // Initialize the skill purchase manager
+        skillPurchaseManager = new SkillPurchaseManager(this, skillTreeManager, skillTreeGUI, ascendancySkillTreeGUI);
+
+        // Register this plugin as a listener
+        getServer().getPluginManager().registerEvents(this, this);
+
+        // Register event listeners - XP, Chat, Player
         getServer().getPluginManager().registerEvents(new MythicMobXPHandler(this), this);
         getServer().getPluginManager().registerEvents(new ChatLevelHandler(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDisconnectListener(partyManager), this);
+        getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
+
+        // Register alchemy listeners
         getServer().getPluginManager().registerEvents(new TotemEffectListener(), this);
         getServer().getPluginManager().registerEvents(new LifestealListener(), this);
         getServer().getPluginManager().registerEvents(new ImmunityListener(), this);
-        alchemyLevelConfig = new AlchemyLevelConfig(this);
-        // In MyExperiencePlugin.onEnable():
         getServer().getPluginManager().registerEvents(new AlchemyItemListener(this, alchemyLevelConfig), this);
         getServer().getPluginManager().registerEvents(new PhysisExpListener(this), this);
-        classManager = new ClassManager(this);
-        classGUI = new ClassGUI(this);
+
+        // Register class system listeners
         getServer().getPluginManager().registerEvents(new ClassGUIListener(this), this);
         getServer().getPluginManager().registerEvents(new ClassResetItemListener(this), this);
 
-        // Commands
+        // Register skill system listeners
+        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
+        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI, skillPurchaseManager), this);
+        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI, skillPurchaseManager), this);
+
+        // Register commands - Party
         PartyCommand partyCommand = new PartyCommand(this, partyManager);
         getCommand("party").setExecutor(partyCommand);
         getCommand("party").setTabCompleter(partyCommand);
 
+        // Register commands - XP
+        getCommand("exp").setExecutor(this);
         getCommand("exp_table").setExecutor(new ExpTableCommand(this));
         getCommand("exp_table").setTabCompleter(new ExpTableCommand(this));
-
         getCommand("exp_money").setExecutor(moneyRewardHandler);
         getCommand("exp_money").setTabCompleter(moneyRewardHandler);
-
-        getCommand("exp").setExecutor(this);
         getCommand("reload_bonus").setExecutor(new ReloadBonusCommand(this));
         getCommand("top").setExecutor(new TopCommand(this));
+        getCommand("bonus_exp").setExecutor(new BonusExpCommand(this));
 
+        // Register commands - Experience
         ExperienceCommandHandler experienceCommandHandler = new ExperienceCommandHandler(this);
         getCommand("get_lvl").setExecutor(experienceCommandHandler);
         getCommand("exp_give").setExecutor(experienceCommandHandler);
         getCommand("exp_give_p").setExecutor(experienceCommandHandler);
 
-        playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
-        getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
-
-        getCommand("bonus_exp").setExecutor(new BonusExpCommand(this));
-
-        // Our new class system commands
+        // Register commands - Class system
         getCommand("chose_class").setExecutor(new ChoseClassCommand(this));
         getCommand("chose_ascendancy").setExecutor(new ChoseAscendancyCommand(this));
         getCommand("alchemy_reset").setExecutor(new AlchemyResetCommand());
-        // Start the periodic reminder every 60 seconds
-        new PeriodicClassReminder(this).runTaskTimer(this, 20L, 1200L); // 20L = 1s, 1200L = 60s
-        skillTreeManager = new SkillTreeManager(this);
-        skillTreeGUI = new SkillTreeGUI(this, skillTreeManager);
-        skillEffectsHandler = new SkillEffectsHandler(this, skillTreeManager);
-        ascendancySkillTreeGUI = new AscendancySkillTreeGUI(this, skillTreeManager);
-        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
-        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI), this);
-        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI), this);
 
-        // Register skill commands
+        // Register commands - Skill system
         getCommand("skilltree").setExecutor(new SkillTreeCommand(this, skillTreeGUI));
-        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI), this);
         getCommand("skillstats").setExecutor(new SkillStatsCommand(this, skillEffectsHandler));
-        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI), this);
         getCommand("skilltree2").setExecutor(new AscendancySkillTreeCommand(this, ascendancySkillTreeGUI));
-        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
         getCommand("playerattributes").setExecutor(new PlayerAttributesCommand(this, skillEffectsHandler));
 
-// Register reset attributes command
+        // Register commands - Reset attributes
         ResetAttributesCommand resetAttributesCommand = new ResetAttributesCommand(this, skillEffectsHandler);
         getCommand("resetattributes").setExecutor(resetAttributesCommand);
         getCommand("resetattributes").setTabCompleter(resetAttributesCommand);
 
-        getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI), this);
-        getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI), this);
-        getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
+        // Start periodic tasks
+        new PeriodicClassReminder(this).runTaskTimer(this, 20L, 1200L); // 20L = 1s, 1200L = 60s
     }
     @Override
     public void onDisable() {
+        if (skillPurchaseManager != null) {
+            skillPurchaseManager.cleanup();
+        }
+
         if (databaseManager != null) {
             try {
                 databaseManager.shutdown();
@@ -384,7 +399,16 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     }
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        PhysisExpManager.getInstance().clearPlayerBonus(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+
+        // Clear physis exp
+        PhysisExpManager.getInstance().clearPlayerBonus(uuid);
+
+        // Clean up skill purchase manager resources
+        if (skillPurchaseManager != null) {
+            skillPurchaseManager.cleanup(uuid);
+        }
     }
     public SkillTreeManager getSkillTreeManager() {
         return skillTreeManager;
@@ -392,4 +416,8 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     public SkillEffectsHandler getSkillEffectsHandler() {
         return skillEffectsHandler;
     }
+    public SkillPurchaseManager getSkillPurchaseManager() {
+        return skillPurchaseManager;
+    }
+
 }
