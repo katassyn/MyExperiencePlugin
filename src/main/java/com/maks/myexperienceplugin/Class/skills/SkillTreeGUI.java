@@ -17,6 +17,7 @@ import java.util.*;
 public class SkillTreeGUI {
     private final MyExperiencePlugin plugin;
     private final SkillTreeManager skillTreeManager;
+    private final int debuggingFlag = 1; // Add debugging flag directly in the class
 
     // Constants for GUI layout
     private static final int INVENTORY_SIZE = 54; // 6 rows
@@ -127,20 +128,49 @@ public class SkillTreeGUI {
 
     private void addSkillPointsInfo(Inventory inventory, Player player) {
         UUID uuid = player.getUniqueId();
+
+        // Force recalculation of skill points
         int unusedPoints = skillTreeManager.getUnusedBasicSkillPoints(uuid);
 
+        // Make sure we never show negative points
+        if (unusedPoints < 0) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("Negative skill points detected for " + player.getName() +
+                        ": " + unusedPoints + ", setting to 0");
+            }
+            unusedPoints = 0;
+        }
+
+        // Create the item
         ItemStack pointsItem = new ItemStack(Material.EXPERIENCE_BOTTLE);
         ItemMeta meta = pointsItem.getItemMeta();
         meta.setDisplayName(ChatColor.GOLD + "Skill Points: " + ChatColor.GREEN + unusedPoints);
 
+        // Add lore with explanation
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + "Click on skills to spend your points");
-        lore.add(ChatColor.GRAY + "You have " + ChatColor.YELLOW + unusedPoints + ChatColor.GRAY + " points to spend");
+        lore.add(ChatColor.GRAY + "You have " + ChatColor.YELLOW + unusedPoints +
+                ChatColor.GRAY + " points to spend");
+
+        // Add additional info about total and used points for debugging
+        if (debuggingFlag == 1) {
+            int totalPoints = skillTreeManager.getBasicSkillPoints(uuid);
+            int usedPoints = totalPoints - unusedPoints;
+            lore.add("");
+            lore.add(ChatColor.DARK_GRAY + "Total: " + totalPoints);
+            lore.add(ChatColor.DARK_GRAY + "Used: " + usedPoints);
+        }
 
         meta.setLore(lore);
         pointsItem.setItemMeta(meta);
 
+        // Place in inventory
         inventory.setItem(4, pointsItem);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Displayed skill points for " + player.getName() +
+                    ": " + unusedPoints + " (unused)");
+        }
     }
 
     private void addSkillNodes(Inventory inventory, Player player, SkillTree tree, Set<Integer> purchasedSkills) {
@@ -169,36 +199,37 @@ public class SkillTreeGUI {
         }
     }
 
-// In SkillTreeGUI.java, replace the createNodeItem method with this improved version:
-
     private ItemStack createNodeItem(SkillNode node, boolean isPurchased, boolean canPurchase, int purchaseCount) {
-        Material material = node.getIcon();
+        Material material;
+
+        // Choose material based on purchase status
         if (isPurchased) {
-            // Use a different material for purchased nodes
             if (purchaseCount >= node.getMaxPurchases()) {
                 material = Material.EMERALD_BLOCK; // Fully purchased
             } else {
                 material = Material.EMERALD; // Partially purchased
             }
         } else if (canPurchase) {
-            // Use a different material for available nodes
-            material = Material.LIME_CONCRETE;
+            material = Material.LIME_CONCRETE; // Available to purchase
         } else {
-            // Use a different material for locked nodes
-            material = Material.RED_CONCRETE;
+            material = Material.RED_CONCRETE; // Locked
         }
 
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
 
+        // Set display name with proper coloring based on status
         String displayName = (isPurchased ? ChatColor.GREEN : (canPurchase ? ChatColor.YELLOW : ChatColor.RED))
                 + node.getName();
-        if (node.getMaxPurchases() > 1 && isPurchased) {
+
+        // Add purchase count if applicable
+        if (node.getMaxPurchases() > 1) {
             displayName += ChatColor.GRAY + " (" + purchaseCount + "/" + node.getMaxPurchases() + ")";
         }
 
         meta.setDisplayName(displayName);
 
+        // Build lore (description)
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + node.getDescription());
         lore.add("");
@@ -224,6 +255,7 @@ public class SkillTreeGUI {
 
         return item;
     }
+
     private void addNodeConnections(Inventory inventory, SkillTree tree, Set<Integer> purchasedSkills) {
         // This would be a more complex implementation to add visual lines between nodes
         // For simplicity, we're omitting this for now

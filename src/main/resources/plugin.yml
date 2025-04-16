@@ -90,7 +90,15 @@ commands:
     usage: /resetattributes [player] [all|vanilla]
     aliases: [resetattr, attreset]
     permission: myplugin.resetattributes
-
+  updateskillpoints:
+    description: Force update of skill points based on player level
+    usage: /updateskillpoints [player]
+    permission: myplugin.skillpoints
+    aliases: [ updatesp, fixsp ]
+  applyskills:
+    description: Manually apply all skill effects
+    usage: /applyskills
+    permission: myplugin.applyskills
 # Add these permissions to your plugin.yml (if you have a permissions section)
 
 permissions:

@@ -9,11 +9,14 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +25,8 @@ public class SkillEffectsHandler implements Listener {
     private final MyExperiencePlugin plugin;
     private final SkillTreeManager skillTreeManager;
     private final Random random = new Random();
-
+    private final Map<UUID, Integer> hitCounters = new HashMap<>();
+    private final Map<UUID, UUID> lastTargetMap = new HashMap<>();
     // Debugging flag - set to 0 after testing
     private final int debuggingFlag = 1;
 
@@ -358,6 +362,13 @@ public class SkillEffectsHandler implements Listener {
             case 1: // +1% movement speed
                 stats.setMovementSpeedBonus(1 * purchaseCount);
                 break;
+            case 2: // Nature's Recovery - Gain Regeneration I
+                // This will be handled separately in a potion effect system
+                stats.setHasRegenerationEffect(true); // Add this to PlayerSkillStats
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("RANGER SKILL 2: Set regeneration effect flag");
+                }
+                break;
             case 3: // +5 damage - FIXED VALUE
                 stats.setBonusDamage(5);
                 if (debuggingFlag == 1) {
@@ -383,6 +394,10 @@ public class SkillEffectsHandler implements Listener {
                 stats.setLuckBonus(1 * purchaseCount);
                 break;
             case 10: // each 3 hits deals +10 dmg - handled by a more complex system
+                stats.setHasTripleStrike(true); // Add this to PlayerSkillStats
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("RANGER SKILL 10: Set triple strike flag");
+                }
                 break;
             case 11: // +1% dmg (1/3)
                 stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
@@ -509,7 +524,8 @@ public class SkillEffectsHandler implements Listener {
         private double movementSpeedBonus = 0;
         private double luckBonus = 0;
         private double goldPerKill = 0;
-
+        private boolean hasRegenerationEffect = false;
+        private boolean hasTripleStrike = false;
         // Getters
         public double getBonusDamage() {
             return bonusDamage;
@@ -624,5 +640,94 @@ public class SkillEffectsHandler implements Listener {
         public void addGoldPerKill(double amount) {
             this.goldPerKill += amount;
         }
+        public boolean hasRegenerationEffect() {
+            return hasRegenerationEffect;
+        }
+
+        public void setHasRegenerationEffect(boolean hasRegenerationEffect) {
+            this.hasRegenerationEffect = hasRegenerationEffect;
+        }
+
+        public boolean hasTripleStrike() {
+            return hasTripleStrike;
+        }
+
+        public void setHasTripleStrike(boolean hasTripleStrike) {
+            this.hasTripleStrike = hasTripleStrike;
+        }
     }
+
+    public void applyRegenerationEffects() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            UUID uuid = player.getUniqueId();
+            PlayerSkillStats stats = getPlayerStats(player);
+
+            if (stats.hasRegenerationEffect()) {
+                // Apply Regeneration I effect (Duration: 3 seconds, amplifier 0 = level 1)
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200, 0, false, true, false));
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Applied Regeneration I to " + player.getName() + " from Nature's Recovery skill");
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles the Triple Strike effect for Ranger skill 10
+     */
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onTripleStrikeDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getDamager();
+        UUID playerId = player.getUniqueId();
+        UUID targetId = event.getEntity().getUniqueId();
+        PlayerSkillStats stats = getPlayerStats(player);
+
+        // Only process if player has the Triple Strike skill
+        if (!stats.hasTripleStrike()) {
+            return;
+        }
+
+        // Check if target changed
+        if (lastTargetMap.containsKey(playerId) && !lastTargetMap.get(playerId).equals(targetId)) {
+            // Reset counter if target changed
+            hitCounters.put(playerId, 1);
+            lastTargetMap.put(playerId, targetId);
+            return;
+        }
+
+        // Initialize or update hit counter
+        int hitCount = hitCounters.getOrDefault(playerId, 0) + 1;
+        hitCounters.put(playerId, hitCount);
+        lastTargetMap.put(playerId, targetId);
+
+        // Every third hit deals extra damage
+        if (hitCount >= 3) {
+            // Add 10 damage on third hit
+            event.setDamage(event.getDamage() + 10.0);
+
+            // Reset counter
+            hitCounters.put(playerId, 0);
+
+            // Notify player
+
+
+            if (debuggingFlag == 1) {
+                player.sendMessage(ChatColor.GREEN + "Triple Strike! +10 damage dealt!");
+                plugin.getLogger().info("Triple Strike activated for " + player.getName() +
+                        ", adding 10 extra damage. Total damage: " + event.getDamage());
+            }
+        }
+    }
+
+    // Add this method to initialize periodic tasks for skill effects
+    public void initializePeriodicTasks() {
+        // Apply regeneration effect every 3 seconds
+        Bukkit.getScheduler().runTaskTimer(plugin, this::applyRegenerationEffects, 20L, 60L);
+    }
+
 }

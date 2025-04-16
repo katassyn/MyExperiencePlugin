@@ -5,6 +5,7 @@ com\maks\myexperienceplugin\party\PartyCommand.class
 com\maks\myexperienceplugin\alchemy\PhysisExpManager.class
 com\maks\myexperienceplugin\alchemy\TonicExpEffect.class
 com\maks\myexperienceplugin\alchemy\TonicTotemEffect.class
+com\maks\myexperienceplugin\Class\skills\PlayerSkillEffectsListener.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageLuckEffect.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeGUI.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\RangerSkillManager.class
@@ -16,6 +17,7 @@ com\maks\myexperienceplugin\Class\skills\SkillEffectsHandler$PlayerSkillStats.cl
 com\maks\myexperienceplugin\Class\SkillTreeCommand.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUI.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUIListener.class
+com\maks\myexperienceplugin\Class\skills\ForceUpdateSkillPointsCommand.class
 com\maks\myexperienceplugin\alchemy\AbsorptionEffect.class
 com\maks\myexperienceplugin\alchemy\OverTimeHealingEffect.class
 com\maks\myexperienceplugin\Class\skills\events\SkillPurchasedEvent.class

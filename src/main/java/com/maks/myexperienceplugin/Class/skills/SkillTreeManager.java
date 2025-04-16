@@ -184,6 +184,16 @@ public class SkillTreeManager {
     public void loadPlayerSkillData(Player player) {
         UUID uuid = player.getUniqueId();
 
+        // For immediate response, load default values directly
+        basicSkillPointsCache.put(uuid, 0);
+        ascendancySkillPointsCache.put(uuid, 0);
+        purchasedSkillsCache.put(uuid, new HashSet<>());
+        skillPurchaseCountCache.put(uuid, new HashMap<>());
+
+        // Then update skill points based on player level
+        updateSkillPoints(player);
+
+        // Then load actual data from database
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try (Connection conn = plugin.getDatabaseManager().getConnection()) {
                 // Load skill points
@@ -196,18 +206,16 @@ public class SkillTreeManager {
                             int basicPoints = rs.getInt("basic_points");
                             int ascendancyPoints = rs.getInt("ascendancy_points");
 
-                            basicSkillPointsCache.put(uuid, basicPoints);
-                            ascendancySkillPointsCache.put(uuid, ascendancyPoints);
-                        } else {
-                            // Insert default values
-                            try (PreparedStatement insertStmt = conn.prepareStatement(
-                                    "INSERT INTO player_skill_points (uuid, basic_points, ascendancy_points) VALUES (?, 0, 0)")) {
-                                insertStmt.setString(1, uuid.toString());
-                                insertStmt.executeUpdate();
-                            }
+                            // Run on main thread to avoid race conditions
+                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                basicSkillPointsCache.put(uuid, basicPoints);
+                                ascendancySkillPointsCache.put(uuid, ascendancyPoints);
 
-                            basicSkillPointsCache.put(uuid, 0);
-                            ascendancySkillPointsCache.put(uuid, 0);
+                                if (debuggingFlag == 1) {
+                                    plugin.getLogger().info("Loaded skill points for " + player.getName() +
+                                            ": basic=" + basicPoints + ", ascendancy=" + ascendancyPoints);
+                                }
+                            });
                         }
                     }
                 }
@@ -217,8 +225,8 @@ public class SkillTreeManager {
                         "SELECT skill_id, purchase_count FROM player_purchased_skills WHERE uuid = ?")) {
                     stmt.setString(1, uuid.toString());
 
-                    Set<Integer> purchasedSkills = new HashSet<>();
-                    Map<Integer, Integer> purchaseCounts = new HashMap<>();
+                    final Set<Integer> purchasedSkills = new HashSet<>();
+                    final Map<Integer, Integer> purchaseCounts = new HashMap<>();
 
                     try (ResultSet rs = stmt.executeQuery()) {
                         while (rs.next()) {
@@ -227,24 +235,42 @@ public class SkillTreeManager {
 
                             purchasedSkills.add(skillId);
                             purchaseCounts.put(skillId, purchaseCount);
+
+                            if (debuggingFlag == 1) {
+                                plugin.getLogger().info("Loaded skill " + skillId +
+                                        " for " + player.getName() +
+                                        " with count " + purchaseCount);
+                            }
                         }
                     }
 
-                    purchasedSkillsCache.put(uuid, purchasedSkills);
-                    skillPurchaseCountCache.put(uuid, purchaseCounts);
+                    // Store in cache (on main thread to avoid race conditions)
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        purchasedSkillsCache.put(uuid, purchasedSkills);
+                        skillPurchaseCountCache.put(uuid, purchaseCounts);
+
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Completed loading " + purchasedSkills.size() +
+                                    " skills for " + player.getName());
+                        }
+                    });
                 }
 
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Loaded skill data for player " + player.getName() +
-                            ": " + purchasedSkillsCache.get(uuid).size() + " skills purchased");
+                    plugin.getLogger().info("Loaded skill data for player " + player.getName());
                 }
             } catch (SQLException e) {
-                plugin.getLogger().severe("Failed to load skill data for player " + player.getName() + ": " + e.getMessage());
+                plugin.getLogger().severe("Failed to load skill data for player " + player.getName() +
+                        ": " + e.getMessage());
                 e.printStackTrace();
             }
         });
-    }
-
+    }    /**
+     * Calculate and update skill points based on player level
+     */
+    /**
+     * Calculate and update skill points based on player level
+     */
     /**
      * Calculate and update skill points based on player level
      */
@@ -252,16 +278,20 @@ public class SkillTreeManager {
         UUID uuid = player.getUniqueId();
         int level = plugin.getPlayerLevel(player);
 
+        // Define debugging flag if not already defined at class level
+        final int DEBUGGING_FLAG = 1;
+
         // Calculate basic class points (1-20)
+        // For levels 1-20, you get 1 point per level (max 20 points)
         int basicPoints = Math.min(level, 20);
 
         // Calculate ascendancy points (20-100)
         int ascendancyPoints = 0;
         if (level >= 20) {
-            // 1 point per level from 20-50
+            // 1 point per level from 20-50 (31 points total)
             ascendancyPoints += Math.min(level - 19, 31);
 
-            // 1 point every 2 levels from 51-99
+            // 1 point every 2 levels from 51-99 (25 points more)
             if (level > 50) {
                 ascendancyPoints += Math.min((level - 50 + 1) / 2, 25);
 
@@ -270,6 +300,12 @@ public class SkillTreeManager {
                     ascendancyPoints += 5;
                 }
             }
+        }
+
+        if (DEBUGGING_FLAG == 1) {
+            plugin.getLogger().info("Calculating skill points for " + player.getName() +
+                    " (level " + level + "): basic=" + basicPoints +
+                    ", ascendancy=" + ascendancyPoints);
         }
 
         // Update cache
@@ -288,21 +324,19 @@ public class SkillTreeManager {
                     stmt.setInt(2, finalBasicPoints);
                     stmt.setInt(3, finalAscendancyPoints);
                     stmt.executeUpdate();
-                }
 
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Updated skill points for player " + player.getName() +
-                            ": basic=" + finalBasicPoints +
-                            ", ascendancy=" + finalAscendancyPoints);
+                    if (DEBUGGING_FLAG == 1) {
+                        plugin.getLogger().info("Saved skill points to database for player " + player.getName() +
+                                ": basic=" + finalBasicPoints +
+                                ", ascendancy=" + finalAscendancyPoints);
+                    }
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Failed to save skill points for player " + player.getName() + ": " + e.getMessage());
                 e.printStackTrace();
             }
         });
-    }
-
-    public int getBasicSkillPoints(UUID uuid) {
+    }    public int getBasicSkillPoints(UUID uuid) {
         return basicSkillPointsCache.getOrDefault(uuid, 0);
     }
 
@@ -320,6 +354,9 @@ public class SkillTreeManager {
         // Sum up costs of all purchased basic skills
         String playerClass = plugin.getClassManager().getPlayerClass(uuid);
         if (!basicSkillTrees.containsKey(playerClass)) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No basic skill tree found for class: " + playerClass);
+            }
             return totalPoints;
         }
 
@@ -327,13 +364,31 @@ public class SkillTreeManager {
         BaseSkillManager manager = classManagers.get(playerClass);
 
         if (manager == null) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No skill manager found for class: " + playerClass);
+            }
             return totalPoints;
         }
 
+        // Create a new set with only basic skill IDs (below 100000)
+        Set<Integer> basicSkills = new HashSet<>();
         for (int skillId : purchasedSkills) {
+            if (skillId < 100000) { // Only count basic class skills, not ascendancy
+                basicSkills.add(skillId);
+            }
+        }
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Calculating used points for " + playerClass +
+                    ", total points: " + totalPoints +
+                    ", purchased basic skills: " + basicSkills.size());
+        }
+
+        for (int skillId : basicSkills) {
             SkillNode node = tree.getNode(skillId);
             if (node != null) {
                 int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
+
                 // Determine actual cost
                 int actualCost;
                 if (manager.isMultiPurchaseDiscountSkill(skillId)) {
@@ -341,14 +396,34 @@ public class SkillTreeManager {
                 } else {
                     actualCost = node.getCost();
                 }
-                usedPoints += actualCost * purchaseCount;
+
+                int skillCost = actualCost * purchaseCount;
+                usedPoints += skillCost;
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("  Skill " + skillId + " (" + node.getName() +
+                            "): cost=" + actualCost +
+                            ", count=" + purchaseCount +
+                            ", total=" + skillCost);
+                }
+            } else {
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().warning("  Purchased skill " + skillId +
+                            " not found in skill tree for " + playerClass);
+                }
             }
         }
 
-        return totalPoints - usedPoints;
-    }
+        // Ensure we never return a negative value
+        int remainingPoints = Math.max(0, totalPoints - usedPoints);
 
-    public int getUnusedAscendancySkillPoints(UUID uuid) {
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Final calculation: " + totalPoints + " - " +
+                    usedPoints + " = " + remainingPoints + " unused points");
+        }
+
+        return remainingPoints;
+    }    public int getUnusedAscendancySkillPoints(UUID uuid) {
         int totalPoints = getAscendancySkillPoints(uuid);
         int usedPoints = 0;
 
@@ -367,18 +442,35 @@ public class SkillTreeManager {
 
         SkillTree tree = ascendancySkillTrees.get(playerClass).get(ascendancy);
 
+        // Only count skill IDs that are part of ascendancy trees (IDs 100000+ for Beastmaster, 200000+ for Berserker)
         for (int skillId : purchasedSkills) {
-            SkillNode node = tree.getNode(skillId);
-            if (node != null) {
-                int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
-                // Ascendancy skills always cost 1 point per purchase
-                usedPoints += purchaseCount;
+            // Only process ascendancy skill IDs (100000+ or other high ranges)
+            if (skillId >= 100000) {
+                SkillNode node = tree.getNode(skillId);
+                if (node != null) {
+                    int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
+                    usedPoints += purchaseCount; // Ascendancy skills always cost 1 point
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("POINTS DEBUG: Ascendancy Skill ID " + skillId +
+                                " cost " + 1 + " × " + purchaseCount +
+                                " = " + purchaseCount + " points for player " + uuid);
+                    }
+                }
             }
         }
 
-        return totalPoints - usedPoints;
-    }
+        int unusedPoints = totalPoints - usedPoints;
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("POINTS DEBUG: Player " + uuid +
+                    " has " + totalPoints + " total ascendancy points, " +
+                    usedPoints + " used points, " +
+                    unusedPoints + " unused points");
+        }
+
+        return unusedPoints;
+    }
     public Set<Integer> getPurchasedSkills(UUID uuid) {
         return purchasedSkillsCache.getOrDefault(uuid, new HashSet<>());
     }
@@ -658,5 +750,14 @@ public class SkillTreeManager {
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Cleared all skill data for player UUID: " + uuid);
         }
+    }
+    /**
+     * Get the purchase count map for a player
+     * @param uuid Player UUID
+     * @return Map of skill IDs to purchase counts
+     */
+    public Map<Integer, Integer> getPurchaseCountMap(UUID uuid) {
+        // Return a copy of the map to prevent direct modification
+        return new HashMap<>(skillPurchaseCountCache.getOrDefault(uuid, new HashMap<>()));
     }
 }

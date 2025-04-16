@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -109,6 +110,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         // Initialize skill system
         skillTreeManager = new SkillTreeManager(this);
         skillEffectsHandler = new SkillEffectsHandler(this, skillTreeManager);
+        skillEffectsHandler.initializePeriodicTasks();
         skillTreeGUI = new SkillTreeGUI(this, skillTreeManager);
         ascendancySkillTreeGUI = new AscendancySkillTreeGUI(this, skillTreeManager);
 
@@ -178,8 +180,33 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("resetattributes").setExecutor(resetAttributesCommand);
         getCommand("resetattributes").setTabCompleter(resetAttributesCommand);
 
+        ForceUpdateSkillPointsCommand forceUpdateSkillPointsCommand = new ForceUpdateSkillPointsCommand(
+                this,
+                skillTreeManager,
+                skillTreeGUI  // Pass the SkillTreeGUI directly
+        );
+        getCommand("updateskillpoints").setExecutor(forceUpdateSkillPointsCommand);
+        getCommand("updateskillpoints").setTabCompleter(forceUpdateSkillPointsCommand);
         // Start periodic tasks
         new PeriodicClassReminder(this).runTaskTimer(this, 20L, 1200L); // 20L = 1s, 1200L = 60s
+        PlayerSkillEffectsListener playerSkillEffectsListener = new PlayerSkillEffectsListener(
+                this,
+                skillTreeManager,
+                skillEffectsHandler
+        );
+        getServer().getPluginManager().registerEvents(playerSkillEffectsListener, this);
+        getCommand("applyskills").setExecutor((sender, cmd, label, args) -> {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                playerSkillEffectsListener.applyAllSkillEffects(player);
+                player.sendMessage("§aAll your skill effects have been applied!");
+                return true;
+            } else {
+                sender.sendMessage("§cThis command can only be run by a player.");
+                return true;
+            }
+        });
+
     }
     @Override
     public void onDisable() {
@@ -419,5 +446,31 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     public SkillPurchaseManager getSkillPurchaseManager() {
         return skillPurchaseManager;
     }
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
 
+        // Delay to ensure all data is loaded
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            // Force recalculation of skill points
+            skillTreeManager.updateSkillPoints(player);
+
+            // Use a local debugging flag if not defined at class level
+            final int DEBUG_FLAG = 1;
+            if (DEBUG_FLAG == 1) {
+                getLogger().info("Recalculated skill points for " + player.getName() +
+                        " upon login (level " + getPlayerLevel(player) + ")");
+            }
+        }, 40L); // 2 second delay
+    }
+
+    // Add this method to your MyExperiencePlugin class:
+
+    /**
+     * Get the SkillTreeGUI instance
+     * @return The SkillTreeGUI instance
+     */
+    public SkillTreeGUI getSkillTreeGUI() {
+        return skillTreeGUI;
+    }
 }
