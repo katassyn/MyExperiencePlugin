@@ -1,5 +1,6 @@
 package com.maks.myexperienceplugin.Class.skills;
 
+import com.maks.myexperienceplugin.Class.skills.base.BaseSkillManager;
 import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
 import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
@@ -192,7 +193,7 @@ public class SkillTreeGUI {
     private ItemStack createNodeItem(SkillNode node, boolean isPurchased, boolean canPurchase, int purchaseCount) {
         Material material;
 
-        // Choose material based on purchase status
+        // Wybór materiału na podstawie statusu zakupu
         if (isPurchased) {
             if (purchaseCount >= node.getMaxPurchases()) {
                 material = Material.EMERALD_BLOCK; // Fully purchased
@@ -208,35 +209,47 @@ public class SkillTreeGUI {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
 
-        // Set display name with proper coloring based on status
+        // Nazwa z odpowiednim kolorem
         String displayName = (isPurchased ? ChatColor.GREEN : (canPurchase ? ChatColor.YELLOW : ChatColor.RED))
                 + node.getName();
 
-        // Add purchase count if applicable
+        // Dodanie licznika zakupów, jeśli umiejętność ma wiele poziomów
         if (node.getMaxPurchases() > 1) {
             displayName += ChatColor.GRAY + " (" + purchaseCount + "/" + node.getMaxPurchases() + ")";
         }
 
         meta.setDisplayName(displayName);
 
-        // Build lore (description)
+        // Budowanie opisu (lore)
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + node.getDescription());
         lore.add("");
 
+        // Określamy rzeczywisty koszt umiejętności
+        int actualCost = node.getCost();
+
+        // Sprawdzamy, czy to umiejętność z wielokrotnym zakupem (1/2, 1/3)
+        // Zamiast używać BaseSkillManager, patrzymy na maxPurchases
+        if (node.getMaxPurchases() > 1) {
+            actualCost = 1; // Umiejętności z wieloma poziomami kosztują 1 punkt za poziom
+        }
+
         if (isPurchased) {
             if (purchaseCount < node.getMaxPurchases()) {
-                lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + node.getCost() + " points");
+                // Pokazujemy faktyczny koszt ulepszenia
+                lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + " point" + (actualCost > 1 ? "s" : ""));
                 lore.add(ChatColor.GREEN + "Click to upgrade! (" + purchaseCount + "/" + node.getMaxPurchases() + ")");
             } else {
                 lore.add(ChatColor.GREEN + "Fully upgraded! (" + purchaseCount + "/" + node.getMaxPurchases() + ")");
             }
         } else if (canPurchase) {
-            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + node.getCost() + " points");
+            // Pokazujemy faktyczny koszt zakupu
+            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + " point" + (actualCost > 1 ? "s" : ""));
             lore.add(ChatColor.GREEN + "Click to purchase!");
         } else {
             lore.add(ChatColor.RED + "Locked - Purchase connected skills first");
-            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + node.getCost() + " points");
+            // Pokazujemy faktyczny koszt, nawet gdy umiejętność jest zablokowana
+            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + " point" + (actualCost > 1 ? "s" : ""));
         }
 
         meta.setLore(lore);
@@ -244,9 +257,7 @@ public class SkillTreeGUI {
         item.setItemMeta(meta);
 
         return item;
-    }
-
-    private void addNodeConnections(Inventory inventory, SkillTree tree, Set<Integer> purchasedSkills) {
+    }    private void addNodeConnections(Inventory inventory, SkillTree tree, Set<Integer> purchasedSkills) {
         // This would be a more complex implementation to add visual lines between nodes
         // For simplicity, we're omitting this for now
     }
