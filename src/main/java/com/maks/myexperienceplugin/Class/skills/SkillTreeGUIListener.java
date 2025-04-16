@@ -40,48 +40,36 @@ public class SkillTreeGUIListener implements Listener {
     }
 
     private void initializeNodeSlotMap() {
-        // Ranger node slots to node IDs
-        Map<Integer, Integer> rangerSlotMap = new HashMap<>();
-        rangerSlotMap.put(10, 1);  // Node 1 at slot 10
-        rangerSlotMap.put(12, 2);  // Node 2 at slot 12
-        rangerSlotMap.put(14, 3);  // Node 3 at slot 14
-        rangerSlotMap.put(19, 4);  // Node 4 at slot 19
-        rangerSlotMap.put(21, 5);  // Node 5 at slot 21
-        rangerSlotMap.put(23, 6);  // Node 6 at slot 23
-        rangerSlotMap.put(28, 7);  // Node 7 at slot 28
-        rangerSlotMap.put(30, 8);  // Node 8 at slot 30
-        rangerSlotMap.put(31, 9);  // Node 9 at slot 31
-        rangerSlotMap.put(32, 10); // Node 10 at slot 32
-        rangerSlotMap.put(37, 11); // Node 11 at slot 37
-        rangerSlotMap.put(38, 12); // Node 12 at slot 38
-        rangerSlotMap.put(39, 13); // Node 13 at slot 39
-        rangerSlotMap.put(40, 14); // Node 14 at slot 40
+        // Wspólny mapping slotów do ID węzłów dla wszystkich klas
+        Map<Integer, Integer> commonSlotMap = new HashMap<>();
+        commonSlotMap.put(10, 1);  // Slot 10 -> Skill 1
+        commonSlotMap.put(13, 2);  // Slot 13 -> Skill 2
+        commonSlotMap.put(16, 3);  // Slot 16 -> Skill 3
 
-        nodeSlotMap.put("Ranger", rangerSlotMap);
+        commonSlotMap.put(19, 4);  // Slot 19 -> Skill 4
+        commonSlotMap.put(22, 5);  // Slot 22 -> Skill 5
+        commonSlotMap.put(25, 6);  // Slot 25 -> Skill 6
 
-        // DragonKnight node slots to node IDs
-        Map<Integer, Integer> dragonKnightSlotMap = new HashMap<>();
-        dragonKnightSlotMap.put(10, 1);  // Node 1 at slot 10
-        dragonKnightSlotMap.put(12, 2);  // Node 2 at slot 12
-        dragonKnightSlotMap.put(14, 3);  // Node 3 at slot 14
-        dragonKnightSlotMap.put(19, 4);  // Node 4 at slot 19
-        dragonKnightSlotMap.put(21, 5);  // Node 5 at slot 21
-        dragonKnightSlotMap.put(23, 6);  // Node 6 at slot 23
-        dragonKnightSlotMap.put(28, 7);  // Node 7 at slot 28
-        dragonKnightSlotMap.put(30, 8);  // Node 8 at slot 30
-        dragonKnightSlotMap.put(31, 9);  // Node 9 at slot 31
-        dragonKnightSlotMap.put(32, 10); // Node 10 at slot 32
-        dragonKnightSlotMap.put(37, 11); // Node 11 at slot 37
-        dragonKnightSlotMap.put(38, 12); // Node 12 at slot 38
-        dragonKnightSlotMap.put(39, 13); // Node 13 at slot 39
-        dragonKnightSlotMap.put(40, 14); // Node 14 at slot 40
+        commonSlotMap.put(27, 7);  // Slot 27 -> Skill 7
+        commonSlotMap.put(29, 8);  // Slot 29 -> Skill 8
+        commonSlotMap.put(31, 9);  // Slot 31 -> Skill 9
+        commonSlotMap.put(33, 10); // Slot 33 -> Skill 10
+        commonSlotMap.put(35, 11); // Slot 35 -> Skill 11
 
-        nodeSlotMap.put("DragonKnight", dragonKnightSlotMap);
+        commonSlotMap.put(36, 12); // Slot 36 -> Skill 12
+        commonSlotMap.put(40, 13); // Slot 40 -> Skill 13
+        commonSlotMap.put(49, 14); // Slot 49 -> Skill 14
 
-        // Add more slot mappings for other classes as needed
-    }
+        // Stosujemy ten sam mapping dla wszystkich klas
+        nodeSlotMap.put("Ranger", new HashMap<>(commonSlotMap));
+        nodeSlotMap.put("DragonKnight", new HashMap<>(commonSlotMap));
+        nodeSlotMap.put("SpellWeaver", new HashMap<>(commonSlotMap)); // na przyszłość
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Zainicjalizowano mapping slotów dla wszystkich klas");
+            plugin.getLogger().info("Układ: Skill 1-14 w slotach: 10,13,16, 19,22,25, 27,29,31,33,35, 36,40,49");
+        }
+    }    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) {
             return;

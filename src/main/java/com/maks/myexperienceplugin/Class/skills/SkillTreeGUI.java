@@ -36,48 +36,38 @@ public class SkillTreeGUI {
     }
 
     private void initializeNodePositions() {
-        // Define positions for Ranger skill tree
-        Map<Integer, Integer> rangerPositions = new HashMap<>();
-        rangerPositions.put(1, 10); // Node 1 at slot 10
-        rangerPositions.put(2, 12); // Node 2 at slot 12
-        rangerPositions.put(3, 14); // Node 3 at slot 14
-        rangerPositions.put(4, 19); // Node 4 at slot 19
-        rangerPositions.put(5, 21); // Node 5 at slot 21
-        rangerPositions.put(6, 23); // Node 6 at slot 23
-        rangerPositions.put(7, 28); // Node 7 at slot 28
-        rangerPositions.put(8, 30); // Node 8 at slot 30
-        rangerPositions.put(9, 31); // Node 9 at slot 31
-        rangerPositions.put(10, 32); // Node 10 at slot 32
-        rangerPositions.put(11, 37); // Node 11 at slot 37
-        rangerPositions.put(12, 38); // Node 12 at slot 38
-        rangerPositions.put(13, 39); // Node 13 at slot 39
-        rangerPositions.put(14, 40); // Node 14 at slot 40
+        // Wspólny układ dla wszystkich klas (Ranger, DragonKnight, SpellWeaver)
+        Map<Integer, Integer> commonLayout = new HashMap<>();
 
-        skillNodePositions.put("Ranger", rangerPositions);
+        // Dokładny układ według podanych slotów
+        commonLayout.put(1, 10);  // Skill 1 w slocie 10
+        commonLayout.put(2, 13);  // Skill 2 w slocie 13
+        commonLayout.put(3, 16);  // Skill 3 w slocie 16
 
-        // Define positions for DragonKnight skill tree
-        Map<Integer, Integer> dragonKnightPositions = new HashMap<>();
-        dragonKnightPositions.put(1, 10);
-        dragonKnightPositions.put(2, 12);
-        dragonKnightPositions.put(3, 14);
-        dragonKnightPositions.put(4, 19);
-        dragonKnightPositions.put(5, 21);
-        dragonKnightPositions.put(6, 23);
-        dragonKnightPositions.put(7, 28);
-        dragonKnightPositions.put(8, 30);
-        dragonKnightPositions.put(9, 31);
-        dragonKnightPositions.put(10, 32);
-        dragonKnightPositions.put(11, 37);
-        dragonKnightPositions.put(12, 38);
-        dragonKnightPositions.put(13, 39);
-        dragonKnightPositions.put(14, 40);
+        commonLayout.put(4, 19);  // Skill 4 w slocie 19
+        commonLayout.put(5, 22);  // Skill 5 w slocie 22
+        commonLayout.put(6, 25);  // Skill 6 w slocie 25
 
-        skillNodePositions.put("DragonKnight", dragonKnightPositions);
+        commonLayout.put(7, 27);  // Skill 7 w slocie 27
+        commonLayout.put(8, 29);  // Skill 8 w slocie 29
+        commonLayout.put(9, 31);  // Skill 9 w slocie 31
+        commonLayout.put(10, 33); // Skill 10 w slocie 33
+        commonLayout.put(11, 35); // Skill 11 w slocie 35
 
-        // Add more skill tree positions as needed
-    }
+        commonLayout.put(12, 36); // Skill 12 w slocie 36
+        commonLayout.put(13, 40); // Skill 13 w slocie 40
+        commonLayout.put(14, 49); // Skill 14 w slocie 49
 
-    public void openSkillTreeGUI(Player player) {
+        // Stosujemy ten sam układ dla wszystkich klas
+        skillNodePositions.put("Ranger", new HashMap<>(commonLayout));
+        skillNodePositions.put("DragonKnight", new HashMap<>(commonLayout));
+        skillNodePositions.put("SpellWeaver", new HashMap<>(commonLayout)); // na przyszłość
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Zainicjalizowano układ drzewka umiejętności dla wszystkich klas");
+            plugin.getLogger().info("Skille umieszczone w slotach: 10,13,16, 19,22,25, 27,29,31,33,35, 36,40,49");
+        }
+    }    public void openSkillTreeGUI(Player player) {
         UUID uuid = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(uuid);
 

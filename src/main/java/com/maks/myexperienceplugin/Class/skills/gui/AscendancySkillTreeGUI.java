@@ -67,90 +67,99 @@ public class AscendancySkillTreeGUI {
     }
 
     private void initializeNodePositions() {
-        // Beastmaster - Wolf Path (showing vertical progression)
-        Map<String, Map<Integer, Integer>> beastmasterBranches = new HashMap<>();
+        // Zamiast przypisywać nową mapę, czyścimy i wypełniamy istniejącą
+        branchNodePositions.clear();
 
-        // Wolf Path nodes - vertical layout
-        Map<Integer, Integer> wolfPathNodes = new HashMap<>();
-        wolfPathNodes.put(100001, 10);  // Wolf Summon at slot 10 (top)
-        wolfPathNodes.put(100004, 19);  // Wolf Speed at slot 19 (second row)
-        wolfPathNodes.put(100007, 28);  // Wolf Attack Speed at slot 28 (third row)
-        wolfPathNodes.put(100011, 37);  // Wolf Critical at slot 37 (fourth row)
-        wolfPathNodes.put(100012, 38);  // Wolf Vitality at slot 38 (fourth row)
-        wolfPathNodes.put(100017, 46);  // Wolf Healing at slot 46 (fifth row)
-        wolfPathNodes.put(100022, 47);  // Wolf Health at slot 47 (fifth row)
-        wolfPathNodes.put(100025, 49);  // Wolf Pack at slot 49 (bottom center)
-        beastmasterBranches.put("Wolf Path", wolfPathNodes);
+        // Tworzymy jeden uniwersalny układ dla wszystkich podklas
+        Map<String, Map<Integer, Integer>> universalBranchPositions = new HashMap<>();
 
-        // Boar Path nodes - vertical layout
-        Map<Integer, Integer> boarPathNodes = new HashMap<>();
-        boarPathNodes.put(100002, 12);  // Boar Summon at slot 12 (top)
-        boarPathNodes.put(100005, 21);  // Boar Damage at slot 21 (second row)
-        boarPathNodes.put(100008, 30);  // Boar Attack Speed at slot 30 (third row)
-        boarPathNodes.put(100009, 31);  // Pack Damage at slot 31 (third row)
-        boarPathNodes.put(100013, 39);  // Boar Critical at slot 39 (fourth row)
-        boarPathNodes.put(100014, 40);  // Pack Damage Plus at slot 40 (fourth row)
-        boarPathNodes.put(100019, 48);  // Boar Frenzy at slot 48 (fifth row)
-        boarPathNodes.put(100023, 50);  // Boar Speed at slot 50 (fifth row)
-        boarPathNodes.put(100026, 51);  // Boar Rage at slot 51 (bottom)
-        beastmasterBranches.put("Boar Path", boarPathNodes);
+        // Branch 1 (Wolf Path / Rage Path / etc.)
+        Map<Integer, Integer> branch1Positions = new HashMap<>();
+        branch1Positions.put(1, 11);  // Skill 1 w slocie 11
+        branch1Positions.put(4, 20);  // Skill 4 w slocie 20
+        branch1Positions.put(7, 29);  // Skill 7 w slocie 29
+        branch1Positions.put(11, 37); // Skill 11 w slocie 37
+        branch1Positions.put(12, 39); // Skill 12 w slocie 39
+        branch1Positions.put(17, 46); // Skill 17 w slocie 46
+        branch1Positions.put(18, 48); // Skill 18 w slocie 48
+        branch1Positions.put(22, 15); // Skill 22 w slocie 15
+        branch1Positions.put(25, 24); // Skill 25 w slocie 24
+        universalBranchPositions.put("Branch1", branch1Positions);
 
-        // Bear Path nodes - vertical layout
-        Map<Integer, Integer> bearPathNodes = new HashMap<>();
-        bearPathNodes.put(100003, 14);  // Bear Summon at slot 14 (top)
-        bearPathNodes.put(100006, 23);  // Bear Health at slot 23 (second row)
-        bearPathNodes.put(100010, 32);  // Bear Defense at slot 32 (third row)
-        bearPathNodes.put(100015, 41);  // Bear Guardian at slot 41 (fourth row)
-        bearPathNodes.put(100016, 42);  // Bear Vitality at slot 42 (fourth row)
-        bearPathNodes.put(100020, 50);  // Bear Regeneration at slot 50 (fifth row)
-        bearPathNodes.put(100021, 51);  // Pack Vitality at slot 51 (fifth row)
-        bearPathNodes.put(100024, 32);  // Pack Defense at slot 32 (fifth row)
-        bearPathNodes.put(100027, 53);  // Pack Healing at slot 53 (bottom)
-        beastmasterBranches.put("Bear Path", bearPathNodes);
+        // Branch 2 (Boar Path / Critical Path / etc.)
+        Map<Integer, Integer> branch2Positions = new HashMap<>();
+        branch2Positions.put(2, 11);  // Skill 2 w slocie 11
+        branch2Positions.put(5, 20);  // Skill 5 w slocie 20
+        branch2Positions.put(8, 28);  // Skill 8 w slocie 28
+        branch2Positions.put(9, 30);  // Skill 9 w slocie 30
+        branch2Positions.put(13, 37); // Skill 13 w slocie 37
+        branch2Positions.put(14, 39); // Skill 14 w slocie 39
+        branch2Positions.put(19, 46); // Skill 19 w slocie 46
+        branch2Positions.put(23, 14); // Skill 23 w slocie 14
+        branch2Positions.put(26, 23); // Skill 26 w slocie 23
+        universalBranchPositions.put("Branch2", branch2Positions);
 
-        branchNodePositions.put("Beastmaster", beastmasterBranches);
+        // Branch 3 (Bear Path / Frenzy Path / etc.)
+        Map<Integer, Integer> branch3Positions = new HashMap<>();
+        branch3Positions.put(3, 11);  // Skill 3 w slocie 11
+        branch3Positions.put(6, 20);  // Skill 6 w slocie 20
+        branch3Positions.put(10, 29); // Skill 10 w slocie 29
+        branch3Positions.put(15, 37); // Skill 15 w slocie 37
+        branch3Positions.put(16, 39); // Skill 16 w slocie 39
+        branch3Positions.put(20, 46); // Skill 20 w slocie 46
+        branch3Positions.put(21, 48); // Skill 21 w slocie 48
+        branch3Positions.put(24, 14); // Skill 24 w slocie 14
+        branch3Positions.put(27, 23); // Skill 27 w slocie 23
+        universalBranchPositions.put("Branch3", branch3Positions);
 
-        // Similar structure for Berserker with its three branches
-        Map<String, Map<Integer, Integer>> berserkerBranches = new HashMap<>();
+        // Nazwy gałęzi dla każdej podklasy
+        Map<String, List<String>> branchNames = new HashMap<>();
 
-        // Rage Path nodes
-        Map<Integer, Integer> ragePathNodes = new HashMap<>();
-        ragePathNodes.put(200001, 10);  // Unarmored Rage at slot 10 (top)
-        ragePathNodes.put(200004, 19);  // Kill Frenzy at slot 19 (second row)
-        ragePathNodes.put(200007, 28);  // Glass Cannon at slot 28 (third row)
-        ragePathNodes.put(200011, 37);  // Finishing Blow at slot 37 (fourth row)
-        ragePathNodes.put(200017, 46);  // Raw Power at slot 46 (fifth row)
-        ragePathNodes.put(200027, 49);  // Death Defiance at slot 49 (bottom center)
-        berserkerBranches.put("Rage Path", ragePathNodes);
+        // Beastmaster
+        List<String> beastmasterBranches = Arrays.asList("Wolf Path", "Boar Path", "Bear Path");
+        branchNames.put("Beastmaster", beastmasterBranches);
 
-        // Critical Path nodes
-        Map<Integer, Integer> criticalPathNodes = new HashMap<>();
-        criticalPathNodes.put(200002, 12);  // Berserker's Fury at slot 12 (top)
-        criticalPathNodes.put(200005, 21);  // Battle Rage at slot 21 (second row)
-        criticalPathNodes.put(200008, 30);  // Reckless Strike at slot 30 (third row)
-        criticalPathNodes.put(200009, 31);  // Critical Specialization at slot 31 (third row)
-        criticalPathNodes.put(200013, 39);  // Vitality at slot 39 (fourth row)
-        criticalPathNodes.put(200014, 40);  // Bleeding Strike at slot 40 (fourth row)
-        criticalPathNodes.put(200018, 48);  // Critical Mastery at slot 48 (fifth row)
-        criticalPathNodes.put(200020, 50);  // Critical Precision at slot 50 (fifth row)
-        berserkerBranches.put("Critical Path", criticalPathNodes);
+        // Berserker
+        List<String> berserkerBranches = Arrays.asList("Rage Path", "Critical Path", "Frenzy Path");
+        branchNames.put("Berserker", berserkerBranches);
 
-        // Frenzy Path nodes
-        Map<Integer, Integer> frenzyPathNodes = new HashMap<>();
-        frenzyPathNodes.put(200003, 14);  // Combat Momentum at slot 14 (top)
-        frenzyPathNodes.put(200006, 23);  // Strength Boost at slot 23 (second row)
-        frenzyPathNodes.put(200010, 32);  // Attack Speed Frenzy at slot 32 (third row)
-        frenzyPathNodes.put(200012, 41);  // Tactical Defense at slot 41 (fourth row)
-        frenzyPathNodes.put(200015, 42);  // Agility at slot 42 (fourth row)
-        frenzyPathNodes.put(200019, 51);  // Reckless Power at slot 51 (fifth row)
-        berserkerBranches.put("Frenzy Path", frenzyPathNodes);
+        // Dodać więcej podklas w przyszłości...
 
-        branchNodePositions.put("Berserker", berserkerBranches);
+        // Inicjalizacja układów dla wszystkich podklas
+        for (String ascendancy : branchNames.keySet()) {
+            Map<String, Map<Integer, Integer>> branches = new HashMap<>();
+            List<String> names = branchNames.get(ascendancy);
 
-        // Add more ascendancies as needed
-    }
+            for (int i = 0; i < names.size(); i++) {
+                String branchName = names.get(i);
+                Map<Integer, Integer> universalPositions = universalBranchPositions.get("Branch" + (i+1));
+                Map<Integer, Integer> branchPositions = new HashMap<>();
 
-    private void initializeConnectionSlots() {
+                // Przekształcenie ID skilli w zależności od podklasy
+                int idOffset = 0;
+                if (ascendancy.equals("Beastmaster")) idOffset = 100000;
+                else if (ascendancy.equals("Berserker")) idOffset = 200000;
+                // Dodać więcej podklas w przyszłości...
+
+                for (Map.Entry<Integer, Integer> entry : universalPositions.entrySet()) {
+                    branchPositions.put(entry.getKey() + idOffset, entry.getValue());
+                }
+
+                branches.put(branchName, branchPositions);
+            }
+
+            // Dodajemy do istniejącej mapy zamiast przypisania
+            branchNodePositions.put(ascendancy, branches);
+        }
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Zainicjalizowano uniwersalny układ drzewka podklas");
+            for (String ascendancy : branchNodePositions.keySet()) {
+                plugin.getLogger().info("Podklasa: " + ascendancy + " - gałęzie: " +
+                        branchNodePositions.get(ascendancy).keySet());
+            }
+        }
+    }    private void initializeConnectionSlots() {
         // Define connections for Beastmaster Wolf Path
         Map<String, List<Integer>> beastmasterConnections = new HashMap<>();
 
@@ -321,37 +330,7 @@ public class AscendancySkillTreeGUI {
             nextButton.setItemMeta(meta);
             inventory.setItem(53, nextButton);
         }
-
-        // Branch indicator in the middle bottom
-        ItemStack branchIndicator = new ItemStack(Material.PAPER);
-        ItemMeta meta = branchIndicator.getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Branch " + currentBranchIndex + " of " + totalBranches);
-
-        // Add description of what each branch focuses on
-        List<String> lore = new ArrayList<>();
-        if ("Beastmaster".equals(ascendancy)) {
-            if (currentBranchIndex == 1) {
-                lore.add(ChatColor.GRAY + "Wolf Path: Focus on wolves and their abilities");
-            } else if (currentBranchIndex == 2) {
-                lore.add(ChatColor.GRAY + "Boar Path: Focus on boars and damage");
-            } else if (currentBranchIndex == 3) {
-                lore.add(ChatColor.GRAY + "Bear Path: Focus on bears and defensive abilities");
-            }
-        } else if ("Berserker".equals(ascendancy)) {
-            if (currentBranchIndex == 1) {
-                lore.add(ChatColor.GRAY + "Rage Path: Focus on damage and power");
-            } else if (currentBranchIndex == 2) {
-                lore.add(ChatColor.GRAY + "Critical Path: Focus on critical hits");
-            } else if (currentBranchIndex == 3) {
-                lore.add(ChatColor.GRAY + "Frenzy Path: Focus on attack speed and combat bonuses");
-            }
-        }
-        meta.setLore(lore);
-
-        branchIndicator.setItemMeta(meta);
-        inventory.setItem(49, branchIndicator);
     }
-
     private void addBranchInfo(Inventory inventory, String ascendancy, int branchIndex, List<String> branches) {
         String branchName = branches.get(branchIndex - 1);
 
@@ -419,23 +398,13 @@ public class AscendancySkillTreeGUI {
     }
 
     private void addConnectionIndicators(Inventory inventory, String ascendancy, String branchName) {
-        Map<String, List<Integer>> ascendancyConnections = branchConnectionSlots.get(ascendancy);
-        if (ascendancyConnections == null) {
-            return;
-        }
+        // Całkowicie usunięte dodawanie wskaźników połączeń
+        // Ta metoda pozostaje pusta, ale jest nadal wywoływana z głównej metody,
+        // aby nie wprowadzać dodatkowych zmian w strukturze kodu
 
-        List<Integer> connections = ascendancyConnections.get(branchName);
-        if (connections == null) {
-            return;
-        }
-
-        ItemStack connectionItem = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta meta = connectionItem.getItemMeta();
-        meta.setDisplayName(ChatColor.DARK_GRAY + "↓");
-        connectionItem.setItemMeta(meta);
-
-        for (int slot : connections) {
-            inventory.setItem(slot, connectionItem);
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Pomijanie dodawania wskaźników połączeń w drzewku " +
+                    ascendancy + ", gałąź: " + branchName);
         }
     }
 

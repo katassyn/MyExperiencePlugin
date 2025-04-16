@@ -149,25 +149,30 @@ public class RangerSkillManager extends BaseSkillManager {
 
     @Override
     protected void setupTreeStructure(SkillTree tree) {
-        // Define root nodes
+        // Definiujemy węzły startowe
         tree.addRootNode(1);
         tree.addRootNode(2);
         tree.addRootNode(3);
 
-        // Connect nodes
+        // Łączymy węzły zgodnie z diagramem Drzewko Klas.md
         tree.connectNodes(1, 4);
-        tree.connectNodes(2, 5);
-        tree.connectNodes(3, 6);
         tree.connectNodes(4, 7);
         tree.connectNodes(4, 8);
-        tree.connectNodes(5, 9);
-        tree.connectNodes(6, 10);
-        tree.connectNodes(7, 11);
         tree.connectNodes(7, 12);
-        tree.connectNodes(8, 13);
-        tree.connectNodes(10, 14);
-    }
 
+        tree.connectNodes(2, 5);
+        tree.connectNodes(5, 9);
+        tree.connectNodes(9, 13);
+
+        tree.connectNodes(3, 6);
+        tree.connectNodes(6, 10);
+        tree.connectNodes(6, 11);
+        tree.connectNodes(11, 14);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Skonfigurowano strukturę drzewka umiejętności dla klasy " + className);
+        }
+    }
     @Override
     protected void applySkillStats(Player player, int skillId, int purchaseCount) {
         switch (skillId) {
