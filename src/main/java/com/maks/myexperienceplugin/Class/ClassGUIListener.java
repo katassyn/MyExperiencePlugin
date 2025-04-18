@@ -15,6 +15,8 @@ public class ClassGUIListener implements Listener {
         this.plugin = plugin;
     }
 
+// Updated onInventoryClick method for ClassGUIListener.java
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
@@ -26,13 +28,22 @@ public class ClassGUIListener implements Listener {
             if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
             String clickedName = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
 
-            if (clickedName.equalsIgnoreCase("Ranger") ||
-                    clickedName.equalsIgnoreCase("Dragonknight") ||
-                    clickedName.equalsIgnoreCase("Spellweaver")) {
+            // Normalize class name for consistent capitalization
+            String normalizedClassName = ClassNameNormalizer.normalize(clickedName);
 
-                plugin.getClassManager().setPlayerClass(player, clickedName);
+            if (ClassNameNormalizer.isValidClass(normalizedClassName)) {
+                plugin.getClassManager().setPlayerClass(player, normalizedClassName);
                 player.closeInventory();
                 player.sendMessage(ChatColor.GOLD + "You chose the " + clickedName + " class!");
+
+                if (plugin.getSkillTreeManager() != null) {
+                    // Force recalculation of skill points based on level
+                    plugin.getSkillTreeManager().updateSkillPoints(player);
+
+                    // Debug message
+                    plugin.getLogger().info("Set player " + player.getName() + " class to " +
+                            normalizedClassName + " and updated skill points");
+                }
             }
         }
         else if (title.equals(ChatColor.DARK_BLUE + "Choose Ascendancy")) {

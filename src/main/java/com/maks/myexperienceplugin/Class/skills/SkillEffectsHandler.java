@@ -1,5 +1,9 @@
 package com.maks.myexperienceplugin.Class.skills;
 
+import com.maks.myexperienceplugin.Class.ClassNameNormalizer;
+import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.DragonKnightSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
@@ -15,6 +19,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -25,13 +30,16 @@ public class SkillEffectsHandler implements Listener {
     private final MyExperiencePlugin plugin;
     private final SkillTreeManager skillTreeManager;
     private final Random random = new Random();
-    private final Map<UUID, Integer> hitCounters = new HashMap<>();
-    private final Map<UUID, UUID> lastTargetMap = new HashMap<>();
     // Debugging flag - set to 0 after testing
     private final int debuggingFlag = 1;
 
     // Cached player stats
     private final Map<UUID, PlayerSkillStats> playerStatsCache = new ConcurrentHashMap<>();
+
+    // Class-specific handlers
+    private final Map<String, BaseSkillEffectsHandler> classHandlers = new HashMap<>();
+    private final RangerSkillEffectsHandler rangerHandler;
+    private final DragonKnightSkillEffectsHandler dragonKnightHandler;
 
     // Constants for attribute modifier names
     private static final String ATTR_MAX_HEALTH = "skill.maxhealth";
@@ -50,6 +58,19 @@ public class SkillEffectsHandler implements Listener {
     public SkillEffectsHandler(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager) {
         this.plugin = plugin;
         this.skillTreeManager = skillTreeManager;
+
+        // Initialize class-specific handlers
+        this.rangerHandler = new RangerSkillEffectsHandler(plugin);
+        this.dragonKnightHandler = new DragonKnightSkillEffectsHandler(plugin);
+
+        // Register handlers in the map
+        classHandlers.put("Ranger", rangerHandler);
+        classHandlers.put("DragonKnight", dragonKnightHandler);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("SkillEffectsHandler initialized with handlers for: " +
+                    String.join(", ", classHandlers.keySet()));
+        }
     }
 
     @EventHandler
@@ -65,11 +86,29 @@ public class SkillEffectsHandler implements Listener {
                 PlayerSkillStats stats = playerStatsCache.get(player.getUniqueId());
                 if (stats != null) {
                     plugin.getLogger().info("MaxHealthBonus: " + stats.getMaxHealthBonus());
-                    plugin.getLogger().info("BonusDamage: " + stats.getBonusDamage() + " (should be exactly 5 for Ranger)");
-                    plugin.getLogger().info("GoldPerKill: " + stats.getGoldPerKill() + " (should be exactly 3 for Ranger)");
+                    plugin.getLogger().info("BonusDamage: " + stats.getBonusDamage());
                     plugin.getLogger().info("Current max health: " + player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
                 }
             }, 20L);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        UUID playerId = player.getUniqueId();
+
+        // Clear player data from cache
+        playerStatsCache.remove(playerId);
+
+        // Clear class-specific handler data
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        if (playerClass.equals("DragonKnight")) {
+            dragonKnightHandler.clearPlayerData(playerId);
+        }
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Cleared all skill effect data for " + player.getName() + " on logout");
         }
     }
 
@@ -198,29 +237,14 @@ public class SkillEffectsHandler implements Listener {
         }
 
         Player player = (Player) event.getEntity();
+        UUID playerId = player.getUniqueId();
         PlayerSkillStats stats = getPlayerStats(player);
-        // Sprawdź umiejętność Wind Stacks - stacki są tracone przy otrzymaniu obrażeń
-        if (stats.getWindStacks() > 0 && skillTreeManager.getPurchasedSkills(player.getUniqueId()).contains(7)) {
-            stats.loseWindStack();
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
 
-            if (debuggingFlag == 1) {
-                player.sendMessage(ChatColor.RED + "Lost a Wind Stack due to damage! Current stacks: " +
-                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
-                plugin.getLogger().info("Player " + player.getName() + " lost Wind Stack. Current: " +
-                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
-            }
-        }
-        // Apply evade chance
-        if (stats.getEvadeChance() > 0 && random.nextDouble() * 100 < stats.getEvadeChance()) {
-            event.setCancelled(true);
-            player.sendMessage("§a§oYou evaded the attack!");
-            return;
-        }
-
-        // Apply shield block chance
-        if (stats.getShieldBlockChance() > 0 && random.nextDouble() * 100 < stats.getShieldBlockChance()) {
-            event.setDamage(event.getDamage() * 0.5); // 50% damage reduction
-            player.sendMessage("§a§oYour shield blocked half the damage!");
+        // Get the appropriate handler for this player's class
+        BaseSkillEffectsHandler handler = classHandlers.get(playerClass);
+        if (handler != null) {
+            handler.handleEntityDamage(event, player, stats);
         }
     }
 
@@ -233,6 +257,8 @@ public class SkillEffectsHandler implements Listener {
         Player player = (Player) event.getDamager();
         UUID playerId = player.getUniqueId();
         PlayerSkillStats stats = getPlayerStats(player);
+
+        // Apply common damage effects
 
         // Apply bonus damage
         if (stats.getBonusDamage() > 0) {
@@ -260,6 +286,13 @@ public class SkillEffectsHandler implements Listener {
                 lastDamageMessageTime.put(playerId, System.currentTimeMillis());
             }
         }
+
+        // Now delegate to class-specific handler
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        BaseSkillEffectsHandler handler = classHandlers.get(playerClass);
+        if (handler != null) {
+            handler.handleEntityDamageByEntity(event, player, stats);
+        }
     }
 
     @EventHandler
@@ -268,41 +301,17 @@ public class SkillEffectsHandler implements Listener {
             Player player = event.getEntity().getKiller();
             UUID playerId = player.getUniqueId();
             PlayerSkillStats stats = getPlayerStats(player);
-            // Sprawdź czy gracz ma umiejętność Wind Stacks
-            if (skillTreeManager.getPurchasedSkills(playerId).contains(7)) {
-                stats.addWindStack();
 
-                // Dodaj efekty Wind Stacks (każdy stack daje +1% ms i +1% evade)
-                // Robimy to przez dynamiczną aktualizację statystyk
-
-                if (debuggingFlag == 1) {
-                    player.sendMessage(ChatColor.GREEN + "Wind Stack added! Current stacks: " +
-                            stats.getWindStacks() + "/" + stats.getMaxWindStacks());
-                    plugin.getLogger().info("Player " + player.getName() + " gained Wind Stack. Current: " +
-                            stats.getWindStacks() + "/" + stats.getMaxWindStacks());
-                }
-            }
-            // Apply gold per kill bonus - once
-            if (stats.getGoldPerKill() > 0) {
-                plugin.moneyRewardHandler.depositMoney(player, stats.getGoldPerKill());
-
-                // Only show the message if cooldown has passed
-                long currentTime = System.currentTimeMillis();
-                if (!lastDamageMessageTime.containsKey(playerId) ||
-                        currentTime - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN) {
-                    player.sendMessage("§6+" + stats.getGoldPerKill() + "$ from trophy hunter skill!");
-                    lastDamageMessageTime.put(playerId, currentTime);
-                }
-
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DEBUG: Mob killed: " + event.getEntity().getType().name() +
-                            ", Gold reward: " + stats.getGoldPerKill());
-                }
+            // Delegate to class-specific handler
+            String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+            BaseSkillEffectsHandler handler = classHandlers.get(playerClass);
+            if (handler != null) {
+                handler.handleEntityDeath(event, player, stats);
             }
         }
     }
 
-    // Complete rewrite of calculatePlayerStats to ensure nothing is duplicated
+    // UPDATED: Complete rewrite of calculatePlayerStats with delegation to class-specific handlers
     public void calculatePlayerStats(Player player) {
         UUID uuid = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(uuid);
@@ -313,55 +322,31 @@ public class SkillEffectsHandler implements Listener {
 
         if ("NoClass".equalsIgnoreCase(playerClass)) {
             playerStatsCache.put(uuid, stats);
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Player " + player.getName() + " has no class, using default stats");
+            }
             return;
         }
 
-        // Create sets to track IDs we've already processed
-        Set<Integer> processedBaseSkills = new HashSet<>();
-        Set<Integer> processedAscendancySkills = new HashSet<>();
+        // Get the class-specific handler
+        BaseSkillEffectsHandler classHandler = classHandlers.get(playerClass);
+        if (classHandler == null) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No handler found for class: " + playerClass);
+            }
+            playerStatsCache.put(uuid, stats);
+            return;
+        }
 
         // Get all purchased skills
         Set<Integer> purchasedSkills = skillTreeManager.getPurchasedSkills(uuid);
 
-        // First process base class skills
-        if ("Ranger".equalsIgnoreCase(playerClass)) {
-            // Apply Ranger base skills - hardcoded with exact values
-            for (int skillId : purchasedSkills) {
-                if (skillId >= 1 && skillId <= 14 && !processedBaseSkills.contains(skillId)) {
-                    processedBaseSkills.add(skillId);
-                    int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-                    applyRangerSkillEffects(stats, skillId, purchaseCount);
-                }
-            }
-        } else if ("DragonKnight".equalsIgnoreCase(playerClass)) {
-            // Apply DragonKnight base skills
-            for (int skillId : purchasedSkills) {
-                if (skillId >= 1 && skillId <= 14 && !processedBaseSkills.contains(skillId)) {
-                    processedBaseSkills.add(skillId);
-                    int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-                    applyDragonKnightSkillEffects(stats, skillId, purchaseCount);
-                }
-            }
-        }
-
-        // Then process ascendancy skills
-        if (!ascendancy.isEmpty()) {
-            if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
-                for (int skillId : purchasedSkills) {
-                    if (skillId >= 100000 && skillId < 200000 && !processedAscendancySkills.contains(skillId)) {
-                        processedAscendancySkills.add(skillId);
-                        int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-                        applyBeastmasterSkillEffects(stats, skillId, purchaseCount);
-                    }
-                }
-            } else if ("Berserker".equalsIgnoreCase(ascendancy)) {
-                for (int skillId : purchasedSkills) {
-                    if (skillId >= 200000 && skillId < 300000 && !processedAscendancySkills.contains(skillId)) {
-                        processedAscendancySkills.add(skillId);
-                        int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-                        applyBerserkerSkillEffects(stats, skillId, purchaseCount);
-                    }
-                }
+        // Process all skills through the class handler
+        for (int skillId : purchasedSkills) {
+            // Only process basic class skills (IDs 1-99)
+            if (skillId >= 1 && skillId <= 99) {
+                int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
+                classHandler.applySkillEffects(stats, skillId, purchaseCount);
             }
         }
 
@@ -369,163 +354,10 @@ public class SkillEffectsHandler implements Listener {
         playerStatsCache.put(uuid, stats);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Calculated stats for player " + player.getName() + ": " +
+            plugin.getLogger().info("Calculated stats for player " + player.getName() + " (" + playerClass + "): " +
                     "HP+" + stats.getMaxHealthBonus() + ", " +
                     "DMG+" + stats.getBonusDamage() + ", " +
-                    "MULT×" + stats.getDamageMultiplier() + ", " +
-                    "Gold/Kill: " + stats.getGoldPerKill());
-        }
-    }
-
-    /**
-     * Explicit implementation for Ranger skills with exact values
-     */
-    private void applyRangerSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
-        switch (skillId) {
-            case 1: // +1% movement speed
-                stats.setMovementSpeedBonus(1 * purchaseCount);
-                break;
-            case 2: // Nature's Recovery - Gain Regeneration I
-                // This will be handled separately in a potion effect system
-                stats.setHasRegenerationEffect(true); // Add this to PlayerSkillStats
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 2: Set regeneration effect flag");
-                }
-                break;
-            case 3: // +5 damage - FIXED VALUE
-                stats.setBonusDamage(5);
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 3: Set bonus damage to EXACTLY 5");
-                }
-                break;
-            case 4: // +2% evade chance
-                stats.setEvadeChance(2 * purchaseCount);
-                break;
-            case 5: // +1 HP
-                stats.setMaxHealthBonus(1 * purchaseCount);
-                break;
-            case 6: // +3$ per killed mob - FIXED VALUE
-                stats.setGoldPerKill(3);
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 6: Set gold per kill to EXACTLY 3");
-                }
-                break;
-            case 8: // +1% evade chance (1/2)
-                stats.addEvadeChance(1 * purchaseCount);
-                break;
-            case 9: // +1% luck (1/2)
-                stats.setLuckBonus(1 * purchaseCount);
-                break;
-            case 10: // each 3 hits deals +10 dmg - handled by a more complex system
-                stats.setHasTripleStrike(true); // Add this to PlayerSkillStats
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 10: Set triple strike flag");
-                }
-                break;
-            case 11: // +1% dmg (1/3)
-                stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
-                break;
-            case 13: // +1% def (1/2)
-                stats.setDefenseBonus(1 * purchaseCount);
-                break;
-            case 12: // Wind Mastery: +2 max stacks of wind
-                stats.setMaxWindStacks(5); // Bazowe 3 + 2 z umiejętności Wind Mastery
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 12: Set max wind stacks to 5");
-                }
-                break;
-            case 14: // +4% evade chance, -2% dmg
-                stats.addEvadeChance(4 * purchaseCount);
-                stats.multiplyDamageMultiplier(1.0 - (0.02 * purchaseCount));
-                break;
-            default:
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().warning("Unknown Ranger skill ID: " + skillId);
-                }
-                break;
-        }
-    }
-
-    private void applyDragonKnightSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
-        switch (skillId) {
-            case 1: // +3% def
-                stats.setDefenseBonus(3 * purchaseCount);
-                break;
-            case 3: // +1% dmg
-                stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
-                break;
-            case 5: // +1% ms (1/2)
-                stats.setMovementSpeedBonus(1 * purchaseCount);
-                break;
-            case 8: // +2hp (1/2)
-                stats.setMaxHealthBonus(2 * purchaseCount);
-                break;
-            case 9: // +1% luck (1/2)
-                stats.setLuckBonus(1 * purchaseCount);
-                break;
-            case 10: // +7 dmg (1/2) - FIXED VALUE
-                stats.setBonusDamage(7);
-                break;
-            case 11: // +5% dmg, -2% ms
-                stats.setDamageMultiplier(1.0 + (0.05 * purchaseCount));
-                stats.addMovementSpeedBonus(-2 * purchaseCount);
-                break;
-            case 13: // +10 dmg - FIXED VALUE
-                stats.setBonusDamage(10);
-                break;
-            case 14: // +5% shield block chance
-                stats.setShieldBlockChance(5 * purchaseCount);
-                break;
-            default:
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().warning("Unknown DragonKnight skill ID: " + skillId);
-                }
-                break;
-        }
-    }
-
-    private void applyBeastmasterSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
-        // Remove the offset to get the original skill number
-        int originalId = skillId - 100000;
-
-        // Example implementation - would be expanded for all skills
-        switch (originalId) {
-            case 9: // Pack Damage: All summons gain +5% damage
-                // This would affect companion damage, not player damage
-                break;
-            case 14: // Pack Damage Plus: All summons gain +10% damage
-                // This would affect companion damage, not player damage
-                break;
-            case 15: // Bear Guardian: When Bears hp<50% you and all summons gain +10% def
-                stats.addDefenseBonus(10 * purchaseCount);
-                break;
-            // ... other Beastmaster skills
-            default:
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Beastmaster skill " + originalId + " has no implemented effect");
-                }
-                break;
-        }
-    }
-
-    private void applyBerserkerSkillEffects(PlayerSkillStats stats, int skillId, int purchaseCount) {
-        // Remove the offset to get the original skill number
-        int originalId = skillId - 200000;
-
-        // Example implementation - would be expanded for all skills
-        switch (originalId) {
-            case 1: // Cannot wear chestplate but gain +200% dmg
-                stats.multiplyDamageMultiplier(1.0 + (2.0 * purchaseCount));
-                break;
-            case 2: // Each 10% hp lost gives +10% dmg
-                // This is a dynamic effect and would be handled in combat
-                break;
-            // ... other Berserker skills
-            default:
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Berserker skill " + originalId + " has no implemented effect");
-                }
-                break;
+                    "MULT×" + stats.getDamageMultiplier());
         }
     }
 
@@ -555,10 +387,10 @@ public class SkillEffectsHandler implements Listener {
         private double goldPerKill = 0;
         private boolean hasRegenerationEffect = false;
         private boolean hasTripleStrike = false;
-        // W klasie SkillEffectsHandler.PlayerSkillStats
+        // For Ranger - Wind Stacks
         private int windStacks = 0;
-        private int maxWindStacks = 3; // Domyślnie 3, zwiększane do 5 przez skill Wind Mastery
-        private long windStacksExpiryTime = 0; // Czas wygaśnięcia stacków
+        private int maxWindStacks = 3; // Default 3, increased to 5 by Wind Mastery skill
+        private long windStacksExpiryTime = 0; // Time when stacks expire
 
         public int getWindStacks() {
             return windStacks;
@@ -570,7 +402,7 @@ public class SkillEffectsHandler implements Listener {
 
         public void addWindStack() {
             this.windStacks = Math.min(windStacks + 1, maxWindStacks);
-            this.windStacksExpiryTime = System.currentTimeMillis() + 30000; // 30 sekund trwania
+            this.windStacksExpiryTime = System.currentTimeMillis() + 30000; // 30 seconds duration
         }
 
         public void loseWindStack() {
@@ -736,89 +568,99 @@ public class SkillEffectsHandler implements Listener {
     }
 
     /**
-     * Handles the Triple Strike effect for Ranger skill 10
+     * Initialize periodic tasks for skill effects
      */
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onTripleStrikeDamage(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player)) {
-            return;
-        }
-
-        Player player = (Player) event.getDamager();
-        UUID playerId = player.getUniqueId();
-        UUID targetId = event.getEntity().getUniqueId();
-        PlayerSkillStats stats = getPlayerStats(player);
-
-        // Only process if player has the Triple Strike skill
-        if (!stats.hasTripleStrike()) {
-            return;
-        }
-
-        // Check if target changed
-        if (lastTargetMap.containsKey(playerId) && !lastTargetMap.get(playerId).equals(targetId)) {
-            // Reset counter if target changed
-            hitCounters.put(playerId, 1);
-            lastTargetMap.put(playerId, targetId);
-            return;
-        }
-
-        // Initialize or update hit counter
-        int hitCount = hitCounters.getOrDefault(playerId, 0) + 1;
-        hitCounters.put(playerId, hitCount);
-        lastTargetMap.put(playerId, targetId);
-
-        // Every third hit deals extra damage
-        if (hitCount >= 3) {
-            // Add 10 damage on third hit
-            event.setDamage(event.getDamage() + 10.0);
-
-            // Reset counter
-            hitCounters.put(playerId, 0);
-
-            // Notify player
-
-
-            if (debuggingFlag == 1) {
-                player.sendMessage(ChatColor.GREEN + "Triple Strike! +10 damage dealt!");
-                plugin.getLogger().info("Triple Strike activated for " + player.getName() +
-                        ", adding 10 extra damage. Total damage: " + event.getDamage());
-            }
-        }
-    }
-    private void checkWindStacksEffects() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            PlayerSkillStats stats = getPlayerStats(player);
-
-            // Jeśli stacki wygasły, usuń je
-            if (stats.getWindStacks() > 0 && stats.hasWindStacksExpired()) {
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Wind Stacks expired for " + player.getName());
-                }
-                stats.setWindStacks(0);
-            }
-
-            // Aplikuj efekty na podstawie aktualnej liczby stacków
-            if (stats.getWindStacks() > 0) {
-                // Dodatkowa prędkość ruchu i szansa na unik zależna od liczby stacków
-                double movementBonus = stats.getWindStacks(); // +1% per stack
-                double evadeBonus = stats.getWindStacks();    // +1% per stack
-
-                // Możemy je zastosować przez modyfikatory atrybutów lub przez dodatkowe dane w stats
-                // W zależności od tego, jak zaimplementowany jest system ruchu i uniku
-
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied Wind Stacks effects to " + player.getName() +
-                            ": +" + movementBonus + "% movement speed, +" + evadeBonus + "% evade chance");
-                }
-            }
-        }
-    }
-    // Add this method to initialize periodic tasks for skill effects
     public void initializePeriodicTasks() {
         // Apply regeneration effect every 3 seconds
         Bukkit.getScheduler().runTaskTimer(plugin, this::applyRegenerationEffects, 20L, 60L);
-        Bukkit.getScheduler().runTaskTimer(plugin, this::checkWindStacksEffects, 20L, 20L);
+
+        // Apply other periodic effects every second
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                applyActiveSkillEffects(player);
+            }
+        }, 20L, 20L);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Initialized periodic skill effect tasks");
+        }
     }
 
+    // Add this method to SkillEffectsHandler class
 
+    /**
+     * Register a class handler that will be used for skill effects
+     * @param className The class name (capitalized correctly)
+     * @param handler The handler instance
+     */
+    public void registerClassHandler(String className, BaseSkillEffectsHandler handler) {
+        if (className == null || className.isEmpty() || handler == null) {
+            return;
+        }
+
+        // Normalize class name
+        String normalizedClassName = ClassNameNormalizer.normalize(className);
+
+        classHandlers.put(normalizedClassName, handler);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Registered skill effects handler for class: " + normalizedClassName);
+        }
+    }
+
+    /**
+     * Get the class-specific handler for a player
+     * @param player The player
+     * @return The class handler or null if not found
+     */
+    public BaseSkillEffectsHandler getHandlerForPlayer(Player player) {
+        if (player == null) {
+            return null;
+        }
+
+        UUID playerId = player.getUniqueId();
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+
+        // Normalize class name
+        String normalizedClassName = ClassNameNormalizer.normalize(playerClass);
+
+        return classHandlers.get(normalizedClassName);
+    }
+
+    /**
+     * Apply active skill effects to a player
+     * This is called periodically and after player actions
+     * @param player The player to apply effects to
+     */
+    public void applyActiveSkillEffects(Player player) {
+        if (player == null) {
+            return;
+        }
+
+        UUID playerId = player.getUniqueId();
+        PlayerSkillStats stats = getPlayerStats(player);
+
+        // Apply regeneration effect if needed
+        if (stats.hasRegenerationEffect()) {
+            player.addPotionEffect(new PotionEffect(
+                    PotionEffectType.REGENERATION,
+                    60, // 3 seconds
+                    0,  // Level 1
+                    false, // No particles
+                    false, // No icon
+                    true   // Show particles
+            ));
+        }
+
+        // Let class-specific handler apply its effects
+        BaseSkillEffectsHandler handler = getHandlerForPlayer(player);
+        if (handler != null) {
+            // For handlers with periodic checks
+            if (handler instanceof RangerSkillEffectsHandler) {
+                ((RangerSkillEffectsHandler) handler).checkWindStacksEffects(player, stats);
+            }
+
+            // Add more class-specific periodic effects as needed
+        }
+    }
 }

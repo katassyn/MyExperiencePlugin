@@ -99,6 +99,10 @@ commands:
     description: Manually apply all skill effects
     usage: /applyskills
     permission: myplugin.applyskills
+  refreshskills:
+    description: Refresh all skill effects for a player
+    usage: /refreshskills [debug]
+    permission: myplugin.refreshskills
 # Add these permissions to your plugin.yml (if you have a permissions section)
 
 permissions:

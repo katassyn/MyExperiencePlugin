@@ -206,6 +206,29 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 return true;
             }
         });
+        // Let's add a command to manually refresh skill effects for debugging
+        getCommand("refreshskills").setExecutor((sender, cmd, label, args) -> {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                skillEffectsHandler.refreshPlayerStats(player);
+                player.sendMessage("§aYour skill effects have been refreshed!");
+
+                if (args.length > 0 && args[0].equalsIgnoreCase("debug")) {
+                    // Use the fully qualified class name for PlayerSkillStats
+                    SkillEffectsHandler.PlayerSkillStats stats = skillEffectsHandler.getPlayerStats(player);
+                    player.sendMessage("§bCurrent stats:");
+                    player.sendMessage("§7 - HP Bonus: §f" + stats.getMaxHealthBonus());
+                    player.sendMessage("§7 - Damage Bonus: §f" + stats.getBonusDamage());
+                    player.sendMessage("§7 - Damage Multiplier: §f" + String.format("%.2f", stats.getDamageMultiplier()) + "x");
+                    player.sendMessage("§7 - Evade Chance: §f" + stats.getEvadeChance() + "%");
+                    player.sendMessage("§7 - Shield Block: §f" + stats.getShieldBlockChance() + "%");
+                }
+                return true;
+            } else {
+                sender.sendMessage("§cThis command can only be run by a player.");
+                return true;
+            }
+        });
 
     }
     @Override

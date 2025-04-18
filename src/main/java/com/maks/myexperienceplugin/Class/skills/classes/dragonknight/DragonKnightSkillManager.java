@@ -16,7 +16,7 @@ public class DragonKnightSkillManager extends BaseSkillManager {
 
     @Override
     protected void initializeSkills() {
-        // Create nodes based on DragonKnight.md
+        // Create nodes based on DragonKnight.md - FULLY IMPLEMENTED
         SkillNode node1 = new SkillNode(1, "Draconic Defense", "+3% defense", 1,
                 Material.SHIELD, 1, player -> {
             player.sendMessage(ChatColor.RED + "Your scales harden!");
@@ -144,33 +144,42 @@ public class DragonKnightSkillManager extends BaseSkillManager {
         skillNodes.put(12, node12);
         skillNodes.put(13, node13);
         skillNodes.put(14, node14);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Initialized DragonKnight skill manager with " + skillNodes.size() + " skills");
+        }
     }
 
     @Override
     protected void setupTreeStructure(SkillTree tree) {
-        // Definiujemy węzły startowe
+        // Define root nodes - these are the starting points of the tree
         tree.addRootNode(1);
         tree.addRootNode(2);
         tree.addRootNode(3);
 
-        // Łączymy węzły zgodnie z diagramem Drzewko Klas.md
+        // Set up connections based on DragonKnight.md and Drzewko Klas.md
+        // Path 1: Draconic Defense branch
         tree.connectNodes(1, 4);
         tree.connectNodes(4, 7);
-        tree.connectNodes(4, 8);
         tree.connectNodes(7, 12);
 
+        // Path 2: Battle Rhythm branch
         tree.connectNodes(2, 5);
         tree.connectNodes(5, 9);
         tree.connectNodes(9, 13);
-        tree.connectNodes(13, 14);  // FIXED: Connect 13 to 14 as per diagram
+        tree.connectNodes(13, 14);
 
+        // Path 3: Dragon's Might branch
         tree.connectNodes(3, 6);
         tree.connectNodes(6, 10);
         tree.connectNodes(6, 11);
-        // tree.connectNodes(11, 14);  // REMOVED: This incorrect connection
+
+        // Connect nodes 4 to 8 as well
+        tree.connectNodes(4, 8);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Skonfigurowano strukturę drzewka umiejętności dla klasy " + className);
+            plugin.getLogger().info("DragonKnight skill tree structure configured with " +
+                    tree.getRootNodeIds().size() + " root nodes and 11 connections");
         }
     }
 
@@ -189,25 +198,25 @@ public class DragonKnightSkillManager extends BaseSkillManager {
                 break;
             case 5: // +1% ms (1/2)
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% movement speed to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + purchaseCount + "% movement speed to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 8: // +2hp (1/2)
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +2 HP to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (2 * purchaseCount) + " HP to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 9: // +1% luck (1/2)
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% luck to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + purchaseCount + "% luck to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 10: // +7 dmg (1/2)
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +7 damage to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (7 * purchaseCount) + " damage to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
@@ -226,12 +235,17 @@ public class DragonKnightSkillManager extends BaseSkillManager {
                     plugin.getLogger().info("Applied +5% shield block chance to " + player.getName());
                 }
                 break;
+            default:
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Skill " + skillId + " effect will be handled by event handler");
+                }
+                break;
         }
     }
 
     @Override
     public boolean isMultiPurchaseDiscountSkill(int skillId) {
-        // List of DragonKnight skills with (1/X) notation that have special cost structure
+        // DragonKnight skills with (1/X) notation - can be purchased multiple times
         return skillId == 5 || skillId == 8 || skillId == 9 || skillId == 10;
     }
 }

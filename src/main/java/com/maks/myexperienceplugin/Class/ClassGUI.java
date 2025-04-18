@@ -22,6 +22,8 @@ public class ClassGUI {
     /**
      * Called when the player has "NoClass" and needs to choose
      */
+// Updated openBaseClassGUI method for ClassGUI.java
+
     public void openBaseClassGUI(Player player) {
         plugin.getLogger().info("[DEBUG] ClassGUI: Creating base class inventory for " + player.getName());
 
@@ -38,10 +40,10 @@ public class ClassGUI {
         ));
         ranger.setItemMeta(rangerMeta);
 
-        // Dragonknight
+        // DragonKnight - Ensure proper capitalization
         ItemStack dragonknight = new ItemStack(org.bukkit.Material.IRON_SWORD);
         ItemMeta dkMeta = dragonknight.getItemMeta();
-        dkMeta.setDisplayName(ChatColor.RED + "Dragonknight");
+        dkMeta.setDisplayName(ChatColor.RED + "DragonKnight"); // Consistent capitalization
         dkMeta.setLore(Arrays.asList(
                 ChatColor.GRAY + "A mighty frontline fighter",
                 ChatColor.GRAY + "Strong defensive capabilities"
@@ -51,7 +53,7 @@ public class ClassGUI {
         // Spellweaver
         ItemStack spellweaver = new ItemStack(org.bukkit.Material.BLAZE_ROD);
         ItemMeta swMeta = spellweaver.getItemMeta();
-        swMeta.setDisplayName(ChatColor.DARK_PURPLE + "Spellweaver");
+        swMeta.setDisplayName(ChatColor.DARK_PURPLE + "SpellWeaver"); // Consistent capitalization
         swMeta.setLore(Arrays.asList(
                 ChatColor.GRAY + "A master of arcane arts",
                 ChatColor.GRAY + "Focuses on ranged spell damage",
@@ -79,7 +81,6 @@ public class ClassGUI {
             plugin.getLogger().info("[DEBUG] ClassGUI: openInventory call completed for " + player.getName());
         });
     }
-
     /**
      * Called when the player hits >=20, has a base class, but no ascendancy
      */
