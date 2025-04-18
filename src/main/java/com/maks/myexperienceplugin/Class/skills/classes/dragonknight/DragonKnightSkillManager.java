@@ -162,11 +162,12 @@ public class DragonKnightSkillManager extends BaseSkillManager {
         tree.connectNodes(2, 5);
         tree.connectNodes(5, 9);
         tree.connectNodes(9, 13);
+        tree.connectNodes(13, 14);  // FIXED: Connect 13 to 14 as per diagram
 
         tree.connectNodes(3, 6);
         tree.connectNodes(6, 10);
         tree.connectNodes(6, 11);
-        tree.connectNodes(11, 14);
+        // tree.connectNodes(11, 14);  // REMOVED: This incorrect connection
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Skonfigurowano strukturę drzewka umiejętności dla klasy " + className);

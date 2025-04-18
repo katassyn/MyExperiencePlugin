@@ -1,5 +1,6 @@
 package com.maks.myexperienceplugin.Class.skills.classes.ranger;
 
+import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.base.BaseSkillManager;
 import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
 import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
@@ -66,7 +67,8 @@ public class RangerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node7 = new SkillNode(7, "Wind Stacks", "After killing a mob gain wind stacks, each +1% ms and evade", 3,
+// W RangerSkillManager.initializeSkills()
+        SkillNode node7 = new SkillNode(7, "Wind Stacks", "After killing a mob gain wind stacks, each +1% ms and evade (max 3 stacks)", 3,
                 Material.PHANTOM_MEMBRANE, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "You harness the power of the wind!");
             if (debuggingFlag == 1) {
@@ -163,11 +165,12 @@ public class RangerSkillManager extends BaseSkillManager {
         tree.connectNodes(2, 5);
         tree.connectNodes(5, 9);
         tree.connectNodes(9, 13);
+        tree.connectNodes(13, 14);  // FIXED: Connect 13 to 14 as per diagram
 
         tree.connectNodes(3, 6);
         tree.connectNodes(6, 10);
         tree.connectNodes(6, 11);
-        tree.connectNodes(11, 14);
+        // tree.connectNodes(11, 14);  // REMOVED: This incorrect connection
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Skonfigurowano strukturę drzewka umiejętności dla klasy " + className);
@@ -225,6 +228,15 @@ public class RangerSkillManager extends BaseSkillManager {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +1% damage multiplier to " + player.getName() +
                             " (purchase " + purchaseCount + "/3)");
+                }
+                // W metodzie applySkillStats w RangerSkillManager
+            case 12: // Wind Mastery: +2 max stacks of wind
+                // Zwiększ maksymalną liczbę stacków
+                SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+                stats.setMaxWindStacks(5); // Bazowe 3 + 2 z umiejętności Wind Mastery
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Applied Wind Mastery: +2 max stacks of wind to " + player.getName() +
+                            ". Max stacks: " + stats.getMaxWindStacks());
                 }
                 break;
             case 13: // +1% def (1/2)

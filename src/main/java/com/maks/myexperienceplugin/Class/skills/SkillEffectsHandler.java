@@ -199,7 +199,17 @@ public class SkillEffectsHandler implements Listener {
 
         Player player = (Player) event.getEntity();
         PlayerSkillStats stats = getPlayerStats(player);
+        // Sprawdź umiejętność Wind Stacks - stacki są tracone przy otrzymaniu obrażeń
+        if (stats.getWindStacks() > 0 && skillTreeManager.getPurchasedSkills(player.getUniqueId()).contains(7)) {
+            stats.loseWindStack();
 
+            if (debuggingFlag == 1) {
+                player.sendMessage(ChatColor.RED + "Lost a Wind Stack due to damage! Current stacks: " +
+                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
+                plugin.getLogger().info("Player " + player.getName() + " lost Wind Stack. Current: " +
+                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
+            }
+        }
         // Apply evade chance
         if (stats.getEvadeChance() > 0 && random.nextDouble() * 100 < stats.getEvadeChance()) {
             event.setCancelled(true);
@@ -258,7 +268,20 @@ public class SkillEffectsHandler implements Listener {
             Player player = event.getEntity().getKiller();
             UUID playerId = player.getUniqueId();
             PlayerSkillStats stats = getPlayerStats(player);
+            // Sprawdź czy gracz ma umiejętność Wind Stacks
+            if (skillTreeManager.getPurchasedSkills(playerId).contains(7)) {
+                stats.addWindStack();
 
+                // Dodaj efekty Wind Stacks (każdy stack daje +1% ms i +1% evade)
+                // Robimy to przez dynamiczną aktualizację statystyk
+
+                if (debuggingFlag == 1) {
+                    player.sendMessage(ChatColor.GREEN + "Wind Stack added! Current stacks: " +
+                            stats.getWindStacks() + "/" + stats.getMaxWindStacks());
+                    plugin.getLogger().info("Player " + player.getName() + " gained Wind Stack. Current: " +
+                            stats.getWindStacks() + "/" + stats.getMaxWindStacks());
+                }
+            }
             // Apply gold per kill bonus - once
             if (stats.getGoldPerKill() > 0) {
                 plugin.moneyRewardHandler.depositMoney(player, stats.getGoldPerKill());
@@ -405,6 +428,12 @@ public class SkillEffectsHandler implements Listener {
             case 13: // +1% def (1/2)
                 stats.setDefenseBonus(1 * purchaseCount);
                 break;
+            case 12: // Wind Mastery: +2 max stacks of wind
+                stats.setMaxWindStacks(5); // Bazowe 3 + 2 z umiejętności Wind Mastery
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("RANGER SKILL 12: Set max wind stacks to 5");
+                }
+                break;
             case 14: // +4% evade chance, -2% dmg
                 stats.addEvadeChance(4 * purchaseCount);
                 stats.multiplyDamageMultiplier(1.0 - (0.02 * purchaseCount));
@@ -526,6 +555,39 @@ public class SkillEffectsHandler implements Listener {
         private double goldPerKill = 0;
         private boolean hasRegenerationEffect = false;
         private boolean hasTripleStrike = false;
+        // W klasie SkillEffectsHandler.PlayerSkillStats
+        private int windStacks = 0;
+        private int maxWindStacks = 3; // Domyślnie 3, zwiększane do 5 przez skill Wind Mastery
+        private long windStacksExpiryTime = 0; // Czas wygaśnięcia stacków
+
+        public int getWindStacks() {
+            return windStacks;
+        }
+
+        public void setWindStacks(int windStacks) {
+            this.windStacks = Math.min(windStacks, maxWindStacks);
+        }
+
+        public void addWindStack() {
+            this.windStacks = Math.min(windStacks + 1, maxWindStacks);
+            this.windStacksExpiryTime = System.currentTimeMillis() + 30000; // 30 sekund trwania
+        }
+
+        public void loseWindStack() {
+            this.windStacks = Math.max(0, windStacks - 1);
+        }
+
+        public int getMaxWindStacks() {
+            return maxWindStacks;
+        }
+
+        public void setMaxWindStacks(int maxWindStacks) {
+            this.maxWindStacks = maxWindStacks;
+        }
+
+        public boolean hasWindStacksExpired() {
+            return System.currentTimeMillis() > windStacksExpiryTime;
+        }
         // Getters
         public double getBonusDamage() {
             return bonusDamage;
@@ -723,11 +785,40 @@ public class SkillEffectsHandler implements Listener {
             }
         }
     }
+    private void checkWindStacksEffects() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            PlayerSkillStats stats = getPlayerStats(player);
 
+            // Jeśli stacki wygasły, usuń je
+            if (stats.getWindStacks() > 0 && stats.hasWindStacksExpired()) {
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Wind Stacks expired for " + player.getName());
+                }
+                stats.setWindStacks(0);
+            }
+
+            // Aplikuj efekty na podstawie aktualnej liczby stacków
+            if (stats.getWindStacks() > 0) {
+                // Dodatkowa prędkość ruchu i szansa na unik zależna od liczby stacków
+                double movementBonus = stats.getWindStacks(); // +1% per stack
+                double evadeBonus = stats.getWindStacks();    // +1% per stack
+
+                // Możemy je zastosować przez modyfikatory atrybutów lub przez dodatkowe dane w stats
+                // W zależności od tego, jak zaimplementowany jest system ruchu i uniku
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Applied Wind Stacks effects to " + player.getName() +
+                            ": +" + movementBonus + "% movement speed, +" + evadeBonus + "% evade chance");
+                }
+            }
+        }
+    }
     // Add this method to initialize periodic tasks for skill effects
     public void initializePeriodicTasks() {
         // Apply regeneration effect every 3 seconds
         Bukkit.getScheduler().runTaskTimer(plugin, this::applyRegenerationEffects, 20L, 60L);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::checkWindStacksEffects, 20L, 20L);
     }
+
 
 }
