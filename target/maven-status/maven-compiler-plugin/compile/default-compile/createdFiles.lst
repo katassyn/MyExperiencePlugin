@@ -54,6 +54,7 @@ com\maks\myexperienceplugin\alchemy\SingleTargetLuckEffect.class
 com\maks\myexperienceplugin\alchemy\TotemManager.class
 com\maks\myexperienceplugin\alchemy\PhycisMagnetEffect.class
 com\maks\myexperienceplugin\Class\PeriodicClassReminder.class
+com\maks\myexperienceplugin\utils\ActionBarUtils.class
 com\maks\myexperienceplugin\Class\ClassGUIListener.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeGUIListener.class
 com\maks\myexperienceplugin\alchemy\AlchemyLevelConfig.class

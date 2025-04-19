@@ -121,7 +121,7 @@ public class DragonKnightSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node14 = new SkillNode(14, "Shield Mastery", "+5% shield block chance", 3,
+        SkillNode node14 = new SkillNode(14, "Shield Mastery", "+5% shield block chance (SHIELD BLOCK = 50% damage reduction)", 3,
                 Material.SHIELD, 1, player -> {
             player.sendMessage(ChatColor.RED + "You master the art of blocking!");
             if (debuggingFlag == 1) {

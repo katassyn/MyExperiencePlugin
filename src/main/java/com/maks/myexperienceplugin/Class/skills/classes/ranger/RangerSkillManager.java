@@ -43,7 +43,7 @@ public class RangerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node4 = new SkillNode(4, "Evasion Training", "+2% evade chance", 2,
+        SkillNode node4 = new SkillNode(4, "Evasion Training", "+2% evade chance (EVADE = 100% damage avoided)", 2,
                 Material.FEATHER, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "You become more evasive!");
             if (debuggingFlag == 1) {
@@ -76,7 +76,7 @@ public class RangerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node8 = new SkillNode(8, "Enhanced Evasion", "+1% evade chance", 2,
+        SkillNode node8 = new SkillNode(8, "Enhanced Evasion", "+1% evade chance (EVADE = 100% damage avoided)", 2,
                 Material.WHITE_WOOL, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "Your evasive movements improve!");
             if (debuggingFlag == 1) {
@@ -124,7 +124,7 @@ public class RangerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node14 = new SkillNode(14, "Shadow Step", "+4% evade chance, -2% dmg", 3,
+        SkillNode node14 = new SkillNode(14, "Shadow Step", "+4% evade chance(EVADE = 100% damage avoided), -2% dmg ", 3,
                 Material.BLACK_WOOL, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "You learn to move like a shadow!");
             if (debuggingFlag == 1) {

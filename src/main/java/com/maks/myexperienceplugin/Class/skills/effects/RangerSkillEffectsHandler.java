@@ -2,6 +2,7 @@ package com.maks.myexperienceplugin.Class.skills.effects;
 
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -20,6 +21,7 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Map<UUID, Integer> hitCounters = new HashMap<>();
     private final Map<UUID, UUID> lastTargetMap = new HashMap<>();
     private final Random random = new Random();
+    private final int debuggingFlag = 1; // Set to 0 in production
 
     public RangerSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -119,29 +121,41 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void handleEntityDamage(EntityDamageEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         // Check Wind Stacks - stacks are lost when taking damage
         if (stats.getWindStacks() > 0 && plugin.getSkillTreeManager().getPurchasedSkills(player.getUniqueId()).contains(7)) {
+            int oldStacks = stats.getWindStacks();
             stats.loseWindStack();
+            int newStacks = stats.getWindStacks();
+
+            // Only notify when all stacks are lost
+            if (newStacks == 0 && oldStacks > 0) {
+                ActionBarUtils.sendActionBar(player,
+                        ChatColor.YELLOW + "Wind Stacks lost!");
+            }
 
             if (debuggingFlag == 1) {
-                player.sendMessage(ChatColor.RED + "Lost a Wind Stack due to damage! Current stacks: " +
-                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
                 plugin.getLogger().info("Player " + player.getName() + " lost Wind Stack. Current: " +
                         stats.getWindStacks() + "/" + stats.getMaxWindStacks());
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Wind Stack lost. " + oldStacks + " → " + newStacks);
             }
         }
 
-        // Apply evade chance
+        // Apply evade chance - important defensive ability, always notify
         if (stats.getEvadeChance() > 0 && random.nextDouble() * 100 < stats.getEvadeChance()) {
             event.setCancelled(true);
-            player.sendMessage("§a§oYou evaded the attack!");
+
+            // Important survival ability - show notification
+            ActionBarUtils.sendActionBar(player,
+                    ChatColor.GREEN + "Evaded!");
+
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " evaded attack with " + stats.getEvadeChance() + "% chance");
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Attack evaded with " + stats.getEvadeChance() + "% chance");
             }
         }
     }
 
     @Override
     public void handleEntityDamageByEntity(EntityDamageByEntityEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
-        // Handle Triple Strike
+        // Handle Triple Strike - don't show notifications to player
         if (stats.hasTripleStrike()) {
             UUID playerId = player.getUniqueId();
             UUID targetId = event.getEntity().getUniqueId();
@@ -151,6 +165,10 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // Reset counter if target changed
                 hitCounters.put(playerId, 1);
                 lastTargetMap.put(playerId, targetId);
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Triple Strike counter reset due to target change for " + player.getName());
+                }
                 return;
             }
 
@@ -162,15 +180,16 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
             // Every third hit deals extra damage
             if (hitCount >= 3) {
                 // Add 10 damage on third hit
-                event.setDamage(event.getDamage() + 10.0);
+                double oldDamage = event.getDamage();
+                event.setDamage(oldDamage + 10.0);
 
                 // Reset counter
                 hitCounters.put(playerId, 0);
 
                 if (debuggingFlag == 1) {
-                    player.sendMessage(ChatColor.GREEN + "Triple Strike! +10 damage dealt!");
                     plugin.getLogger().info("Triple Strike activated for " + player.getName() +
                             ", adding 10 extra damage. Total damage: " + event.getDamage());
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Triple Strike! Damage: " + oldDamage + " → " + event.getDamage());
                 }
             }
         }
@@ -180,26 +199,33 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void handleEntityDeath(EntityDeathEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
 
-        // Check for Wind Stacks skill
+        // Check for Wind Stacks skill - important stack-based effect
         if (plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(7)) {
+            int oldStacks = stats.getWindStacks();
             stats.addWindStack();
+            int newStacks = stats.getWindStacks();
+
+            // Only notify when reaching max stacks
+            if (newStacks > oldStacks && newStacks == stats.getMaxWindStacks()) {
+                ActionBarUtils.sendActionBar(player,
+                        ChatColor.GREEN + "Wind Stacks MAX! (" + newStacks + "/" + stats.getMaxWindStacks() + ")");
+            }
 
             if (debuggingFlag == 1) {
-                player.sendMessage(ChatColor.GREEN + "Wind Stack added! Current stacks: " +
-                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
                 plugin.getLogger().info("Player " + player.getName() + " gained Wind Stack. Current: " +
                         stats.getWindStacks() + "/" + stats.getMaxWindStacks());
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Wind Stack gained. " + oldStacks + " → " + newStacks);
             }
         }
 
-        // Apply gold per kill bonus
+        // Apply gold per kill bonus - don't notify, minor resource gain
         if (stats.getGoldPerKill() > 0) {
             plugin.moneyRewardHandler.depositMoney(player, stats.getGoldPerKill());
-            player.sendMessage("§6+" + stats.getGoldPerKill() + "$ from trophy hunter skill!");
 
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " received " +
                         stats.getGoldPerKill() + "$ from Trophy Hunter skill");
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Received " + stats.getGoldPerKill() + "$ from Trophy Hunter");
             }
         }
     }
@@ -210,21 +236,16 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void checkWindStacksEffects(Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         // Check if stacks have expired
         if (stats.getWindStacks() > 0 && stats.hasWindStacksExpired()) {
+            // Notify when losing all stacks
+            ActionBarUtils.sendActionBar(player,
+                    ChatColor.GRAY + "Wind Stacks expired");
+
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Wind Stacks expired for " + player.getName());
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Wind Stacks expired");
             }
             stats.setWindStacks(0);
             return;
-        }
-
-        // Apply effects based on current stack count
-        if (stats.getWindStacks() > 0) {
-            // Nothing to do here as the wind stack bonuses
-            // are already calculated in the PlayerSkillStats object
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("Wind Stacks active for " + player.getName() + ": " +
-                        stats.getWindStacks() + "/" + stats.getMaxWindStacks());
-            }
         }
     }
 }
