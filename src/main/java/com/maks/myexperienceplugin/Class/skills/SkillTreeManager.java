@@ -7,6 +7,7 @@ import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.DragonKnigh
 import com.maks.myexperienceplugin.Class.skills.classes.ranger.RangerSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy.BeastmasterSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.BerserkerSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.SpellWeaverSkillManager;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
@@ -75,11 +76,13 @@ public class SkillTreeManager {
         RangerSkillManager rangerManager = new RangerSkillManager(plugin);
         DragonKnightSkillManager dragonKnightManager = new DragonKnightSkillManager(plugin);
         // Add SpellweaverSkillManager when implemented
+        SpellWeaverSkillManager spellWeaverManager = new SpellWeaverSkillManager(plugin);
 
         // Add to map
         classManagers.put("Ranger", rangerManager);
         classManagers.put("DragonKnight", dragonKnightManager);
         // Add SpellweaverSkillManager when implemented
+        classManagers.put("SpellWeaver", spellWeaverManager);
 
         // Create ascendancy managers
         // Ranger ascendancies

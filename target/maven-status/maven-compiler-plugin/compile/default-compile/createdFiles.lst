@@ -14,6 +14,7 @@ com\maks\myexperienceplugin\Class\skills\effects\RangerSkillEffectsHandler.class
 com\maks\myexperienceplugin\alchemy\TonicLuckEffect.class
 com\maks\myexperienceplugin\exp\ReloadBonusCommand.class
 com\maks\myexperienceplugin\alchemy\NightVisionEffect.class
+com\maks\myexperienceplugin\Class\skills\classes\spellweaver\SpellWeaverSkillManager.class
 com\maks\myexperienceplugin\alchemy\TonicHealthEffect.class
 com\maks\myexperienceplugin\alchemy\ImmunityEffect.class
 com\maks\myexperienceplugin\Class\ClassGUI.class
@@ -42,6 +43,7 @@ com\maks\myexperienceplugin\alchemy\PhysisPercentageExpEffect.class
 com\maks\myexperienceplugin\exp\ChatLevelHandler.class
 com\maks\myexperienceplugin\Class\ChoseClassCommand.class
 com\maks\myexperienceplugin\Class\SkillTreeCommand.class
+com\maks\myexperienceplugin\Class\skills\effects\SpellWeaverSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUI.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUIListener.class
 com\maks\myexperienceplugin\alchemy\AbsorptionEffect.class

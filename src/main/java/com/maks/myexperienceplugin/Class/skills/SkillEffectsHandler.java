@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.ClassNameNormalizer;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.DragonKnightSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.SpellWeaverSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
@@ -55,6 +56,8 @@ public class SkillEffectsHandler implements Listener {
     // Add a field to track if the listener is currently handling an event
     private boolean isHandlingSkillEvent = false;
 
+    private final SpellWeaverSkillEffectsHandler spellWeaverHandler;
+
     public SkillEffectsHandler(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager) {
         this.plugin = plugin;
         this.skillTreeManager = skillTreeManager;
@@ -62,10 +65,12 @@ public class SkillEffectsHandler implements Listener {
         // Initialize class-specific handlers
         this.rangerHandler = new RangerSkillEffectsHandler(plugin);
         this.dragonKnightHandler = new DragonKnightSkillEffectsHandler(plugin);
+        this.spellWeaverHandler = new SpellWeaverSkillEffectsHandler(plugin);
 
         // Register handlers in the map
         classHandlers.put("Ranger", rangerHandler);
         classHandlers.put("DragonKnight", dragonKnightHandler);
+        classHandlers.put("SpellWeaver", spellWeaverHandler);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("SkillEffectsHandler initialized with handlers for: " +
@@ -73,23 +78,22 @@ public class SkillEffectsHandler implements Listener {
         }
     }
 
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
 
         // Completely recalculate all stats on join
         recalculateAllStats(player);
 
+        // Initialize cooldowns for spell-based classes
+        if ("SpellWeaver".equals(playerClass)) {
+            spellWeaverHandler.initializePlayerSpellCooldowns(player);
+        }
+
         if (debuggingFlag == 1) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                plugin.getLogger().info("Applied fresh stats for " + player.getName());
-                PlayerSkillStats stats = playerStatsCache.get(player.getUniqueId());
-                if (stats != null) {
-                    plugin.getLogger().info("MaxHealthBonus: " + stats.getMaxHealthBonus());
-                    plugin.getLogger().info("BonusDamage: " + stats.getBonusDamage());
-                    plugin.getLogger().info("Current max health: " + player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-                }
-            }, 20L);
+            // Debug log output
         }
     }
 
@@ -97,14 +101,16 @@ public class SkillEffectsHandler implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
 
         // Clear player data from cache
         playerStatsCache.remove(playerId);
 
         // Clear class-specific handler data
-        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
-        if (playerClass.equals("DragonKnight")) {
+        if ("DragonKnight".equals(playerClass)) {
             dragonKnightHandler.clearPlayerData(playerId);
+        } else if ("SpellWeaver".equals(playerClass)) {
+            spellWeaverHandler.clearPlayerData(playerId);
         }
 
         if (debuggingFlag == 1) {
@@ -391,7 +397,53 @@ public class SkillEffectsHandler implements Listener {
         private int windStacks = 0;
         private int maxWindStacks = 3; // Default 3, increased to 5 by Wind Mastery skill
         private long windStacksExpiryTime = 0; // Time when stacks expire
+        private double spellDamageBonus = 0;
+        private double spellDamageMultiplier = 1.0;
+        private double spellCriticalChance = 0;
+        private boolean hasFireResistance = false;
+        public double getSpellDamageBonus() {
+            return spellDamageBonus;
+        }
 
+        public void setSpellDamageBonus(double amount) {
+            this.spellDamageBonus = amount;
+        }
+
+        public void addSpellDamageBonus(double amount) {
+            this.spellDamageBonus += amount;
+        }
+
+        public double getSpellDamageMultiplier() {
+            return spellDamageMultiplier;
+        }
+
+        public void setSpellDamageMultiplier(double amount) {
+            this.spellDamageMultiplier = amount;
+        }
+
+        public void multiplySpellDamageMultiplier(double factor) {
+            this.spellDamageMultiplier *= factor;
+        }
+
+        public double getSpellCriticalChance() {
+            return spellCriticalChance;
+        }
+
+        public void setSpellCriticalChance(double amount) {
+            this.spellCriticalChance = amount;
+        }
+
+        public void addSpellCriticalChance(double amount) {
+            this.spellCriticalChance += amount;
+        }
+
+        public boolean hasFireResistance() {
+            return hasFireResistance;
+        }
+
+        public void setHasFireResistance(boolean hasFireResistance) {
+            this.hasFireResistance = hasFireResistance;
+        }
         public int getWindStacks() {
             return windStacks;
         }
@@ -573,6 +625,15 @@ public class SkillEffectsHandler implements Listener {
     public void initializePeriodicTasks() {
         // Apply regeneration effect every 3 seconds
         Bukkit.getScheduler().runTaskTimer(plugin, this::applyRegenerationEffects, 20L, 60L);
+
+        // Apply SpellWeaver fire resistance every 5 seconds
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (plugin.getClassManager().getPlayerClass(player.getUniqueId()).equals("SpellWeaver")) {
+                    spellWeaverHandler.applyFireResistanceEffect(player);
+                }
+            }
+        }, 20L, 100L);
 
         // Apply other periodic effects every second
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {

@@ -2,6 +2,7 @@ package com.maks.myexperienceplugin.Class.skills;
 
 import com.maks.myexperienceplugin.Class.skills.effects.DragonKnightSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.SpellWeaverSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
 
@@ -48,13 +49,15 @@ public class SkillSystemIntegrator {
         // Create instances
         RangerSkillEffectsHandler rangerHandler = new RangerSkillEffectsHandler(plugin);
         DragonKnightSkillEffectsHandler dragonKnightHandler = new DragonKnightSkillEffectsHandler(plugin);
+        SpellWeaverSkillEffectsHandler spellWeaverHandler = new SpellWeaverSkillEffectsHandler(plugin);
 
         // Register with main handler
         skillEffectsHandler.registerClassHandler("Ranger", rangerHandler);
         skillEffectsHandler.registerClassHandler("DragonKnight", dragonKnightHandler);
+        skillEffectsHandler.registerClassHandler("SpellWeaver", spellWeaverHandler);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("SkillSystemIntegrator: Registered skill effect handlers for Ranger and DragonKnight");
+            plugin.getLogger().info("SkillSystemIntegrator: Registered skill effect handlers for all base classes");
         }
     }
 }
