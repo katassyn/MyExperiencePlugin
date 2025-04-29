@@ -5,6 +5,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class TonicHealthEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Max health increased by " + healthBonus);
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Max health increased by " + healthBonus);
         modifier = new AttributeModifier(UUID.randomUUID(), effectName, healthBonus, AttributeModifier.Operation.ADD_NUMBER);
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).addModifier(modifier);
 
@@ -32,6 +33,6 @@ public class TonicHealthEffect extends AlchemyEffect {
         if (modifier != null) {
             player.getAttribute(Attribute.GENERIC_MAX_HEALTH).removeModifier(modifier);
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Health bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Health bonus expired.");
     }
 }

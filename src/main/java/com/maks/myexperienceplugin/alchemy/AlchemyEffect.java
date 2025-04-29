@@ -2,11 +2,11 @@ package com.maks.myexperienceplugin.alchemy;
 
 import org.bukkit.entity.Player;
 
-public abstract class AlchemyEffect {
+public abstract class AlchemyEffect implements AlchemyManager.AlchemyEffectWithDuration {
     protected final Player player;
-    protected final long durationMillis;   // czas trwania efektu w milisekundach (0 = efekt natychmiastowy)
-    protected final long cooldownMillis;   // cooldown (czas, przez który nie można ponownie użyć mikstury z tej kategorii)
-    protected final String effectName;     // nazwa efektu, np. "Healing Potion", "Tonic Damage", itp.
+    protected final long durationMillis;   // duration in milliseconds (0 = instant effect)
+    protected final long cooldownMillis;   // cooldown (time after which you can't reuse a potion in this category)
+    protected final String effectName;     // effect name, e.g. "Healing Potion", "Tonic Damage", etc.
 
     public AlchemyEffect(Player player, long durationMillis, long cooldownMillis, String effectName) {
         this.player = player;
@@ -15,10 +15,10 @@ public abstract class AlchemyEffect {
         this.effectName = effectName;
     }
 
-    /** Metoda wywoływana przy rozpoczęciu efektu */
+    /** Method called at the start of effect */
     public abstract void apply();
 
-    /** Metoda wywoływana po zakończeniu efektu */
+    /** Method called when effect ends */
     public abstract void remove();
 
     public String getEffectName() {
@@ -27,5 +27,10 @@ public abstract class AlchemyEffect {
 
     public long getCooldownMillis() {
         return cooldownMillis;
+    }
+
+    @Override
+    public long getDuration() {
+        return durationMillis;
     }
 }

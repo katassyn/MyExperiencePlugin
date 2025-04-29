@@ -3,10 +3,7 @@ package com.maks.myexperienceplugin;
 import com.maks.myexperienceplugin.Class.*;
 import com.maks.myexperienceplugin.Class.skills.*;
 import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUIListener;
-import com.maks.myexperienceplugin.alchemy.AlchemyItemListener;
-import com.maks.myexperienceplugin.alchemy.AlchemyLevelConfig;
-import com.maks.myexperienceplugin.alchemy.AlchemyResetCommand;
-import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
+import com.maks.myexperienceplugin.alchemy.*;
 import com.maks.myexperienceplugin.exp.*;
 import com.maks.myexperienceplugin.listener.*;
 import com.maks.myexperienceplugin.party.PartyCommand;
@@ -100,6 +97,10 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         moneyRewardHandler = new MoneyRewardHandler(economy, this);
         playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
         alchemyLevelConfig = new AlchemyLevelConfig(this);
+        AlchemyManager.getInstance().initialize(this);
+
+        // Register the player join alchemy listener
+        getServer().getPluginManager().registerEvents(new PlayerJoinAlchemyListener(this), this);
         classManager = new ClassManager(this);
         classGUI = new ClassGUI(this);
 
@@ -168,6 +169,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("chose_class").setExecutor(new ChoseClassCommand(this));
         getCommand("chose_ascendancy").setExecutor(new ChoseAscendancyCommand(this));
         getCommand("alchemy_reset").setExecutor(new AlchemyResetCommand());
+        getCommand("alchemy_cd").setExecutor(new AlchemyCooldownCommand());
 
         // Register commands - Skill system
         getCommand("skilltree").setExecutor(new SkillTreeCommand(this, skillTreeGUI));
@@ -229,7 +231,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 return true;
             }
         });
+// Register the player join alchemy listener
 
+// Add this line to make sure the ActionBarUtils class is loaded
     }
     @Override
     public void onDisable() {
@@ -246,6 +250,11 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             }
         }
 
+        // In onDisable(), add before other shutdown code:
+            getLogger().info("Saving alchemy data before shutdown");
+
+        // Save any remaining alchemy data
+        AlchemyManager.getInstance().saveData();
         Bukkit.getLogger().info("MyExperiencePlugin has been disabled!");
     }
 
@@ -459,6 +468,11 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         if (skillPurchaseManager != null) {
             skillPurchaseManager.cleanup(uuid);
         }
+
+        // AlchemyManager will now handle this instead of clearing effects
+        AlchemyManager.getInstance().handlePlayerDisconnect(player);
+
+
     }
     public SkillTreeManager getSkillTreeManager() {
         return skillTreeManager;

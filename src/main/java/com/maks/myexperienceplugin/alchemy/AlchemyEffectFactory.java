@@ -76,12 +76,13 @@ public class AlchemyEffectFactory {
             case "tonichp_blood":
                 return new TonicHealthEffect(player, 15.0, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Health Tonic [III]");
 
+            // Fixed: These should be percentages, not decimals (0.003 = 0.3%, not 3%)
             case "tonicexp_inf":
-                return new TonicExpEffect(player, 0.001, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Experience Tonic [I]");
+                return new TonicExpEffect(player, 0.00003, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Experience Tonic [I]");
             case "tonicexp_hell":
-                return new TonicExpEffect(player, 0.002, 10 * 60 * 1000, 15 * 60 * 1000, "Great Experience Tonic [II]");
+                return new TonicExpEffect(player, 0.00003, 10 * 60 * 1000, 15 * 60 * 1000, "Great Experience Tonic [II]");
             case "tonicexp_blood":
-                return new TonicExpEffect(player, 0.003, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Experience Tonic [III]");
+                return new TonicExpEffect(player, 0.00003, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Experience Tonic [III]");
 
             case "tonicms_inf":
                 return new TonicMovementSpeedEffect(player, 0.05, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Movement Tonic [I]");
@@ -127,11 +128,11 @@ public class AlchemyEffectFactory {
                 return new PhysisPercentageHealthEffect(player, 0.15, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Health Phycis [III]");
 
             case "phycisexp_inf":
-                return new PhysisPercentageExpEffect(player, 0.05, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Experience Phycis [I]");
+                return new PhysisPercentageExpEffect(player, 0.00003, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Experience Phycis [I]");
             case "phycisexp_hell":
-                return new PhysisPercentageExpEffect(player, 0.10, 10 * 60 * 1000, 15 * 60 * 1000, "Great Experience Phycis [II]");
+                return new PhysisPercentageExpEffect(player, 0.00006, 10 * 60 * 1000, 15 * 60 * 1000, "Great Experience Phycis [II]");
             case "phycisexp_blood":
-                return new PhysisPercentageExpEffect(player, 0.15, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Experience Phycis [III]");
+                return new PhysisPercentageExpEffect(player, 0.00009, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Experience Phycis [III]");
 
             case "phycisms_inf":
                 return new PhysisPercentageMovementEffect(player, 0.05, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Movement Phycis [I]");
@@ -141,11 +142,11 @@ public class AlchemyEffectFactory {
                 return new PhysisPercentageMovementEffect(player, 0.15, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Movement Phycis [III]");
 
             case "phycismagnes_inf":
-                return new PhycisMagnetEffect(player, 15 * 60 * 1000, "Basic Magnet Phycis [I]");
+                return new PhycisMagnetEffect(player, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Magnet Phycis [I]");
             case "phycismagnes_hell":
-                return new PhycisMagnetEffect(player, 15 * 60 * 1000, "Great Magnet Phycis [II]");
+                return new PhycisMagnetEffect(player, 10 * 60 * 1000, 15 * 60 * 1000, "Great Magnet Phycis [II]");
             case "phycismagnes_blood":
-                return new PhycisMagnetEffect(player, 15 * 60 * 1000, "Excellent Magnet Phycis [III]");
+                return new PhycisMagnetEffect(player, 15 * 60 * 1000, 15 * 60 * 1000, "Excellent Magnet Phycis [III]");
 
             case "phycissteal_inf":
                 return new LifestealEffect(player, 0.01, 5 * 60 * 1000, 15 * 60 * 1000, "Basic Lifesteal Phycis [I]");

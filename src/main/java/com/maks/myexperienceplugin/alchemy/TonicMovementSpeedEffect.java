@@ -5,6 +5,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class TonicMovementSpeedEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Movement speed increased by " + bonusSpeed + ".");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Movement speed increased by " + bonusSpeed + ".");
         modifier = new AttributeModifier(UUID.randomUUID(), effectName, bonusSpeed, AttributeModifier.Operation.ADD_NUMBER);
         player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).addModifier(modifier);
         Bukkit.getScheduler().runTaskLater(MyExperiencePlugin.getInstance(), this::remove, durationMillis / 50);
@@ -30,6 +31,6 @@ public class TonicMovementSpeedEffect extends AlchemyEffect {
         if (modifier != null) {
             player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).removeModifier(modifier);
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Movement speed bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Movement speed bonus expired.");
     }
 }

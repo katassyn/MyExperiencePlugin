@@ -7,6 +7,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandle
 import com.maks.myexperienceplugin.Class.skills.effects.SpellWeaverSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
@@ -23,6 +24,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -318,6 +320,7 @@ public class SkillEffectsHandler implements Listener {
     }
 
     // UPDATED: Complete rewrite of calculatePlayerStats with delegation to class-specific handlers
+    // and proper accumulation of bonuses
     public void calculatePlayerStats(Player player) {
         UUID uuid = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(uuid);
@@ -346,13 +349,68 @@ public class SkillEffectsHandler implements Listener {
 
         // Get all purchased skills
         Set<Integer> purchasedSkills = skillTreeManager.getPurchasedSkills(uuid);
+        Map<Integer, Integer> purchaseCounts = skillTreeManager.getPurchaseCountMap(uuid);
+
+        // For tracking total bonus damage for debugging
+        double totalBonusDamage = 0;
 
         // Process all skills through the class handler
         for (int skillId : purchasedSkills) {
             // Only process basic class skills (IDs 1-99)
             if (skillId >= 1 && skillId <= 99) {
-                int purchaseCount = skillTreeManager.getSkillPurchaseCount(uuid, skillId);
-                classHandler.applySkillEffects(stats, skillId, purchaseCount);
+                int count = purchaseCounts.getOrDefault(skillId, 1);
+
+                // Record current damage before applying new effects
+                double previousDamage = stats.getBonusDamage();
+
+                // Apply effect for this skill
+                classHandler.applySkillEffects(stats, skillId, count);
+
+                // Track damage increase for debugging
+                double damageIncrease = stats.getBonusDamage() - previousDamage;
+                if (damageIncrease > 0) {
+                    totalBonusDamage += damageIncrease;
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Skill " + skillId + " added " + damageIncrease +
+                                " damage for player " + player.getName() +
+                                " (purchase count: " + count + ")");
+                    }
+                }
+            }
+        }
+
+        // Process ascendancy skills if applicable
+        if (!ascendancy.isEmpty()) {
+            // Only use handlers registered directly in classHandlers map
+            BaseSkillEffectsHandler ascendancyHandler = classHandlers.get(ascendancy);
+
+            if (ascendancyHandler != null) {
+                for (int skillId : purchasedSkills) {
+                    // Only process ascendancy skills (IDs 100000+)
+                    if (skillId >= 100000) {
+                        int count = purchaseCounts.getOrDefault(skillId, 1);
+
+                        // Record current damage before applying new effects
+                        double previousDamage = stats.getBonusDamage();
+
+                        // Apply effect for this skill
+                        ascendancyHandler.applySkillEffects(stats, skillId, count);
+
+                        // Track damage increase for debugging
+                        double damageIncrease = stats.getBonusDamage() - previousDamage;
+                        if (damageIncrease > 0) {
+                            totalBonusDamage += damageIncrease;
+                            if (debuggingFlag == 1) {
+                                plugin.getLogger().info("Ascendancy skill " + skillId + " added " + damageIncrease +
+                                        " damage for player " + player.getName() +
+                                        " (purchase count: " + count + ")");
+                            }
+                        }
+                    }
+                }
+            } else if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No handler found for ascendancy: " + ascendancy +
+                        ". Make sure to register handlers with registerClassHandler() method.");
             }
         }
 
@@ -362,7 +420,7 @@ public class SkillEffectsHandler implements Listener {
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Calculated stats for player " + player.getName() + " (" + playerClass + "): " +
                     "HP+" + stats.getMaxHealthBonus() + ", " +
-                    "DMG+" + stats.getBonusDamage() + ", " +
+                    "DMG+" + stats.getBonusDamage() + " (total from all skills: " + totalBonusDamage + "), " +
                     "MULT×" + stats.getDamageMultiplier());
         }
     }

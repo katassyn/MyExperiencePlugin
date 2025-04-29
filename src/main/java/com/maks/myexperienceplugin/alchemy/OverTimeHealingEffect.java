@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 public class OverTimeHealingEffect extends AlchemyEffect {
     private final double healPercentagePerSecond; // np. 0.10 = 10% maks. HP na sekundę
@@ -17,7 +18,7 @@ public class OverTimeHealingEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Healing over time.");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Healing over time.");
         // Leczenie co 20 ticków (1 sekunda)
         task = Bukkit.getScheduler().runTaskTimer(MyExperiencePlugin.getInstance(), () -> {
             double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
@@ -35,6 +36,6 @@ public class OverTimeHealingEffect extends AlchemyEffect {
         if (task != null) {
             task.cancel();
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Healing over time finished.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Healing over time finished.");
     }
 }

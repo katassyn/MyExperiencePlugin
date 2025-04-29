@@ -5,6 +5,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -19,11 +20,10 @@ public class PhysisPercentageDamageEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Damage increased by " + (damagePercentage * 100) + "%");
-        double baseDamage = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getBaseValue();
-        double bonus = baseDamage * damagePercentage;
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Damage increased by " + (damagePercentage * 100) + "%");
 
-        modifier = new AttributeModifier(UUID.randomUUID(), effectName, bonus, AttributeModifier.Operation.ADD_NUMBER);
+        // Apply damage boost as a percentage multiplier
+        modifier = new AttributeModifier(UUID.randomUUID(), effectName, damagePercentage, AttributeModifier.Operation.MULTIPLY_SCALAR_1);
         player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).addModifier(modifier);
 
         Bukkit.getScheduler().runTaskLater(MyExperiencePlugin.getInstance(), this::remove, durationMillis / 50);
@@ -34,6 +34,6 @@ public class PhysisPercentageDamageEffect extends AlchemyEffect {
         if (modifier != null) {
             player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).removeModifier(modifier);
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Percentage damage bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Percentage damage bonus expired.");
     }
 }

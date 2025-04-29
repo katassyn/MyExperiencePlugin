@@ -3,6 +3,7 @@ package com.maks.myexperienceplugin.alchemy;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 public class TonicTotemEffect extends AlchemyEffect {
 
@@ -12,7 +13,7 @@ public class TonicTotemEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Totem effect activated. It will protect you from the next fatal hit for "
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Totem effect activated. It will protect you from the next fatal hit for "
                 + (durationMillis / 60000) + " minutes.");
         // Rejestrujemy totem – wykorzystujemy istniejący TotemEffect (lub inny mechanizm ochronny)
         TotemManager.getInstance().registerTotem(player, new TotemEffect(player, cooldownMillis, effectName));
@@ -23,6 +24,6 @@ public class TonicTotemEffect extends AlchemyEffect {
     @Override
     public void remove() {
         TotemManager.getInstance().clearTotem(player);
-        player.sendMessage("§c[" + effectName + "] Totem effect expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Totem effect expired.");
     }
 }

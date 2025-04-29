@@ -65,6 +65,10 @@ commands:
     usage: /alchemy_reset [player]
     permission: myplugin.alchemy.reset
     aliases: [ alch_reset, areset ]
+  alchemy_cd:
+    description: Show current alchemy cooldowns
+    usage: /alchemy_cd
+    aliases: [ alch_cd, acd ]
   permissions:
     myplugin.alchemy.reset:
       description: Allows resetting alchemy effects and cooldowns

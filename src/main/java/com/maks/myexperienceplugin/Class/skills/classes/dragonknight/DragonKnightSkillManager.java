@@ -1,5 +1,6 @@
 package com.maks.myexperienceplugin.Class.skills.classes.dragonknight;
 
+import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.base.BaseSkillManager;
 import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
 import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
@@ -185,52 +186,65 @@ public class DragonKnightSkillManager extends BaseSkillManager {
 
     @Override
     protected void applySkillStats(Player player, int skillId, int purchaseCount) {
+        // Get the player's current stats
+        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+
         switch (skillId) {
             case 1: // +3% def
+                stats.addDefenseBonus(3 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +3% defense to " + player.getName());
+                    plugin.getLogger().info("Applied +" + (3 * purchaseCount) + "% defense to " + player.getName());
                 }
                 break;
             case 3: // +1% dmg
+                stats.addDamageMultiplier(0.01 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% damage to " + player.getName());
+                    plugin.getLogger().info("Applied +" + (0.01 * purchaseCount) + " to damage multiplier for " + player.getName());
                 }
                 break;
             case 5: // +1% ms (1/2)
+                stats.addMovementSpeedBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +" + purchaseCount + "% movement speed to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + "% movement speed to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 8: // +2hp (1/2)
+                stats.addMaxHealth(2 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +" + (2 * purchaseCount) + " HP to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 9: // +1% luck (1/2)
+                stats.addLuckBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +" + purchaseCount + "% luck to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + "% luck to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 10: // +7 dmg (1/2)
+                stats.addBonusDamage(7 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +" + (7 * purchaseCount) + " damage to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 11: // +5% dmg, -2% ms
+                stats.addDamageMultiplier(0.05);
+                stats.addMovementSpeedBonus(-2);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +5% damage, -2% movement speed to " + player.getName());
                 }
                 break;
             case 13: // +10 dmg
+                stats.addBonusDamage(10);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +10 damage to " + player.getName());
                 }
                 break;
             case 14: // +5% shield block chance
+                stats.addShieldBlockChance(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +5% shield block chance to " + player.getName());
                 }
@@ -241,6 +255,9 @@ public class DragonKnightSkillManager extends BaseSkillManager {
                 }
                 break;
         }
+
+        // Force a refresh of player stats to apply changes
+        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
     }
 
     @Override

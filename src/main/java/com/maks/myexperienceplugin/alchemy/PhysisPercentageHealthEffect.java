@@ -5,6 +5,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class PhysisPercentageHealthEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Health increased by " + (healthPercentage * 100) + "%");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Health increased by " + (healthPercentage * 100) + "%");
         double baseHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
         double bonus = baseHealth * healthPercentage;
 
@@ -39,6 +40,6 @@ public class PhysisPercentageHealthEffect extends AlchemyEffect {
                 player.setHealth(maxHealth);
             }
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Percentage health bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Percentage health bonus expired.");
     }
 }

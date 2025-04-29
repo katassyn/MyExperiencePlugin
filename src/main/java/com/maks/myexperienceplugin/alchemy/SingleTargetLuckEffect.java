@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public class SingleTargetLuckEffect extends AlchemyEffect implements Listener {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Next mob kill will have " + luckMultiplier + "x luck!");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Next mob kill will have " + luckMultiplier + "x luck!");
         modifier = new AttributeModifier(UUID.randomUUID(), effectName, luckMultiplier, AttributeModifier.Operation.ADD_NUMBER);
         player.getAttribute(Attribute.GENERIC_LUCK).addModifier(modifier);
 
@@ -47,6 +48,6 @@ public class SingleTargetLuckEffect extends AlchemyEffect implements Listener {
         if (modifier != null) {
             player.getAttribute(Attribute.GENERIC_LUCK).removeModifier(modifier);
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: One-time luck bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: One-time luck bonus expired.");
     }
 }

@@ -3,6 +3,7 @@ package com.maks.myexperienceplugin.alchemy;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 public class AbsorptionEffect extends AlchemyEffect {
     private final double absorptionAmount;
@@ -14,7 +15,7 @@ public class AbsorptionEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: You gained " + absorptionAmount + " absorption hearts.");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: You gained " + absorptionAmount + " absorption hearts.");
         player.setAbsorptionAmount(player.getAbsorptionAmount() + absorptionAmount);
         Bukkit.getScheduler().runTaskLater(MyExperiencePlugin.getInstance(), this::remove, durationMillis / 50);
     }
@@ -24,6 +25,6 @@ public class AbsorptionEffect extends AlchemyEffect {
         double current = player.getAbsorptionAmount();
         double newAmount = Math.max(0, current - absorptionAmount);
         player.setAbsorptionAmount(newAmount);
-        player.sendMessage("§c[" + effectName + "] Effect ended: Absorption effect expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Absorption effect expired.");
     }
 }

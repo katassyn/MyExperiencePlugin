@@ -31,9 +31,9 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
         switch (skillId) {
             case 1: // +1% movement speed
-                stats.setMovementSpeedBonus(1 * purchaseCount);
+                stats.addMovementSpeedBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 1: Set movement speed bonus to " + (1 * purchaseCount) + "%");
+                    plugin.getLogger().info("RANGER SKILL 1: Added " + (1 * purchaseCount) + "% movement speed bonus");
                 }
                 break;
             case 2: // Nature's Recovery - Gain Regeneration I
@@ -43,27 +43,27 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 3: // +5 damage - FIXED VALUE
-                stats.setBonusDamage(5);
+                stats.addBonusDamage(5);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 3: Set bonus damage to EXACTLY 5");
+                    plugin.getLogger().info("RANGER SKILL 3: Added 5 bonus damage");
                 }
                 break;
             case 4: // +2% evade chance
-                stats.setEvadeChance(2 * purchaseCount);
+                stats.addEvadeChance(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 4: Set evade chance to " + (2 * purchaseCount) + "%");
+                    plugin.getLogger().info("RANGER SKILL 4: Added " + (2 * purchaseCount) + "% evade chance");
                 }
                 break;
             case 5: // +1 HP
-                stats.setMaxHealthBonus(1 * purchaseCount);
+                stats.addMaxHealth(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 5: Set max health bonus to " + (1 * purchaseCount));
+                    plugin.getLogger().info("RANGER SKILL 5: Added " + (1 * purchaseCount) + " max health");
                 }
                 break;
             case 6: // +3$ per killed mob - FIXED VALUE
-                stats.setGoldPerKill(3);
+                stats.addGoldPerKill(3);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 6: Set gold per kill to EXACTLY 3");
+                    plugin.getLogger().info("RANGER SKILL 6: Added 3 gold per kill");
                 }
                 break;
             case 8: // +1% evade chance (1/2)
@@ -73,9 +73,9 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 9: // +1% luck (1/2)
-                stats.setLuckBonus(1 * purchaseCount);
+                stats.addLuckBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 9: Set luck bonus to " + (1 * purchaseCount) + "%");
+                    plugin.getLogger().info("RANGER SKILL 9: Added " + (1 * purchaseCount) + "% luck bonus");
                 }
                 break;
             case 10: // each 3 hits deals +10 dmg - handled by a more complex system
@@ -85,9 +85,9 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 11: // +1% dmg (1/3)
-                stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
+                stats.addDamageMultiplier(0.01 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 11: Set damage multiplier to " + (1.0 + (0.01 * purchaseCount)));
+                    plugin.getLogger().info("RANGER SKILL 11: Added " + (0.01 * purchaseCount) + " to damage multiplier");
                 }
                 break;
             case 12: // Wind Mastery: +2 max stacks of wind
@@ -97,16 +97,16 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 13: // +1% def (1/2)
-                stats.setDefenseBonus(1 * purchaseCount);
+                stats.addDefenseBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 13: Set defense bonus to " + (1 * purchaseCount) + "%");
+                    plugin.getLogger().info("RANGER SKILL 13: Added " + (1 * purchaseCount) + "% defense bonus");
                 }
                 break;
             case 14: // +4% evade chance, -2% dmg
                 stats.addEvadeChance(4 * purchaseCount);
                 stats.multiplyDamageMultiplier(1.0 - (0.02 * purchaseCount));
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 14: Added " + (4 * purchaseCount) + "% evade and reduced damage by " + (2 * purchaseCount) + "%");
+                    plugin.getLogger().info("RANGER SKILL 14: Added " + (4 * purchaseCount) + "% evade chance and reduced damage multiplier by " + (0.02 * purchaseCount));
                 }
                 break;
             default:

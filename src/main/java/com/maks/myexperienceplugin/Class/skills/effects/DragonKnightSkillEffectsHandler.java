@@ -51,9 +51,9 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
         switch (skillId) {
             case 1: // +3% def
-                stats.setDefenseBonus(3 * purchaseCount);
+                stats.addDefenseBonus(3 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 1: Set defense bonus to " + (3 * purchaseCount) + "%");
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 1: Added " + (3 * purchaseCount) + "% defense bonus");
                 }
                 break;
             case 2: // After successful hit gain +5% as for 5s
@@ -63,9 +63,9 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 3: // +1% dmg
-                stats.setDamageMultiplier(1.0 + (0.01 * purchaseCount));
+                stats.addDamageMultiplier(0.01 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 3: Set damage multiplier to " + (1.0 + (0.01 * purchaseCount)));
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 3: Added " + (0.01 * purchaseCount) + " to damage multiplier");
                 }
                 break;
             case 4: // When hp<50% gain +2% def
@@ -75,9 +75,9 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 5: // +1% ms (1/2)
-                stats.setMovementSpeedBonus(1 * purchaseCount);
+                stats.addMovementSpeedBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 5: Set movement speed bonus to " + (1 * purchaseCount) + "%");
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 5: Added " + (1 * purchaseCount) + "% movement speed bonus");
                 }
                 break;
             case 6: // For every 100 damage dealt, you increase your damage by 1% for 5 seconds (stack up to 3 times)
@@ -93,25 +93,25 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 8: // +2hp (1/2)
-                stats.setMaxHealthBonus(2 * purchaseCount);
+                stats.addMaxHealth(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 8: Set max health bonus to " + (2 * purchaseCount));
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 8: Added " + (2 * purchaseCount) + " max health bonus");
                 }
                 break;
             case 9: // +1% luck (1/2)
-                stats.setLuckBonus(1 * purchaseCount);
+                stats.addLuckBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("RANGER SKILL 9: Set luck bonus to " + (1 * purchaseCount) + "%");
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 9: Added " + (1 * purchaseCount) + "% luck bonus");
                 }
                 break;
             case 10: // +7 dmg (1/2) - FIXED VALUE
-                stats.setBonusDamage(7 * purchaseCount);
+                stats.addBonusDamage(7 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 10: Set bonus damage to " + (7 * purchaseCount));
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 10: Added " + (7 * purchaseCount) + " bonus damage");
                 }
                 break;
             case 11: // +5% dmg, -2% ms
-                stats.multiplyDamageMultiplier(1.0 + (0.05 * purchaseCount));
+                stats.addDamageMultiplier(0.05 * purchaseCount);
                 stats.addMovementSpeedBonus(-2 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 11: Added " + (5 * purchaseCount) + "% damage multiplier and " +
@@ -125,15 +125,15 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 13: // +10 dmg - FIXED VALUE
-                stats.setBonusDamage(10);
+                stats.addBonusDamage(10);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 13: Set bonus damage to exactly 10");
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 13: Added 10 bonus damage");
                 }
                 break;
             case 14: // +5% shield block chance
-                stats.setShieldBlockChance(5 * purchaseCount);
+                stats.addShieldBlockChance(5 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("DRAGONKNIGHT SKILL 14: Set shield block chance to " + (5 * purchaseCount) + "%");
+                    plugin.getLogger().info("DRAGONKNIGHT SKILL 14: Added " + (5 * purchaseCount) + "% shield block chance");
                 }
                 break;
             default:

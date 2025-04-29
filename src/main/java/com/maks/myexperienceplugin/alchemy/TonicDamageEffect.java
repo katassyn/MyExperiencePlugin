@@ -5,6 +5,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class TonicDamageEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Damage increased by " + bonusDamage + ".");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Damage increased by " + bonusDamage + ".");
         modifier = new AttributeModifier(UUID.randomUUID(), effectName, bonusDamage, AttributeModifier.Operation.ADD_NUMBER);
         player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).addModifier(modifier);
 
@@ -32,6 +33,6 @@ public class TonicDamageEffect extends AlchemyEffect {
         if (modifier != null) {
             player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).removeModifier(modifier);
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Damage bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Damage bonus expired.");
     }
 }

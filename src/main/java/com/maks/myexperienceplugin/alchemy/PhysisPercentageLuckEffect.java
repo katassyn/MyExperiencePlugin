@@ -5,6 +5,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class PhysisPercentageLuckEffect extends AlchemyEffect {
 
     @Override
     public void apply() {
-        player.sendMessage("§a[" + effectName + "] Effect started: Luck increased by " + (luckPercentage * 100) + "%");
+        ActionBarUtils.sendActionBar(player, "§a[" + effectName + "] Effect started: Luck increased by " + (luckPercentage * 100) + "%");
         double baseLuck = player.getAttribute(Attribute.GENERIC_LUCK).getBaseValue();
         double bonus = baseLuck * luckPercentage;
 
@@ -34,6 +35,6 @@ public class PhysisPercentageLuckEffect extends AlchemyEffect {
         if (modifier != null) {
             player.getAttribute(Attribute.GENERIC_LUCK).removeModifier(modifier);
         }
-        player.sendMessage("§c[" + effectName + "] Effect ended: Luck bonus expired.");
+        ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended: Luck bonus expired.");
     }
 }

@@ -16,6 +16,7 @@ com\maks\myexperienceplugin\exp\ReloadBonusCommand.class
 com\maks\myexperienceplugin\alchemy\NightVisionEffect.class
 com\maks\myexperienceplugin\Class\skills\classes\spellweaver\SpellWeaverSkillManager.class
 com\maks\myexperienceplugin\alchemy\TonicHealthEffect.class
+com\maks\myexperienceplugin\alchemy\AlchemyManager$AlchemyEffectWithDuration.class
 com\maks\myexperienceplugin\alchemy\ImmunityEffect.class
 com\maks\myexperienceplugin\Class\ClassGUI.class
 com\maks\myexperienceplugin\listener\ImmunityListener.class
@@ -27,6 +28,8 @@ com\maks\myexperienceplugin\Class\ChoseAscendancyCommand.class
 com\maks\myexperienceplugin\exp\MoneyRewardHandler.class
 com\maks\myexperienceplugin\Class\skills\base\SkillTree.class
 com\maks\myexperienceplugin\alchemy\AlchemyItemMatcher.class
+com\maks\myexperienceplugin\listener\PlayerJoinAlchemyListener.class
+com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffect.class
 com\maks\myexperienceplugin\MyExperiencePlugin.class
 com\maks\myexperienceplugin\Class\skills\base\SkillNode.class
@@ -37,6 +40,7 @@ com\maks\myexperienceplugin\alchemy\AlchemyManager.class
 com\maks\myexperienceplugin\party\PartyCommand.class
 com\maks\myexperienceplugin\alchemy\PhysisExpManager.class
 com\maks\myexperienceplugin\alchemy\TonicTotemEffect.class
+com\maks\myexperienceplugin\alchemy\AlchemyEffectWithDuration.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageLuckEffect.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\RangerSkillManager.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageExpEffect.class
@@ -78,6 +82,7 @@ com\maks\myexperienceplugin\alchemy\InstantHealingEffect.class
 com\maks\myexperienceplugin\exp\TopCommand$PlayerData.class
 com\maks\myexperienceplugin\exp\MythicMobXPHandler.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageHealthEffect.class
+com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand$1.class
 com\maks\myexperienceplugin\alchemy\ImmunityManager.class
 com\maks\myexperienceplugin\listener\LifestealListener.class
 com\maks\myexperienceplugin\alchemy\TotemEffect.class

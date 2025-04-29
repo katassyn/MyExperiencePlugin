@@ -176,63 +176,67 @@ public class RangerSkillManager extends BaseSkillManager {
             plugin.getLogger().info("Skonfigurowano strukturę drzewka umiejętności dla klasy " + className);
         }
     }
+
     @Override
     protected void applySkillStats(Player player, int skillId, int purchaseCount) {
+        // Get the player's current stats
+        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+
         switch (skillId) {
             case 1: // +1% movement speed
-                // Apply movement speed bonus
+                stats.addMovementSpeedBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% movement speed to " + player.getName());
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + "% movement speed to " + player.getName());
                 }
                 break;
             case 3: // +5 damage
-                // Apply damage bonus
+                stats.addBonusDamage(5);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +5 damage to " + player.getName());
                 }
                 break;
             case 4: // +2% evade chance
-                // Apply evade chance
+                stats.addEvadeChance(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +2% evade chance to " + player.getName());
+                    plugin.getLogger().info("Applied +" + (2 * purchaseCount) + "% evade chance to " + player.getName());
                 }
                 break;
             case 5: // +1 HP
-                // Apply HP bonus
+                stats.addMaxHealth(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1 HP to " + player.getName());
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + " HP to " + player.getName());
                 }
                 break;
             case 6: // +3$ per killed mob
-                // Apply gold bonus
+                stats.addGoldPerKill(3);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +3$ per kill to " + player.getName());
                 }
                 break;
             case 8: // +1% evade chance (1/2)
-                // Apply evade chance
+                stats.addEvadeChance(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% evade chance to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + "% evade chance to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 9: // +1% luck (1/2)
-                // Apply luck bonus
+                stats.addLuckBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% luck to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + "% luck to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 11: // +1% dmg (1/3)
-                // Apply damage multiplier
+                stats.addDamageMultiplier(0.01 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% damage multiplier to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (0.01 * purchaseCount) + " damage multiplier to " + player.getName() +
                             " (purchase " + purchaseCount + "/3)");
                 }
-                // W metodzie applySkillStats w RangerSkillManager
+                break;
+            // W metodzie applySkillStats w RangerSkillManager
             case 12: // Wind Mastery: +2 max stacks of wind
                 // Zwiększ maksymalną liczbę stacków
-                SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
                 stats.setMaxWindStacks(5); // Bazowe 3 + 2 z umiejętności Wind Mastery
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied Wind Mastery: +2 max stacks of wind to " + player.getName() +
@@ -240,19 +244,23 @@ public class RangerSkillManager extends BaseSkillManager {
                 }
                 break;
             case 13: // +1% def (1/2)
-                // Apply defense bonus
+                stats.addDefenseBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +1% defense to " + player.getName() +
+                    plugin.getLogger().info("Applied +" + (1 * purchaseCount) + "% defense to " + player.getName() +
                             " (purchase " + purchaseCount + "/2)");
                 }
                 break;
             case 14: // +4% evade chance, -2% dmg
-                // Apply evade chance and damage penalty
+                stats.addEvadeChance(4 * purchaseCount);
+                stats.multiplyDamageMultiplier(1.0 - (0.02 * purchaseCount));
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Applied +4% evade chance and -2% damage to " + player.getName());
                 }
                 break;
         }
+
+        // Force a refresh of player stats to apply changes
+        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
     }
 
     @Override
