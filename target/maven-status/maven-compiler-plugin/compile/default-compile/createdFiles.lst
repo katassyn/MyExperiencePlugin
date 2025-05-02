@@ -2,6 +2,7 @@ com\maks\myexperienceplugin\alchemy\PhysisPercentageDamageEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffectFactory.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager$AlchemyCategory.class
 com\maks\myexperienceplugin\alchemy\TonicExpEffect.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BerserkerSkillEffectsHandler$1.class
 com\maks\myexperienceplugin\Class\skills\PlayerSkillEffectsListener.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeGUI.class
 com\maks\myexperienceplugin\party\PartyInvite.class
@@ -24,6 +25,7 @@ com\maks\myexperienceplugin\Class\skills\SkillEffectsHandler.class
 com\maks\myexperienceplugin\party\PartyManager.class
 com\maks\myexperienceplugin\Class\ClassResetItemListener.class
 com\maks\myexperienceplugin\Class\skills\AscendancySkillTreeCommand.class
+com\maks\myexperienceplugin\CustomItemHandler.class
 com\maks\myexperienceplugin\Class\ChoseAscendancyCommand.class
 com\maks\myexperienceplugin\exp\MoneyRewardHandler.class
 com\maks\myexperienceplugin\Class\skills\base\SkillTree.class
@@ -42,6 +44,7 @@ com\maks\myexperienceplugin\alchemy\PhysisExpManager.class
 com\maks\myexperienceplugin\alchemy\TonicTotemEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffectWithDuration.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageLuckEffect.class
+com\maks\myexperienceplugin\Class\skills\AscendancySkillEffectIntegrator.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\RangerSkillManager.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageExpEffect.class
 com\maks\myexperienceplugin\exp\ChatLevelHandler.class
@@ -57,6 +60,7 @@ com\maks\myexperienceplugin\Class\ClassManager.class
 com\maks\myexperienceplugin\party\Party.class
 com\maks\myexperienceplugin\exp\ExperienceCommandHandler.class
 com\maks\myexperienceplugin\alchemy\SingleTargetLuckEffect.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BeastmasterSkillEffectsHandler.class
 com\maks\myexperienceplugin\alchemy\TotemManager.class
 com\maks\myexperienceplugin\alchemy\PhycisMagnetEffect.class
 com\maks\myexperienceplugin\Class\PeriodicClassReminder.class
@@ -71,7 +75,9 @@ com\maks\myexperienceplugin\listener\PlayerDisconnectListener.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageMovementEffect.class
 com\maks\myexperienceplugin\Class\ClassCommand.class
 com\maks\myexperienceplugin\exp\PlayerLevelDisplayHandler.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BerserkerSkillEffectsHandler.class
 com\maks\myexperienceplugin\listener\PhysisExpListener.class
+com\maks\myexperienceplugin\ResetRanksCommand.class
 com\maks\myexperienceplugin\Class\skills\base\BaseSkillManager.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\BeastmasterSkillManager.class
 com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\BerserkerSkillManager.class

@@ -146,6 +146,24 @@ public class ClassManager {
             plugin.getLogger().info("Current level: " + plugin.getPlayerLevel(player));
         }
 
+        // Check if player was a Beastmaster and remove all summons
+        String currentAscendancy = getPlayerAscendancy(uuid);
+        if ("Beastmaster".equals(currentAscendancy)) {
+            if (plugin.getAscendancySkillEffectIntegrator() != null) {
+                // Get the Beastmaster handler and remove all summons
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
+                    (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
+                    plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
+
+                if (handler != null) {
+                    handler.removeAllSummons(player);
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Removed all summons for Beastmaster: " + player.getName());
+                    }
+                }
+            }
+        }
+
         // Reset class and ascendancy in cache
         playerClassCache.put(uuid, "NoClass");
         playerAscendancyCache.put(uuid, "");

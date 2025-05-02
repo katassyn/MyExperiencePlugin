@@ -62,32 +62,30 @@ public class SkillTree {
      * Check if a node can be purchased by the player
      * A node can be purchased if:
      * 1. It's a root node, or
-     * 2. At least one of its connected nodes is already purchased
+     * 2. At least one of its connected nodes is already purchased, or
+     * 3. It is connected to at least one already purchased node
      */
     public boolean canPurchaseNode(Player player, int nodeId, Set<Integer> purchasedNodes) {
         // Root nodes can always be purchased
         if (rootNodeIds.contains(nodeId)) {
-            if (debuggingFlag == 1) {
-                System.out.println("[SkillTree] Node " + nodeId + " is a root node, can purchase");
-            }
             return true;
         }
 
         // Get the node we're checking
         SkillNode targetNode = nodes.get(nodeId);
         if (targetNode == null) {
-            if (debuggingFlag == 1) {
-                System.out.println("[SkillTree] Node " + nodeId + " not found in tree");
-            }
             return false;
         }
 
-        // DEBUG: Print the purchased nodes for this player
-        if (debuggingFlag == 1) {
-            System.out.println("[SkillTree] Player " + player.getName() + " has purchased nodes: " + purchasedNodes);
+
+        // Check if the target node is connected to any purchased node
+        for (SkillNode connectedNode : targetNode.getConnectedNodes()) {
+            if (purchasedNodes.contains(connectedNode.getId())) {
+                return true;
+            }
         }
 
-        // Check if ANY connected node is already purchased
+        // Check if ANY purchased node is connected to our target
         // We need to check inverse connections (find nodes that have the target as a connection)
         for (Map.Entry<Integer, SkillNode> entry : nodes.entrySet()) {
             SkillNode node = entry.getValue();
@@ -100,19 +98,12 @@ public class SkillTree {
             // Check if this purchased node connects to our target
             for (SkillNode connectedNode : node.getConnectedNodes()) {
                 if (connectedNode.getId() == nodeId) {
-                    if (debuggingFlag == 1) {
-                        System.out.println("[SkillTree] Node " + nodeId + " is connected to purchased node " +
-                                node.getId() + " (" + node.getName() + "), can purchase");
-                    }
                     return true;
                 }
             }
         }
 
         // If we've checked all purchased nodes and none connect to our target
-        if (debuggingFlag == 1) {
-            System.out.println("[SkillTree] Node " + nodeId + " is not connected to any purchased nodes, cannot purchase");
-        }
         return false;
     }
 }

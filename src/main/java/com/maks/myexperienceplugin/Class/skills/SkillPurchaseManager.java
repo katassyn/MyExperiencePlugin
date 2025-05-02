@@ -2,6 +2,7 @@ package com.maks.myexperienceplugin.Class.skills;
 
 import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
 import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUI;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
@@ -308,6 +309,26 @@ public class SkillPurchaseManager {
                 // Wait 1 tick before refreshing GUI to avoid race conditions
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     ascendancySkillTreeGUI.openAscendancySkillTreeGUI(player, branchIndex);
+
+                    // Add this block to check for Beastmaster skills
+                    String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
+                    if ("Beastmaster".equals(ascendancy)) {
+                        BeastmasterSkillEffectsHandler handler = 
+                            (BeastmasterSkillEffectsHandler) plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
+
+                        if (handler != null) {
+                            // If it's a summon skill, trigger auto-summon
+                            if (nodeId == 100001 || nodeId == 100002 || nodeId == 100003) {
+                                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                    handler.checkAndSummonCreatures(player);
+                                }, 20L); // 1 second after purchase
+                            } 
+                            // For any Beastmaster skill, refresh existing summons to update their stats
+                            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                handler.refreshSummons(player);
+                            }, 20L); // 1 second after purchase
+                        }
+                    }
                 }, 1L);
             }
         } finally {

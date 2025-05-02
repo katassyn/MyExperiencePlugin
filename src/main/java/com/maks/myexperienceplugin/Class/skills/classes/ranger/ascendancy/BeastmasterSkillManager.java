@@ -1,5 +1,6 @@
 package com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy;
 
+import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.base.BaseSkillManager;
 import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
 import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
@@ -20,26 +21,22 @@ public class BeastmasterSkillManager extends BaseSkillManager {
     @Override
     protected void initializeSkills() {
         // Create nodes based on Beastmaster.md - FULLY IMPLEMENTED
-        // Using IDs offset by 100000 to avoid conflicts
-        SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Wolf Summon", "Unlock wolf summon, balanced companion (50% dmg/50hp)", 1,
+        SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Wolf Summon", "Unlock wolf summon, balanced companion (50% dmg/50hp).\nNote: You can only have 2 types of summons at once.", 1,
                 Material.BONE, 1, player -> {
-            player.sendMessage(ChatColor.GREEN + "You can now summon wolves!");
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Wolf Summon skill");
             }
         });
 
-        SkillNode node2 = new SkillNode(ID_OFFSET + 2, "Boar Summon", "Unlock boar summon, high damage companion (80% dmg/20hp)", 1,
+        SkillNode node2 = new SkillNode(ID_OFFSET + 2, "Boar Summon", "Unlock boar summon, high damage companion (80% dmg/20hp).\nNote: You can only have 2 types of summons at once.", 1,
                 Material.PORKCHOP, 1, player -> {
-            player.sendMessage(ChatColor.GREEN + "You can now summon boars!");
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Boar Summon skill");
             }
         });
 
-        SkillNode node3 = new SkillNode(ID_OFFSET + 3, "Bear Summon", "Unlock bear summon, tanky companion (20% dmg/80hp)", 1,
+        SkillNode node3 = new SkillNode(ID_OFFSET + 3, "Bear Summon", "Unlock bear summon, tanky companion (80% dmg/80hp).\nNote: You can only have 2 types of summons at once.", 1,
                 Material.HONEY_BOTTLE, 1, player -> {
-            player.sendMessage(ChatColor.GREEN + "You can now summon bears!");
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Bear Summon skill");
             }
@@ -133,7 +130,7 @@ public class BeastmasterSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node15 = new SkillNode(ID_OFFSET + 15, "Bear Guardian", "When Bears hp<50% you and all summons gain +10% def", 3,
+        SkillNode node15 = new SkillNode(ID_OFFSET + 15, "Bear Guardian", "When Bears hp<50% u and all summons gain +10% def", 3,
                 Material.NETHERITE_CHESTPLATE, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "Your bears now protect the pack when injured!");
             if (debuggingFlag == 1) {
@@ -267,7 +264,7 @@ public class BeastmasterSkillManager extends BaseSkillManager {
         skillNodes.put(ID_OFFSET + 27, node27);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Initialized Beastmaster skills with ID offset " + ID_OFFSET);
+            plugin.getLogger().info("Initialized all 27 Beastmaster skills with ID offset " + ID_OFFSET);
         }
     }
 
@@ -278,60 +275,154 @@ public class BeastmasterSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        // Connect nodes based on the ascendancy skill tree structure
-        // First level connections
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Added root nodes: " + 
+                (ID_OFFSET + 1) + " (Wolf Summon), " + 
+                (ID_OFFSET + 2) + " (Boar Summon), " + 
+                (ID_OFFSET + 3) + " (Bear Summon)");
+
+        // Path 1: Wolf Path
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 1) + " (Wolf Summon) -> " + (ID_OFFSET + 4) + " (Wolf Speed)");
 
-        // Second level connections
         tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
-        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 4) + " (Wolf Speed) -> " + (ID_OFFSET + 7) + " (Wolf Attack Speed)");
 
-        // Third level connections
         tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Wolf Attack Speed) -> " + (ID_OFFSET + 11) + " (Wolf Critical)");
+
         tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Wolf Attack Speed) -> " + (ID_OFFSET + 12) + " (Wolf Vitality)");
 
-        // Fourth level connections
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 11) + " (Wolf Critical) -> " + (ID_OFFSET + 17) + " (Wolf Healing)");
+
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
-        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 12) + " (Wolf Vitality) -> " + (ID_OFFSET + 18) + " (Pack Speed)");
 
-        // Fifth level connections
         tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 17) + " (Wolf Healing) -> " + (ID_OFFSET + 22) + " (Wolf Health)");
+
         tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22);
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
-        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 18) + " (Pack Speed) -> " + (ID_OFFSET + 22) + " (Wolf Health)");
 
-        // Final connections
         tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
-        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
-    }
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 22) + " (Wolf Health) -> " + (ID_OFFSET + 25) + " (Wolf Pack)");
 
-    @Override
-    protected void applySkillStats(Player player, int skillId, int purchaseCount) {
-        // The actual implementation would apply different effects based on skill ID
-        // This would interact with a pet/summon system that you'd need to implement
+        // Path 2: Boar Path
+        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 2) + " (Boar Summon) -> " + (ID_OFFSET + 5) + " (Boar Damage)");
+
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Boar Damage) -> " + (ID_OFFSET + 8) + " (Boar Attack Speed)");
+
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Boar Damage) -> " + (ID_OFFSET + 9) + " (Pack Damage)");
+
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 8) + " (Boar Attack Speed) -> " + (ID_OFFSET + 13) + " (Boar Critical)");
+
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 9) + " (Pack Damage) -> " + (ID_OFFSET + 14) + " (Pack Damage Plus)");
+
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 13) + " (Boar Critical) -> " + (ID_OFFSET + 19) + " (Boar Frenzy)");
+
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 14) + " (Pack Damage Plus) -> " + (ID_OFFSET + 19) + " (Boar Frenzy)");
+
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 19) + " (Boar Frenzy) -> " + (ID_OFFSET + 23) + " (Boar Speed)");
+
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 23) + " (Boar Speed) -> " + (ID_OFFSET + 26) + " (Boar Rage)");
+
+        // Path 3: Bear Path
+        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 3) + " (Bear Summon) -> " + (ID_OFFSET + 6) + " (Bear Health)");
+
+        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 6) + " (Bear Health) -> " + (ID_OFFSET + 10) + " (Bear Defense)");
+
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 10) + " (Bear Defense) -> " + (ID_OFFSET + 15) + " (Bear Guardian)");
+
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 10) + " (Bear Defense) -> " + (ID_OFFSET + 16) + " (Bear Vitality)");
+
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 15) + " (Bear Guardian) -> " + (ID_OFFSET + 20) + " (Bear Regeneration)");
+
+        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 16) + " (Bear Vitality) -> " + (ID_OFFSET + 21) + " (Pack Vitality)");
+
+        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 20) + " (Bear Regeneration) -> " + (ID_OFFSET + 24) + " (Pack Defense)");
+
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 21) + " (Pack Vitality) -> " + (ID_OFFSET + 24) + " (Pack Defense)");
+
+        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 24) + " (Pack Defense) -> " + (ID_OFFSET + 27) + " (Pack Healing)");
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Applied Beastmaster skill " + skillId +
-                    " effect to " + player.getName() +
-                    " (purchase " + purchaseCount + ")");
+            plugin.getLogger().info("Configured Beastmaster skill tree with " +
+                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+
+            // Log a summary of all connections for node 100012 (Wolf Vitality)
+            logNodeConnections(tree, ID_OFFSET + 12);
+        }
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[BEASTMASTER DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[BEASTMASTER DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[BEASTMASTER DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            if (otherNode.getConnectedNodes().contains(node)) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                hasIncoming = true;
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG]   No incoming connections found!");
         }
     }
 
     @Override
+    protected void applySkillStats(Player player, int skillId, int purchaseCount) {
+        // Most Beastmaster skills apply to summons which are handled in the effects handler
+        // This method is primarily for any direct effects on the player
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Beastmaster skill " + (skillId - ID_OFFSET) +
+                    " for player " + player.getName() + " will be handled by BeastmasterSkillEffectsHandler");
+        }
+
+        // Force refresh player stats to ensure any relevant effects are applied
+        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+    }
+
+    @Override
     public boolean isMultiPurchaseDiscountSkill(int skillId) {
-        // Beastmaster has no multi-purchase discount skills
+        // Beastmaster doesn't have any multi-purchase discount skills
         return false;
     }
 }

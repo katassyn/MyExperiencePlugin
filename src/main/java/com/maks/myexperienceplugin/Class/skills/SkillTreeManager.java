@@ -454,23 +454,12 @@ public class SkillTreeManager {
                     int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
                     usedPoints += purchaseCount; // Ascendancy skills always cost 1 point
 
-                    if (debuggingFlag == 1) {
-                        plugin.getLogger().info("POINTS DEBUG: Ascendancy Skill ID " + skillId +
-                                " cost " + 1 + " × " + purchaseCount +
-                                " = " + purchaseCount + " points for player " + uuid);
-                    }
                 }
             }
         }
 
         int unusedPoints = totalPoints - usedPoints;
 
-        if (debuggingFlag == 1) {
-            plugin.getLogger().info("POINTS DEBUG: Player " + uuid +
-                    " has " + totalPoints + " total ascendancy points, " +
-                    usedPoints + " used points, " +
-                    unusedPoints + " unused points");
-        }
 
         return unusedPoints;
     }
@@ -629,8 +618,36 @@ public class SkillTreeManager {
             return false;
         }
 
-        // Check if player has purchased a connected node
+        // Get purchased skills
         Set<Integer> purchasedSkills = getPurchasedSkills(uuid);
+
+        // Special check for Beastmaster summon skills
+        if ("Beastmaster".equals(ascendancy)) {
+            // Check if this is one of the summon skills (Wolf, Boar, Bear)
+            if (skillId == 100001 || skillId == 100002 || skillId == 100003) {
+                // If player already has this skill, allow the purchase (for upgrades)
+                if (purchasedSkills.contains(skillId)) {
+                    return true;
+                }
+
+                // Count how many summon skills the player already has
+                int summonSkillsCount = 0;
+                if (purchasedSkills.contains(100001)) summonSkillsCount++;
+                if (purchasedSkills.contains(100002)) summonSkillsCount++;
+                if (purchasedSkills.contains(100003)) summonSkillsCount++;
+
+                // If player already has 2 summon skills, don't allow purchasing a third
+                if (summonSkillsCount >= 2) {
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Player " + player.getName() + 
+                            " already has 2 summon skills, cannot purchase a third one.");
+                    }
+                    return false;
+                }
+            }
+        }
+
+        // Check if player has purchased a connected node
         return tree.canPurchaseNode(player, skillId, purchasedSkills);
     }
 

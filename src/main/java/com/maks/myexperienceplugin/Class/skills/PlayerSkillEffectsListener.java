@@ -1,6 +1,7 @@
 package com.maks.myexperienceplugin.Class.skills;
 
 import com.maks.myexperienceplugin.Class.skills.base.BaseSkillManager;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -38,6 +39,21 @@ public class PlayerSkillEffectsListener implements Listener {
         // Wait a bit to ensure all data is loaded first
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             applyAllSkillEffects(player);
+
+            // Add this block: Check for Beastmaster and trigger summons
+            String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
+            if ("Beastmaster".equals(ascendancy)) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Checking for auto-summons for " + player.getName());
+                BeastmasterSkillEffectsHandler handler = 
+                    (BeastmasterSkillEffectsHandler) plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
+
+                if (handler != null) {
+                    // Delay summons to ensure all skills are loaded
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        handler.checkAndSummonCreatures(player);
+                    }, 20L); // 1 second after effects are applied
+                }
+            }
         }, 40L); // 2 seconds delay
     }
 

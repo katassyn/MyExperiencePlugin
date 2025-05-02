@@ -25,7 +25,6 @@ public class AlchemyItemMatcher {
         }
 
         String display = meta.getDisplayName();
-        System.out.println("Trying to match item with name: " + display);
 
         // Basic Potions (no tier)
         if (display.equals("§aSmall Healing Potion")) {

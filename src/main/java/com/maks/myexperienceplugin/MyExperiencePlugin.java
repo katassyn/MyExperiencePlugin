@@ -2,6 +2,7 @@ package com.maks.myexperienceplugin;
 
 import com.maks.myexperienceplugin.Class.*;
 import com.maks.myexperienceplugin.Class.skills.*;
+import com.maks.myexperienceplugin.Class.skills.AscendancySkillEffectIntegrator;
 import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUIListener;
 import com.maks.myexperienceplugin.alchemy.*;
 import com.maks.myexperienceplugin.exp.*;
@@ -21,6 +22,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUI;
+import net.luckperms.api.LuckPerms;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.io.File;
 import java.util.*;
@@ -48,6 +51,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private SkillTreeManager skillTreeManager;
     private SkillTreeGUI skillTreeGUI;
     private SkillEffectsHandler skillEffectsHandler;
+    private AscendancySkillEffectIntegrator ascendancySkillEffectIntegrator;
     public ClassManager getClassManager() {
         return classManager;
     }
@@ -56,7 +60,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     }
     private AscendancySkillTreeGUI ascendancySkillTreeGUI; // Add this field
     private SkillPurchaseManager skillPurchaseManager;
-
+    private LuckPerms luckPerms;
     public static MyExperiencePlugin getInstance() {
         return instance;
     }
@@ -92,6 +96,24 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         Bukkit.getLogger().info("MyExperiencePlugin has been enabled!");
 
+        // LuckPerms setup
+        RegisteredServiceProvider<LuckPerms> luckPermsProvider = getServer().getServicesManager().getRegistration(LuckPerms.class);
+        if (luckPermsProvider != null) {
+            luckPerms = luckPermsProvider.getProvider();
+            getLogger().info("LuckPerms integration successful!");
+        } else {
+            getLogger().severe("LuckPerms not found! Premium and Deluxe packages will not work.");
+            luckPerms = null;
+        }
+
+// Register custom item handler
+        if (economy != null) {
+            getServer().getPluginManager().registerEvents(new CustomItemHandler(this, economy, luckPerms), this);
+            getLogger().info("CustomItemHandler registered successfully!");
+        } else {
+            getLogger().severe("Economy not found! Gold coin items will not work.");
+        }
+
         // Initialize core managers and handlers
         partyManager = new PartyManager(this);
         moneyRewardHandler = new MoneyRewardHandler(economy, this);
@@ -112,6 +134,11 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         skillTreeManager = new SkillTreeManager(this);
         skillEffectsHandler = new SkillEffectsHandler(this, skillTreeManager);
         skillEffectsHandler.initializePeriodicTasks();
+
+        // Initialize ascendancy skill effect integrator
+        ascendancySkillEffectIntegrator = new AscendancySkillEffectIntegrator(this, skillEffectsHandler);
+        getServer().getPluginManager().registerEvents(ascendancySkillEffectIntegrator, this);
+
         skillTreeGUI = new SkillTreeGUI(this, skillTreeManager);
         ascendancySkillTreeGUI = new AscendancySkillTreeGUI(this, skillTreeManager);
 
@@ -181,6 +208,16 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         ResetAttributesCommand resetAttributesCommand = new ResetAttributesCommand(this, skillEffectsHandler);
         getCommand("resetattributes").setExecutor(resetAttributesCommand);
         getCommand("resetattributes").setTabCompleter(resetAttributesCommand);
+
+        // Register command - Reset ranks
+        if (luckPerms != null) {
+            ResetRanksCommand resetRanksCommand = new ResetRanksCommand(this, luckPerms);
+            getCommand("resetranks").setExecutor(resetRanksCommand);
+            getCommand("resetranks").setTabCompleter(resetRanksCommand);
+            getLogger().info("ResetRanksCommand registered successfully!");
+        } else {
+            getLogger().severe("LuckPerms not found! ResetRanksCommand will not work.");
+        }
 
         ForceUpdateSkillPointsCommand forceUpdateSkillPointsCommand = new ForceUpdateSkillPointsCommand(
                 this,
@@ -472,7 +509,18 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         // AlchemyManager will now handle this instead of clearing effects
         AlchemyManager.getInstance().handlePlayerDisconnect(player);
 
+        // Remove all summons for Beastmaster players
+        String ascendancy = classManager.getPlayerAscendancy(uuid);
+        if ("Beastmaster".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
+                ascendancySkillEffectIntegrator.getHandler("Beastmaster");
 
+            if (handler != null) {
+                handler.removeAllSummons(player);
+                getLogger().info("[BEASTMASTER] Removed all summons for " + player.getName() + " on logout");
+            }
+        }
     }
     public SkillTreeManager getSkillTreeManager() {
         return skillTreeManager;
@@ -498,6 +546,23 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 getLogger().info("Recalculated skill points for " + player.getName() +
                         " upon login (level " + getPlayerLevel(player) + ")");
             }
+
+            // Respawn summons for Beastmaster players
+            UUID uuid = player.getUniqueId();
+            String ascendancy = classManager.getPlayerAscendancy(uuid);
+            if ("Beastmaster".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
+                    (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
+                    ascendancySkillEffectIntegrator.getHandler("Beastmaster");
+
+                if (handler != null) {
+                    // Add a slight delay to ensure all player data is loaded
+                    Bukkit.getScheduler().runTaskLater(this, () -> {
+                        handler.checkAndSummonCreatures(player);
+                        getLogger().info("[BEASTMASTER] Checked and respawned summons for " + player.getName() + " on login");
+                    }, 20L); // 1 second delay
+                }
+            }
         }, 40L); // 2 second delay
     }
 
@@ -509,5 +574,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
      */
     public SkillTreeGUI getSkillTreeGUI() {
         return skillTreeGUI;
+    }
+
+    public AscendancySkillEffectIntegrator getAscendancySkillEffectIntegrator() {
+        return ascendancySkillEffectIntegrator;
     }
 }

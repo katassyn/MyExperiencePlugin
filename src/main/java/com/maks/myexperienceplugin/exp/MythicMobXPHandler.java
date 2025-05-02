@@ -1,11 +1,13 @@
 package com.maks.myexperienceplugin.exp;
 
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
 import com.maks.myexperienceplugin.alchemy.TonicExpManager;
 import com.maks.myexperienceplugin.party.Party;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,9 +25,45 @@ public class MythicMobXPHandler implements Listener {
 
     @EventHandler
     public void onMythicMobDeath(MythicMobDeathEvent event) {
-        if (event.getKiller() instanceof Player) {
-            Player killer = (Player) event.getKiller();
-
+        Entity killerEntity = event.getKiller();
+        Player killer = null;
+        
+        // Check if the killer is a player
+        if (killerEntity instanceof Player) {
+            killer = (Player) killerEntity;
+        } 
+        // Check if the killer is a summon
+        else if (killerEntity != null) {
+            // Check if the AscendancySkillEffectIntegrator is available
+            if (plugin.getAscendancySkillEffectIntegrator() != null) {
+                // Get the BeastmasterSkillEffectsHandler
+                BeastmasterSkillEffectsHandler beastmasterHandler = 
+                    (BeastmasterSkillEffectsHandler) plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
+                
+                if (beastmasterHandler != null) {
+                    // Check if the killer is a summon and get its owner
+                    killer = beastmasterHandler.getSummonOwner(killerEntity);
+                    
+                    if (killer != null && debuggingFlag == 1) {
+                        Bukkit.getLogger().info("[DEBUG] MythicMob killed by a summon owned by " + killer.getName());
+                    }
+                }
+            }
+        }
+        
+        // Log if no valid killer was found
+        if (killer == null && debuggingFlag == 1) {
+            String mobName = event.getMobType().getInternalName();
+            Bukkit.getLogger().info("[DEBUG] MythicMob " + mobName + " died but no valid killer (player or summon owner) was found");
+            if (killerEntity != null) {
+                Bukkit.getLogger().info("[DEBUG] Killer entity type: " + killerEntity.getType().toString());
+            } else {
+                Bukkit.getLogger().info("[DEBUG] Killer entity is null");
+            }
+        }
+        
+        // If we have a valid killer (either player or summon owner), award XP
+        if (killer != null) {
             // Get mob's XP value
             String mobName = event.getMobType().getInternalName();
             double baseXpReward = plugin.getXpForMob(mobName);

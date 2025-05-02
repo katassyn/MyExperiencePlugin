@@ -4,7 +4,7 @@ main: com.maks.myexperienceplugin.MyExperiencePlugin
 api-version: '1.20'
 commands:
   exp:
-    description: Wyświetla poziom i doświadczenie gracza.
+    description: Displays player level and experience.
   exp_table:
     description: "Reloads the experience table"
     usage: "/exp_table reload"
@@ -107,6 +107,11 @@ commands:
     description: Refresh all skill effects for a player
     usage: /refreshskills [debug]
     permission: myplugin.refreshskills
+  resetranks:
+    description: Reset Premium and/or Deluxe ranks for testing
+    usage: /resetranks <all|premium|deluxe> [player]
+    permission: myplugin.resetranks
+    aliases: [rankreset, resetrank]
 # Add these permissions to your plugin.yml (if you have a permissions section)
 
 permissions:
@@ -120,4 +125,12 @@ permissions:
 
   myplugin.resetattributes.others:
     description: Allows resetting other players' attributes
+    default: op
+
+  myplugin.resetranks:
+    description: Allows resetting own Premium and Deluxe ranks
+    default: op
+
+  myplugin.resetranks.others:
+    description: Allows resetting other players' Premium and Deluxe ranks
     default: op
