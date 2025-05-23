@@ -6,15 +6,20 @@ import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
@@ -24,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Handler for Beastmaster-specific skill effects
  */
-public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
+public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler implements Listener {
     // Constants
     private static final int WOLF_SUMMON_ID = 100001;
     private static final int BOAR_SUMMON_ID = 100002;
@@ -71,6 +76,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
 
     public BeastmasterSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
+        // Register this class as a listener for events
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -305,8 +312,19 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
         Entity attacker = event.getDamager();
         Entity target = event.getEntity();
 
-        // Prevent player from damaging their own summons
-        if (attacker.equals(player) && isSummonedEntity(playerId, target)) {
+        if (debuggingFlag == 1) {
+            // Debug general damage event information
+            if (isSummonedEntity(playerId, attacker) || isSummonedEntity(playerId, target)) {
+                plugin.getLogger().info("[BEASTMASTER DAMAGE] Event: " + 
+                        getEntityName(attacker) + " attacking " + getEntityName(target) + 
+                        ", damage: " + event.getDamage() + 
+                        ", final damage: " + event.getFinalDamage());
+            }
+        }
+
+        // Check if this player is attacking their own summon (this is a SEPARATE check)
+        if (isSummonedEntity(playerId, target) && attacker instanceof Player && attacker.getUniqueId().equals(playerId)) {
+            // Cancel the event to prevent damage
             event.setCancelled(true);
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Prevented " + player.getName() + " from damaging their own summon");
@@ -419,25 +437,134 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             // Set respawn cooldown based on summon type
             if (isWolfSummon(playerId, deadEntity)) {
-                wolfRespawnCooldowns.put(playerId, System.currentTimeMillis());
-                playerWolf.remove(playerId);
-                untrackSummonSkill(playerId, WOLF_SUMMON_ID);
+                UUID deadEntityId = deadEntity.getUniqueId();
 
-                // Notify player that wolf died
-                ActionBarUtils.sendActionBar(player,
-                        ChatColor.RED + "Your wolf has died! (60s respawn)");
+                // Check if it's the primary wolf or an additional wolf
+                boolean isPrimaryWolf = playerWolf.containsKey(playerId) && 
+                                       playerWolf.get(playerId).equals(deadEntityId);
 
-                // Schedule automatic respawn after 60 seconds
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    if (player.isOnline() && !hasActiveSummon(playerId, playerWolf) && !playerWolf.containsKey(playerId)) {
-                        summonWolves(player);
+                boolean isAdditionalWolf = false;
+                if (additionalWolves.containsKey(playerId)) {
+                    List<UUID> wolves = additionalWolves.get(playerId);
+                    isAdditionalWolf = wolves.contains(deadEntityId);
+                }
+
+                // Handle primary wolf death
+                if (isPrimaryWolf) {
+                    wolfRespawnCooldowns.put(playerId, System.currentTimeMillis());
+                    playerWolf.remove(playerId);
+
+                    // Only untrack if there are no additional wolves left
+                    if (!additionalWolves.containsKey(playerId) || additionalWolves.get(playerId).isEmpty()) {
+                        untrackSummonSkill(playerId, WOLF_SUMMON_ID);
                     }
-                }, 20 * 60); // 60 seconds
 
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Wolf summon died for " + player.getName() +
-                            " (respawn cooldown: 60s)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Wolf summon died (60s respawn)");
+                    // Notify player that wolf died
+                    ActionBarUtils.sendActionBar(player,
+                            ChatColor.RED + "Your primary wolf has died! (60s respawn)");
+
+                    // Schedule automatic respawn after 60 seconds
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        if (player.isOnline() && !playerWolf.containsKey(playerId)) {
+                            // Only summon a new primary wolf
+                            Wolf wolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
+                            wolf.setTamed(true);
+                            wolf.setOwner(player);
+
+                            // Apply wolf-specific bonuses
+                            setWolfStats(player, wolf);
+
+                            // Set custom name with player name and HP
+                            updateSummonNameTag(wolf, player, "Wolf");
+
+                            // Store reference to the primary wolf
+                            playerWolf.put(playerId, wolf.getUniqueId());
+
+                            // Track this summon type if not already tracked
+                            if (!activeSummonSkills.containsKey(playerId) || 
+                                !activeSummonSkills.get(playerId).contains(WOLF_SUMMON_ID)) {
+                                trackSummonSkill(playerId, WOLF_SUMMON_ID);
+                            }
+
+                            // Show notification
+                            ActionBarUtils.sendActionBar(player,
+                                    ChatColor.GREEN + "Primary wolf respawned");
+                        }
+                    }, 20 * 60); // 60 seconds
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Primary wolf summon died for " + player.getName() +
+                                " (respawn cooldown: 60s)");
+                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Primary wolf died (60s respawn)");
+                    }
+                }
+
+                // Handle additional wolf death
+                if (isAdditionalWolf) {
+                    // Remove this wolf from the additional wolves list
+                    List<UUID> wolves = additionalWolves.get(playerId);
+                    wolves.remove(deadEntityId);
+
+                    // If no wolves left, remove the entry
+                    if (wolves.isEmpty()) {
+                        additionalWolves.remove(playerId);
+
+                        // If primary wolf is also gone, untrack the skill
+                        if (!playerWolf.containsKey(playerId)) {
+                            untrackSummonSkill(playerId, WOLF_SUMMON_ID);
+                        }
+                    } else {
+                        // Update the list
+                        additionalWolves.put(playerId, wolves);
+                    }
+
+                    // Notify player that additional wolf died
+                    ActionBarUtils.sendActionBar(player,
+                            ChatColor.RED + "Your additional wolf has died! (60s respawn)");
+
+                    // Schedule automatic respawn after 60 seconds
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        if (player.isOnline() && isPurchased(playerId, 100025)) {
+                            // Check if we need to respawn an additional wolf
+                            // Only respawn if there are no additional wolves at all
+                            if (!additionalWolves.containsKey(playerId) || 
+                                additionalWolves.get(playerId).isEmpty()) {
+
+                                // Spawn a new additional wolf
+                                Wolf wolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
+                                wolf.setTamed(true);
+                                wolf.setOwner(player);
+
+                                // Apply wolf-specific bonuses
+                                setWolfStats(player, wolf);
+
+                                // Set custom name with player name and HP
+                                updateSummonNameTag(wolf, player, "Wolf");
+
+                                // Add to additional wolves
+                                List<UUID> newWolves = additionalWolves.getOrDefault(
+                                    playerId, new ArrayList<>());
+                                newWolves.add(wolf.getUniqueId());
+                                additionalWolves.put(playerId, newWolves);
+
+                                // Track this summon type if not already tracked
+                                if (!activeSummonSkills.containsKey(playerId) || 
+                                    !activeSummonSkills.get(playerId).contains(WOLF_SUMMON_ID)) {
+                                    trackSummonSkill(playerId, WOLF_SUMMON_ID);
+                                }
+
+                                // Show notification
+                                ActionBarUtils.sendActionBar(player,
+                                        ChatColor.GREEN + "Additional wolf respawned");
+                            }
+                        }
+                    }, 20 * 60); // 60 seconds
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Additional wolf summon died for " + player.getName() +
+                                " (respawn cooldown: 60s)");
+                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Additional wolf died (60s respawn)");
+                    }
                 }
             }
             else if (isBoarSummon(playerId, deadEntity)) {
@@ -809,8 +936,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
         double baseHealth = 50.0;  // Fixed base value
         double finalHealth = baseHealth;
 
-        // Calculate damage bonuses
-        double damageMultiplier = 0.5; // Base 50%
+        // Calculate damage multipliers - wolves have 50 dmg as per requirements
+        double damageMultiplier = 0.5; // 50% damage (50 dmg)
 
         // Additional global damage bonuses (ID 9, ID 14)
         if (isPurchased(playerId, 100009)) {
@@ -851,9 +978,20 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
             moveSpeedBonus += 0.10; // +10% movement speed for all summons
         }
         if (moveSpeedBonus > 0) {
-            double baseSpeed = wolf.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
-            wolf.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(baseSpeed * (1 + moveSpeedBonus));
+            // Get the original vanilla wolf movement speed (0.3)
+            double vanillaWolfSpeed = 0.3;
+
+            // Set the speed directly using the vanilla value as base
+            wolf.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(
+                vanillaWolfSpeed * (1 + moveSpeedBonus));
+
             summonMovementSpeedMultiplier.put(wolf.getUniqueId(), moveSpeedBonus);
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Wolf speed set to " + 
+                    (vanillaWolfSpeed * (1 + moveSpeedBonus)) + 
+                    " (vanilla: " + vanillaWolfSpeed + ", bonus: " + moveSpeedBonus + ")");
+            }
         }
 
         // Attack speed bonuses (ID 7)
@@ -893,8 +1031,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
         double baseHealth = 20.0;  // Fixed base value
         double finalHealth = baseHealth;
 
-        // Calculate damage bonuses
-        double damageMultiplier = 0.8; // Base 80%
+        // Calculate damage bonuses - boars have 80 dmg as per requirements
+        double damageMultiplier = 0.8; // 80% damage (80 dmg)
 
         // Additional global damage bonuses (ID 9, ID 14)
         if (isPurchased(playerId, 100009)) {
@@ -935,9 +1073,20 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
             moveSpeedBonus += 0.20; // +20% movement speed for boars
         }
         if (moveSpeedBonus > 0) {
-            double baseSpeed = boar.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
-            boar.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(baseSpeed * (1 + moveSpeedBonus));
+            // Get the original vanilla wolf movement speed (0.3)
+            double vanillaWolfSpeed = 0.3;
+
+            // Set the speed directly using the vanilla value as base
+            boar.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(
+                vanillaWolfSpeed * (1 + moveSpeedBonus));
+
             summonMovementSpeedMultiplier.put(boar.getUniqueId(), moveSpeedBonus);
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Boar speed set to " + 
+                    (vanillaWolfSpeed * (1 + moveSpeedBonus)) + 
+                    " (vanilla: " + vanillaWolfSpeed + ", bonus: " + moveSpeedBonus + ")");
+            }
         }
 
         // Attack speed bonuses (ID 8, ID 26)
@@ -980,8 +1129,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
         double baseHealth = 80.0;  // Fixed base value
         double finalHealth = baseHealth;
 
-        // Calculate damage bonuses
-        double damageMultiplier = 0.8; // Base 80%
+        // Calculate damage bonuses - bears have 20 dmg as per requirements
+        double damageMultiplier = 0.2; // 20% damage (20 dmg)
 
         // Additional global damage bonuses (ID 9, ID 14)
         if (isPurchased(playerId, 100009)) {
@@ -1031,9 +1180,20 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
             moveSpeedBonus += 0.10; // +10% movement speed for all summons
         }
         if (moveSpeedBonus > 0) {
-            double baseSpeed = bear.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getBaseValue();
-            bear.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(baseSpeed * (1 + moveSpeedBonus));
+            // Get the original vanilla wolf movement speed (0.3)
+            double vanillaWolfSpeed = 0.3;
+
+            // Set the speed directly using the vanilla value as base
+            bear.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(
+                vanillaWolfSpeed * (1 + moveSpeedBonus));
+
             summonMovementSpeedMultiplier.put(bear.getUniqueId(), moveSpeedBonus);
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Bear speed set to " + 
+                    (vanillaWolfSpeed * (1 + moveSpeedBonus)) + 
+                    " (vanilla: " + vanillaWolfSpeed + ", bonus: " + moveSpeedBonus + ")");
+            }
         }
 
         if (debuggingFlag == 1) {
@@ -1164,15 +1324,25 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
      */
     private void applyDamageToSummonAttack(Player player, Entity summon, EntityDamageByEntityEvent event) {
         UUID summonId = summon.getUniqueId();
+        UUID playerId = player.getUniqueId();
 
-        // Get player's attack damage attribute
-        double playerDamage = 1.0; // Default value if attribute is not available
-        if (player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE) != null) {
-            playerDamage = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue();
+        // Use fixed base damage values based on summon type
+        double baseDamage = 0.0;
+
+        // Determine base damage by summon type
+        if (isWolfSummon(playerId, summon) || 
+            (additionalWolves.containsKey(playerId) && 
+             additionalWolves.get(playerId).contains(summonId))) {
+            baseDamage = 50.0; // Wolf base damage
+        } else if (isBoarSummon(playerId, summon)) {
+            baseDamage = 80.0; // Boar base damage
+        } else if (isBearSummon(playerId, summon)) {
+            baseDamage = 20.0; // Bear base damage
         }
 
-        // Apply player's damage to summon's attack based on multiplier
-        double damage = playerDamage * summonDamageMultiplier.getOrDefault(summonId, 0.0);
+        // Apply damage multipliers directly
+        double multiplier = summonDamageMultiplier.getOrDefault(summonId, 1.0);
+        double damage = baseDamage * multiplier;
 
         // Check for critical hit
         double critChance = summonCritChance.getOrDefault(summonId, 0.0);
@@ -1187,14 +1357,18 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
                     ChatColor.RED + "Summon Critical Hit!");
         }
 
-        // Apply final damage
+        // IMPORTANT: Set the base damage directly instead of modifying the existing damage
+        // This is the key fix - we're completely overriding the damage value
         event.setDamage(damage);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Summon attack damage: " + damage + 
-                    " (base player damage: " + playerDamage + 
-                    ", multiplier: " + summonDamageMultiplier.getOrDefault(summonId, 0.0) + 
+                    " (base damage: " + baseDamage + 
+                    ", multiplier: " + multiplier + 
                     (isCrit ? ", CRITICAL HIT!" : "") + ")");
+            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Summon attack: " + 
+                    baseDamage + " × " + multiplier + " = " + damage + " damage" + 
+                    (isCrit ? " (CRIT!)" : ""));
         }
     }
 
@@ -1299,15 +1473,23 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
         UUID summonId = summonMap.get(playerId);
         Entity entity = Bukkit.getEntity(summonId);
 
-        // Entity might be null if the chunk is unloaded
+        // If entity is null, it's no longer active (changed from assuming it is)
         if (entity == null) {
-            plugin.getLogger().info("[BEASTMASTER DEBUG] Entity check failed: Entity with ID " + 
-                    summonId + " not found (chunk might be unloaded)");
+            // Changed logic: if we can't find the entity, it's NOT active
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Entity check - Entity with ID " + 
+                        summonId + " not found. Considering it inactive.");
+            }
             return false;
         }
 
         // Additional validation - make sure it's still alive and valid
         boolean valid = entity.isValid() && !entity.isDead();
+
+        if (debuggingFlag == 1 && !valid) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] Entity found but not valid for " + 
+                    playerId + ". Dead: " + entity.isDead() + ", Valid: " + entity.isValid());
+        }
 
         return valid;
     }
@@ -1339,12 +1521,26 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
     }
 
     /**
-     * Check if an entity is the player's wolf summon
+     * Check if an entity is the player's wolf summon (primary or additional)
      */
     private boolean isWolfSummon(UUID playerId, Entity entity) {
         if (entity == null) return false;
-        return playerWolf.containsKey(playerId) &&
-                playerWolf.get(playerId).equals(entity.getUniqueId());
+
+        // Check if it's the primary wolf
+        if (playerWolf.containsKey(playerId) && 
+            playerWolf.get(playerId).equals(entity.getUniqueId())) {
+            return true;
+        }
+
+        // Check if it's one of the additional wolves
+        if (additionalWolves.containsKey(playerId)) {
+            List<UUID> wolves = additionalWolves.get(playerId);
+            if (wolves.contains(entity.getUniqueId())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1447,23 +1643,77 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void checkAndSummonCreatures(Player player) {
         UUID playerId = player.getUniqueId();
 
+        // Add debug logging to track all calls to this method
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] checkAndSummonCreatures called for " + 
+                player.getName() + " - Wolf active: " + hasActiveSummon(playerId, playerWolf) +
+                ", Boar active: " + hasActiveSummon(playerId, playerBoar) + 
+                ", Bear active: " + hasActiveSummon(playerId, playerBear));
+        }
+
         // Check for wolf summon skill
         if (isPurchased(playerId, WOLF_SUMMON_ID) && !hasActiveSummon(playerId, playerWolf) && 
             !isOnCooldown(playerId, wolfRespawnCooldowns, WOLF_SUMMON_COOLDOWN)) {
-            summonWolves(player);
+
+            // Verify again to avoid duplication
+            if (!hasActiveSummonInWorld(player.getWorld(), playerId, "Wolf")) {
+                summonWolves(player);
+            } else if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Found active wolf in world for " + 
+                    player.getName() + ", skipping summon");
+            }
         }
 
         // Check for boar summon skill
         if (isPurchased(playerId, BOAR_SUMMON_ID) && !hasActiveSummon(playerId, playerBoar) && 
             !isOnCooldown(playerId, boarRespawnCooldowns, BOAR_SUMMON_COOLDOWN)) {
-            summonBoars(player);
+
+            // Verify again to avoid duplication
+            if (!hasActiveSummonInWorld(player.getWorld(), playerId, "Boar")) {
+                summonBoars(player);
+            } else if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Found active boar in world for " + 
+                    player.getName() + ", skipping summon");
+            }
         }
 
         // Check for bear summon skill
         if (isPurchased(playerId, BEAR_SUMMON_ID) && !hasActiveSummon(playerId, playerBear) && 
             !isOnCooldown(playerId, bearRespawnCooldowns, BEAR_SUMMON_COOLDOWN)) {
-            summonBears(player);
+
+            // Verify again to avoid duplication
+            if (!hasActiveSummonInWorld(player.getWorld(), playerId, "Bear")) {
+                summonBears(player);
+            } else if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Found active bear in world for " + 
+                    player.getName() + ", skipping summon");
+            }
         }
+    }
+
+    /**
+     * Add this new method to perform an additional check in the current world
+     */
+    private boolean hasActiveSummonInWorld(org.bukkit.World world, UUID playerId, String type) {
+        // Search for entities that might be summons but aren't tracked properly
+        for (Entity entity : world.getEntities()) {
+            if (entity instanceof Wolf) {
+                Wolf wolf = (Wolf) entity;
+
+                // Check if it's tamed and owned by this player
+                if (wolf.isTamed() && wolf.getOwner() instanceof Player) {
+                    Player owner = (Player) wolf.getOwner();
+                    if (owner.getUniqueId().equals(playerId)) {
+                        // Check if it has a custom name that matches our summon pattern
+                        String name = wolf.getCustomName();
+                        if (name != null && name.contains(owner.getName()) && name.contains(type)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -1497,8 +1747,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             // If Wolf Pack was just purchased and we only have one wolf, summon another
             if (isPurchased(playerId, 100025) && 
-                !additionalWolves.containsKey(playerId) || 
-                (additionalWolves.containsKey(playerId) && additionalWolves.get(playerId).isEmpty())) {
+                (!additionalWolves.containsKey(playerId) || 
+                (additionalWolves.containsKey(playerId) && additionalWolves.get(playerId).isEmpty()))) {
                 // Summon an additional wolf
                 Wolf newWolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
                 newWolf.setTamed(true);
@@ -1642,5 +1892,172 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler {
             }
         }
 
+    }
+    /**
+     * Helper method for debug info
+     */
+    private String getEntityName(Entity entity) {
+        if (entity instanceof Player) {
+            return "Player:" + ((Player) entity).getName();
+        } else {
+            String name = entity.getCustomName();
+            if (name != null) {
+                return entity.getType() + ":" + ChatColor.stripColor(name);
+            } else {
+                return entity.getType().toString();
+            }
+        }
+    }
+
+    /**
+     * Global event handler to catch all cases of players attacking their own summons
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerAttackSummon(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player)) return;
+
+        Player attacker = (Player) event.getDamager();
+        Entity target = event.getEntity();
+
+        // Check all online players to see if this entity belongs to anyone
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (isSummonedEntity(player.getUniqueId(), target) && 
+                attacker.getUniqueId().equals(player.getUniqueId())) {
+
+                // Cancel the event to prevent damage
+                event.setCancelled(true);
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Prevented " + attacker.getName() + 
+                        " from damaging their own summon via global handler");
+                    attacker.sendMessage(ChatColor.DARK_GRAY + 
+                        "[DEBUG] You cannot damage your own summons (global protection)");
+                }
+                return;
+            }
+        }
+    }
+
+    /**
+     * Handle summon attacks with correct damage values
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onSummonAttack(EntityDamageByEntityEvent event) {
+        // Check if attacker is a wolf or any entity that could be a summon
+        if (event.getDamager() instanceof Wolf) {
+            Wolf wolf = (Wolf) event.getDamager();
+
+            // Only process tamed wolves (summons are tamed)
+            if (!wolf.isTamed()) return;
+
+            // Get the owner if it's a player
+            if (wolf.getOwner() instanceof Player) {
+                Player owner = (Player) wolf.getOwner();
+                UUID ownerId = owner.getUniqueId();
+
+                // Check if this is our summon
+                if (isWolfSummon(ownerId, wolf) || 
+                    (additionalWolves.containsKey(ownerId) && 
+                     additionalWolves.get(ownerId).contains(wolf.getUniqueId())) ||
+                    isBoarSummon(ownerId, wolf) ||
+                    isBearSummon(ownerId, wolf)) {
+
+                    // Get the base damage based on summon type
+                    double baseDamage = 0.0;
+                    if (isWolfSummon(ownerId, wolf) || 
+                        (additionalWolves.containsKey(ownerId) && 
+                         additionalWolves.get(ownerId).contains(wolf.getUniqueId()))) {
+                        baseDamage = 50.0;
+                    } else if (isBoarSummon(ownerId, wolf)) {
+                        baseDamage = 80.0;
+                    } else if (isBearSummon(ownerId, wolf)) {
+                        baseDamage = 20.0;
+                    }
+
+                    // Apply damage multiplier
+                    double multiplier = summonDamageMultiplier.getOrDefault(wolf.getUniqueId(), 1.0);
+                    double finalDamage = baseDamage * multiplier;
+
+                    // Check for critical hit
+                    double critChance = summonCritChance.getOrDefault(wolf.getUniqueId(), 0.0);
+                    boolean isCrit = false;
+                    if (critChance > 0 && random.nextDouble() < critChance) {
+                        finalDamage *= 2.0;
+                        isCrit = true;
+
+                        // Show notification
+                        ActionBarUtils.sendActionBar(owner, 
+                            ChatColor.RED + "Summon Critical Hit!");
+                    }
+
+                    // Set the damage directly - this is the key fix
+                    event.setDamage(finalDamage);
+
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("[SUMMON DAMAGE] " + owner.getName() + 
+                                "'s summon dealt " + finalDamage + " damage" +
+                                " (base: " + baseDamage + ", multiplier: " + multiplier + 
+                                (isCrit ? ", CRITICAL HIT!" : "") + ")");
+                        owner.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Summon dealt " + 
+                                finalDamage + " damage");
+                    }
+
+                    // Apply wolf lifesteal if applicable (Skill ID 100017)
+                    if (isWolfSummon(ownerId, wolf) && isPurchased(ownerId, 100017)) {
+                        double healAmount = finalDamage * 0.05; // 5% of damage dealt
+                        double maxHealth = owner.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+                        double newHealth = Math.min(owner.getHealth() + healAmount, maxHealth);
+                        owner.setHealth(newHealth);
+
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Wolf Healing: " + owner.getName() + 
+                                    " healed for " + healAmount + " HP");
+                            owner.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Wolf Healing: +" + 
+                                    String.format("%.1f", healAmount) + " HP");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle player teleportation and remove all summons
+     */
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+        UUID playerId = player.getUniqueId();
+
+        // Skip for short-distance teleports (like small movements)
+        if (event.getFrom().distance(event.getTo()) < 10) {
+            return;
+        }
+
+        // Schedule task to run after teleport completes
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!player.isOnline()) return;
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Removing summons for " + player.getName() + " after teleport");
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Removing all summons after teleport");
+            }
+
+            // Remove all summons
+            removeAllSummons(player);
+
+            // Force cooldowns to be off after a delay to allow re-summoning
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (player.isOnline()) {
+                    wolfRespawnCooldowns.remove(playerId);
+                    boarRespawnCooldowns.remove(playerId);
+                    bearRespawnCooldowns.remove(playerId);
+
+                    // Now it's safe to re-summon
+                    checkAndSummonCreatures(player);
+                }
+            }, 20L); // 1 second delay
+
+        }, 5L); // 5 ticks (0.25 second) delay to ensure teleport completes
     }
 }

@@ -17,7 +17,7 @@ import java.util.UUID;
 public class MythicMobXPHandler implements Listener {
 
     private final MyExperiencePlugin plugin;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public MythicMobXPHandler(MyExperiencePlugin plugin) {
         this.plugin = plugin;

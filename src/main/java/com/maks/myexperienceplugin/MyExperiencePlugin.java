@@ -7,6 +7,7 @@ import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUIListen
 import com.maks.myexperienceplugin.alchemy.*;
 import com.maks.myexperienceplugin.exp.*;
 import com.maks.myexperienceplugin.listener.*;
+import com.maks.myexperienceplugin.party.PartyAPI;
 import com.maks.myexperienceplugin.party.PartyCommand;
 import com.maks.myexperienceplugin.party.PartyManager;
 import net.milkbowl.vault.economy.Economy;
@@ -116,6 +117,10 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Initialize core managers and handlers
         partyManager = new PartyManager(this);
+
+        // Inicjalizacja Party API dla integracji z innymi pluginami
+        PartyAPI.initialize(this);
+
         moneyRewardHandler = new MoneyRewardHandler(economy, this);
         playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
         alchemyLevelConfig = new AlchemyLevelConfig(this);
@@ -521,6 +526,30 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 getLogger().info("[BEASTMASTER] Removed all summons for " + player.getName() + " on logout");
             }
         }
+
+        // Clean up FlameWarden player data
+        if ("FlameWarden".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler handler = 
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler) 
+                ascendancySkillEffectIntegrator.getHandler("FlameWarden");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[FLAMEWARDEN] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up ScaleGuardian player data
+        if ("ScaleGuardian".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler handler = 
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler) 
+                ascendancySkillEffectIntegrator.getHandler("ScaleGuardian");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[SCALEGUARDIAN] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
     }
     public SkillTreeManager getSkillTreeManager() {
         return skillTreeManager;
@@ -560,6 +589,27 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                     Bukkit.getScheduler().runTaskLater(this, () -> {
                         handler.checkAndSummonCreatures(player);
                         getLogger().info("[BEASTMASTER] Checked and respawned summons for " + player.getName() + " on login");
+                    }, 20L); // 1 second delay
+                }
+            }
+
+            // Apply effects for FlameWarden players
+            if ("FlameWarden".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler handler = 
+                    (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler) 
+                    ascendancySkillEffectIntegrator.getHandler("FlameWarden");
+
+                if (handler != null) {
+                    // Add a slight delay to ensure all player data is loaded
+                    Bukkit.getScheduler().runTaskLater(this, () -> {
+                        // Check if player has the Fire Resistance skill (ID 3)
+                        if (skillTreeManager.getPurchasedSkills(uuid).contains(300003)) {
+                            // Apply fire resistance effect
+                            player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE, 
+                                Integer.MAX_VALUE, 0, false, false, true));
+                            getLogger().info("[FLAMEWARDEN] Applied infinite fire resistance to " + player.getName() + " on login");
+                        }
                     }, 20L); // 1 second delay
                 }
             }

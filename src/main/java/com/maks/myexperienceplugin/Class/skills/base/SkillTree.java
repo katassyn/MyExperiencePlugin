@@ -62,8 +62,7 @@ public class SkillTree {
      * Check if a node can be purchased by the player
      * A node can be purchased if:
      * 1. It's a root node, or
-     * 2. At least one of its connected nodes is already purchased, or
-     * 3. It is connected to at least one already purchased node
+     * 2. The player has purchased at least one of its parent nodes
      */
     public boolean canPurchaseNode(Player player, int nodeId, Set<Integer> purchasedNodes) {
         // Root nodes can always be purchased
@@ -77,33 +76,40 @@ public class SkillTree {
             return false;
         }
 
+        // Find nodes that have the target node as a connection
+        // These are the parent nodes that must be purchased first
+        boolean hasValidParent = false;
 
-        // Check if the target node is connected to any purchased node
-        for (SkillNode connectedNode : targetNode.getConnectedNodes()) {
-            if (purchasedNodes.contains(connectedNode.getId())) {
-                return true;
-            }
-        }
-
-        // Check if ANY purchased node is connected to our target
-        // We need to check inverse connections (find nodes that have the target as a connection)
         for (Map.Entry<Integer, SkillNode> entry : nodes.entrySet()) {
-            SkillNode node = entry.getValue();
+            int parentId = entry.getKey();
+            SkillNode parentNode = entry.getValue();
 
-            // Skip if this node isn't purchased
-            if (!purchasedNodes.contains(node.getId())) {
+            // Skip if this node doesn't connect to our target
+            boolean isParent = false;
+            for (SkillNode connectedNode : parentNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    isParent = true;
+                    break;
+                }
+            }
+
+            if (!isParent) {
                 continue;
             }
 
-            // Check if this purchased node connects to our target
-            for (SkillNode connectedNode : node.getConnectedNodes()) {
-                if (connectedNode.getId() == nodeId) {
-                    return true;
+            // If this is a parent and it's purchased, the node can be purchased
+            if (purchasedNodes.contains(parentId)) {
+                hasValidParent = true;
+
+                if (debuggingFlag == 1) {
+                    MyExperiencePlugin.getInstance().getLogger().info("Node " + nodeId + " can be purchased because parent node " + 
+                            parentId + " is purchased");
                 }
+
+                break;
             }
         }
 
-        // If we've checked all purchased nodes and none connect to our target
-        return false;
+        return hasValidParent;
     }
 }

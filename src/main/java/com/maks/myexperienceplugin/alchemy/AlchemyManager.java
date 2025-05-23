@@ -33,7 +33,7 @@ public class AlchemyManager {
     private JavaPlugin plugin;
     private File storageFile;
     private FileConfiguration storage;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     private AlchemyManager() {}
 

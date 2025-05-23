@@ -6,7 +6,11 @@ import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
 import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.DragonKnightSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.ranger.RangerSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy.BeastmasterSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy.EarthwardenSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy.ShadowstalkerSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.BerserkerSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.FlameWardenSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.ScaleGuardianSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.SpellWeaverSkillManager;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
@@ -88,11 +92,15 @@ public class SkillTreeManager {
         // Ranger ascendancies
         Map<String, BaseSkillManager> rangerAscendancies = new HashMap<>();
         rangerAscendancies.put("Beastmaster", new BeastmasterSkillManager(plugin));
+        rangerAscendancies.put("Shadowstalker", new ShadowstalkerSkillManager(plugin));
+        rangerAscendancies.put("Earthwarden", new EarthwardenSkillManager(plugin));
         // Add other Ranger ascendancies when implemented
 
         // DragonKnight ascendancies
         Map<String, BaseSkillManager> dragonKnightAscendancies = new HashMap<>();
         dragonKnightAscendancies.put("Berserker", new BerserkerSkillManager(plugin));
+        dragonKnightAscendancies.put("FlameWarden", new FlameWardenSkillManager(plugin));
+        dragonKnightAscendancies.put("ScaleGuardian", new ScaleGuardianSkillManager(plugin));
         // Add other DragonKnight ascendancies when implemented
 
         // Add to map

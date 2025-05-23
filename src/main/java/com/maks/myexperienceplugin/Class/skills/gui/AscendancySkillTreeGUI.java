@@ -63,6 +63,34 @@ public class AscendancySkillTreeGUI {
         berserkerBranches.add("Frenzy Path");
         ascendancyBranches.put("Berserker", berserkerBranches);
 
+        // For FlameWarden - define branches based on the theme
+        List<String> flameWardenBranches = new ArrayList<>();
+        flameWardenBranches.add("Ignite Path");
+        flameWardenBranches.add("Burning Damage Path");
+        flameWardenBranches.add("Fire Defense Path");
+        ascendancyBranches.put("FlameWarden", flameWardenBranches);
+
+        // For ScaleGuardian - define branches based on the theme
+        List<String> scaleGuardianBranches = new ArrayList<>();
+        scaleGuardianBranches.add("Shield Path");
+        scaleGuardianBranches.add("Defense Path");
+        scaleGuardianBranches.add("Protection Path");
+        ascendancyBranches.put("ScaleGuardian", scaleGuardianBranches);
+
+        // For Shadowstalker - define branches based on the theme
+        List<String> shadowstalkerBranches = new ArrayList<>();
+        shadowstalkerBranches.add("Stealth Path");
+        shadowstalkerBranches.add("Critical Path");
+        shadowstalkerBranches.add("Poison Path");
+        ascendancyBranches.put("Shadowstalker", shadowstalkerBranches);
+
+        // For Earthwarden - define branches based on the theme
+        List<String> earthwardenBranches = new ArrayList<>();
+        earthwardenBranches.add("Defense Path");
+        earthwardenBranches.add("Healing Path");
+        earthwardenBranches.add("Nature Path");
+        ascendancyBranches.put("Earthwarden", earthwardenBranches);
+
         // Add more ascendancies as needed
     }
 
@@ -123,7 +151,21 @@ public class AscendancySkillTreeGUI {
         List<String> berserkerBranches = Arrays.asList("Rage Path", "Critical Path", "Frenzy Path");
         branchNames.put("Berserker", berserkerBranches);
 
-        // Dodać więcej podklas w przyszłości...
+        // FlameWarden
+        List<String> flameWardenBranches = Arrays.asList("Ignite Path", "Burning Damage Path", "Fire Defense Path");
+        branchNames.put("FlameWarden", flameWardenBranches);
+
+        // ScaleGuardian
+        List<String> scaleGuardianBranches = Arrays.asList("Shield Path", "Defense Path", "Protection Path");
+        branchNames.put("ScaleGuardian", scaleGuardianBranches);
+
+        // Shadowstalker
+        List<String> shadowstalkerBranches = Arrays.asList("Stealth Path", "Critical Path", "Poison Path");
+        branchNames.put("Shadowstalker", shadowstalkerBranches);
+
+        // Earthwarden
+        List<String> earthwardenBranches = Arrays.asList("Defense Path", "Healing Path", "Nature Path");
+        branchNames.put("Earthwarden", earthwardenBranches);
 
         // Inicjalizacja układów dla wszystkich podklas
         for (String ascendancy : branchNames.keySet()) {
@@ -139,7 +181,10 @@ public class AscendancySkillTreeGUI {
                 int idOffset = 0;
                 if (ascendancy.equals("Beastmaster")) idOffset = 100000;
                 else if (ascendancy.equals("Berserker")) idOffset = 200000;
-                // Dodać więcej podklas w przyszłości...
+                else if (ascendancy.equals("FlameWarden")) idOffset = 300000;
+                else if (ascendancy.equals("ScaleGuardian")) idOffset = 400000;
+                else if (ascendancy.equals("Shadowstalker")) idOffset = 500000;
+                else if (ascendancy.equals("Earthwarden")) idOffset = 600000;
 
                 for (Map.Entry<Integer, Integer> entry : universalPositions.entrySet()) {
                     branchPositions.put(entry.getKey() + idOffset, entry.getValue());
@@ -214,6 +259,158 @@ public class AscendancySkillTreeGUI {
         berserkerConnections.put("Frenzy Path", new ArrayList<>());
 
         branchConnectionSlots.put("Berserker", berserkerConnections);
+
+        // FlameWarden connections
+        Map<String, List<Integer>> flameWardenConnections = new HashMap<>();
+
+        List<Integer> ignitePath = new ArrayList<>();
+        ignitePath.add(10+9);  // Connection between node 1 and node 4
+        ignitePath.add(19+9);  // Connection between node 4 and node 7
+        ignitePath.add(28+9);  // Connection between node 7 and node 12
+        ignitePath.add(37+9);  // Connection between node 12 and node 17
+        ignitePath.add(46+3);  // Connection between node 17 and node 21
+        ignitePath.add(49+3);  // Connection between node 21 and node 25
+        flameWardenConnections.put("Ignite Path", ignitePath);
+
+        List<Integer> burningDamagePath = new ArrayList<>();
+        burningDamagePath.add(12+9);  // Connection between node 2 and node 5
+        burningDamagePath.add(21+9);  // Connection between node 5 and node 8/9
+        burningDamagePath.add(30+9);  // Connection between node 8 and node 13
+        burningDamagePath.add(31+9);  // Connection between node 9 and node 14
+        burningDamagePath.add(39+9);  // Connection between node 13 and node 19
+        burningDamagePath.add(40+9);  // Connection between node 14 and node 20
+        burningDamagePath.add(48+3);  // Connection between node 19 and node 24
+        burningDamagePath.add(49+3);  // Connection between node 20 and node 26
+        burningDamagePath.add(51+3);  // Connection between node 24 and node 26
+        flameWardenConnections.put("Burning Damage Path", burningDamagePath);
+
+        List<Integer> fireDefensePath = new ArrayList<>();
+        fireDefensePath.add(14+9);  // Connection between node 3 and node 6
+        fireDefensePath.add(23+9);  // Connection between node 6 and node 10/11
+        fireDefensePath.add(32+9);  // Connection between node 10 and node 15
+        fireDefensePath.add(33+9);  // Connection between node 11 and node 16
+        fireDefensePath.add(41+9);  // Connection between node 15 and node 18
+        fireDefensePath.add(42+9);  // Connection between node 16 and node 22
+        fireDefensePath.add(50+3);  // Connection between node 18 and node 23
+        fireDefensePath.add(51+3);  // Connection between node 22 and node 23
+        fireDefensePath.add(52+3);  // Connection between node 23 and node 27
+        flameWardenConnections.put("Fire Defense Path", fireDefensePath);
+
+        branchConnectionSlots.put("FlameWarden", flameWardenConnections);
+
+        // ScaleGuardian connections
+        Map<String, List<Integer>> scaleGuardianConnections = new HashMap<>();
+
+        List<Integer> shieldPath = new ArrayList<>();
+        shieldPath.add(10+9);  // Connection between node 1 and node 4
+        shieldPath.add(19+9);  // Connection between node 4 and node 9
+        shieldPath.add(28+9);  // Connection between node 9 and node 13/18
+        shieldPath.add(37+9);  // Connection between node 13 and node 17
+        shieldPath.add(46+3);  // Connection between node 17 and node 24
+        shieldPath.add(47+3);  // Connection between node 18 and node 24
+        shieldPath.add(51+3);  // Connection between node 24 and node 25
+        scaleGuardianConnections.put("Shield Path", shieldPath);
+
+        List<Integer> defensePath = new ArrayList<>();
+        defensePath.add(12+9);  // Connection between node 2 and node 5
+        defensePath.add(21+9);  // Connection between node 5 and node 8
+        defensePath.add(29+9);  // Connection between node 8 and node 11/12
+        defensePath.add(37+9);  // Connection between node 11 and node 15
+        defensePath.add(38+9);  // Connection between node 12 and node 20
+        defensePath.add(46+3);  // Connection between node 15 and node 21
+        defensePath.add(47+3);  // Connection between node 20 and node 23
+        defensePath.add(50+3);  // Connection between node 21 and node 23
+        defensePath.add(51+3);  // Connection between node 23 and node 26
+        scaleGuardianConnections.put("Defense Path", defensePath);
+
+        List<Integer> protectionPath = new ArrayList<>();
+        protectionPath.add(14+9);  // Connection between node 3 and node 6/7
+        protectionPath.add(23+9);  // Connection between node 6 and node 10
+        protectionPath.add(24+9);  // Connection between node 7 and node 14
+        protectionPath.add(32+9);  // Connection between node 10 and node 16
+        protectionPath.add(33+9);  // Connection between node 14 and node 19
+        protectionPath.add(41+9);  // Connection between node 16 and node 22
+        protectionPath.add(42+9);  // Connection between node 19 and node 22
+        protectionPath.add(50+3);  // Connection between node 22 and node 27
+        scaleGuardianConnections.put("Protection Path", protectionPath);
+
+        branchConnectionSlots.put("ScaleGuardian", scaleGuardianConnections);
+
+        // Shadowstalker connections
+        Map<String, List<Integer>> shadowstalkerConnections = new HashMap<>();
+
+        List<Integer> stealthPath = new ArrayList<>();
+        stealthPath.add(10+9);  // Connection between node 1 and node 4
+        stealthPath.add(19+9);  // Connection between node 4 and node 6/7
+        stealthPath.add(28+9);  // Connection between node 6 and node 12
+        stealthPath.add(29+9);  // Connection between node 7 and node 10
+        stealthPath.add(37+9);  // Connection between node 12 and node 16
+        stealthPath.add(38+9);  // Connection between node 10 and node 22
+        stealthPath.add(46+3);  // Connection between node 16 and node 25
+        stealthPath.add(47+3);  // Connection between node 22 and node 25
+        shadowstalkerConnections.put("Stealth Path", stealthPath);
+
+        List<Integer> criticalPath = new ArrayList<>();
+        criticalPath.add(12+9);  // Connection between node 2 and node 5
+        criticalPath.add(21+9);  // Connection between node 5 and node 8
+        criticalPath.add(30+9);  // Connection between node 8 and node 11
+        criticalPath.add(39+9);  // Connection between node 11 and node 17
+        criticalPath.add(48+3);  // Connection between node 17 and node 20
+        criticalPath.add(51+3);  // Connection between node 20 and node 26
+        shadowstalkerConnections.put("Critical Path", criticalPath);
+
+        List<Integer> poisonPath = new ArrayList<>();
+        poisonPath.add(14+9);  // Connection between node 3 and node 9
+        poisonPath.add(23+9);  // Connection between node 9 and node 13/14/15
+        poisonPath.add(32+9);  // Connection between node 13 and node 18
+        poisonPath.add(33+9);  // Connection between node 14 and node 19
+        poisonPath.add(34+9);  // Connection between node 15 and node 21
+        poisonPath.add(41+9);  // Connection between node 18 and node 23
+        poisonPath.add(42+9);  // Connection between node 19 and node 24
+        poisonPath.add(43+9);  // Connection between node 21 and node 24
+        poisonPath.add(50+3);  // Connection between node 23 and node 27
+        poisonPath.add(51+3);  // Connection between node 24 and node 27
+        shadowstalkerConnections.put("Poison Path", poisonPath);
+
+        branchConnectionSlots.put("Shadowstalker", shadowstalkerConnections);
+
+        // Earthwarden connections
+        Map<String, List<Integer>> earthwardenConnections = new HashMap<>();
+
+        List<Integer> earthDefensePath = new ArrayList<>();
+        earthDefensePath.add(10+9);  // Connection between node 1 and node 4/5
+        earthDefensePath.add(19+9);  // Connection between node 4 and node 7
+        earthDefensePath.add(20+9);  // Connection between node 5 and node 10
+        earthDefensePath.add(28+9);  // Connection between node 7 and node 11/12
+        earthDefensePath.add(29+9);  // Connection between node 10 and node 15
+        earthDefensePath.add(37+9);  // Connection between node 11 and node 16
+        earthDefensePath.add(38+9);  // Connection between node 12 and node 18
+        earthDefensePath.add(39+9);  // Connection between node 15 and node 23
+        earthDefensePath.add(46+3);  // Connection between node 16 and node 25
+        earthDefensePath.add(47+3);  // Connection between node 18 and node 25
+        earthDefensePath.add(48+3);  // Connection between node 23 and node 25
+        earthwardenConnections.put("Defense Path", earthDefensePath);
+
+        List<Integer> healingPath = new ArrayList<>();
+        healingPath.add(12+9);  // Connection between node 2 and node 6/9
+        healingPath.add(21+9);  // Connection between node 6 and node 13
+        healingPath.add(22+9);  // Connection between node 9 and node 17
+        healingPath.add(30+9);  // Connection between node 13 and node 19
+        healingPath.add(31+9);  // Connection between node 17 and node 21
+        healingPath.add(39+9);  // Connection between node 19 and node 24
+        healingPath.add(40+9);  // Connection between node 21 and node 24
+        healingPath.add(49+3);  // Connection between node 24 and node 26
+        earthwardenConnections.put("Healing Path", healingPath);
+
+        List<Integer> naturePath = new ArrayList<>();
+        naturePath.add(14+9);  // Connection between node 3 and node 8
+        naturePath.add(23+9);  // Connection between node 8 and node 14
+        naturePath.add(32+9);  // Connection between node 14 and node 20
+        naturePath.add(41+9);  // Connection between node 20 and node 22
+        naturePath.add(50+3);  // Connection between node 22 and node 27
+        earthwardenConnections.put("Nature Path", naturePath);
+
+        branchConnectionSlots.put("Earthwarden", earthwardenConnections);
     }
 
     public void openAscendancySkillTreeGUI(Player player, int branchIndex) {
@@ -382,6 +579,86 @@ public class AscendancySkillTreeGUI {
                 lore.add(ChatColor.GRAY + "• Attack speed bonuses");
                 lore.add(ChatColor.GRAY + "• Movement and agility improvements");
                 lore.add(ChatColor.GRAY + "• Gaining power through continuous combat");
+            }
+        } else if ("FlameWarden".equals(ascendancy)) {
+            if ("Ignite Path".equals(branchName)) {
+                material = Material.FLINT_AND_STEEL;
+                lore.add(ChatColor.GRAY + "Focus on igniting enemies");
+                lore.add(ChatColor.GRAY + "• Increased chance to ignite enemies");
+                lore.add(ChatColor.GRAY + "• Burning aura and momentum");
+                lore.add(ChatColor.GRAY + "• Damage scaling with burning enemies");
+            } else if ("Burning Damage Path".equals(branchName)) {
+                material = Material.BLAZE_POWDER;
+                lore.add(ChatColor.GRAY + "Focus on damage against burning enemies");
+                lore.add(ChatColor.GRAY + "• Bonus damage against burning enemies");
+                lore.add(ChatColor.GRAY + "• Critical hits cause additional burning");
+                lore.add(ChatColor.GRAY + "• Spreading flames between enemies");
+            } else {
+                material = Material.MAGMA_CREAM;
+                lore.add(ChatColor.GRAY + "Focus on fire-based defense");
+                lore.add(ChatColor.GRAY + "• Fire resistance and healing");
+                lore.add(ChatColor.GRAY + "• Fire nova and protection");
+                lore.add(ChatColor.GRAY + "• Defensive bonuses from burning enemies");
+            }
+        } else if ("ScaleGuardian".equals(ascendancy)) {
+            if ("Shield Path".equals(branchName)) {
+                material = Material.SHIELD;
+                lore.add(ChatColor.GRAY + "Focus on shield blocking and reflection");
+                lore.add(ChatColor.GRAY + "• Increased shield block chance");
+                lore.add(ChatColor.GRAY + "• Damage reflection when blocking");
+                lore.add(ChatColor.GRAY + "• Health restoration from successful blocks");
+            } else if ("Defense Path".equals(branchName)) {
+                material = Material.IRON_CHESTPLATE;
+                lore.add(ChatColor.GRAY + "Focus on defensive capabilities");
+                lore.add(ChatColor.GRAY + "• Increased defense and armor");
+                lore.add(ChatColor.GRAY + "• Resistance to knockback effects");
+                lore.add(ChatColor.GRAY + "• Defensive bonuses when stationary");
+            } else {
+                material = Material.TOTEM_OF_UNDYING;
+                lore.add(ChatColor.GRAY + "Focus on protecting allies");
+                lore.add(ChatColor.GRAY + "• Defensive auras for nearby allies");
+                lore.add(ChatColor.GRAY + "• Taunting enemies to focus on you");
+                lore.add(ChatColor.GRAY + "• Last resort survival abilities");
+            }
+        } else if ("Shadowstalker".equals(ascendancy)) {
+            if ("Stealth Path".equals(branchName)) {
+                material = Material.GRAY_DYE;
+                lore.add(ChatColor.GRAY + "Focus on stealth and evasion");
+                lore.add(ChatColor.GRAY + "• Increased movement speed in shadows");
+                lore.add(ChatColor.GRAY + "• Reduced enemy detection range");
+                lore.add(ChatColor.GRAY + "• Evasion bonuses while sneaking");
+            } else if ("Critical Path".equals(branchName)) {
+                material = Material.DIAMOND_SWORD;
+                lore.add(ChatColor.GRAY + "Focus on critical hits and precision");
+                lore.add(ChatColor.GRAY + "• Increased critical hit chance");
+                lore.add(ChatColor.GRAY + "• Enhanced critical damage");
+                lore.add(ChatColor.GRAY + "• Special effects on critical hits");
+            } else {
+                material = Material.SPIDER_EYE;
+                lore.add(ChatColor.GRAY + "Focus on poison and debuffs");
+                lore.add(ChatColor.GRAY + "• Poisoned attacks and bleeding");
+                lore.add(ChatColor.GRAY + "• Enhanced damage against poisoned enemies");
+                lore.add(ChatColor.GRAY + "• Toxic amplification abilities");
+            }
+        } else if ("Earthwarden".equals(ascendancy)) {
+            if ("Defense Path".equals(branchName)) {
+                material = Material.SHIELD;
+                lore.add(ChatColor.GRAY + "Focus on defensive capabilities");
+                lore.add(ChatColor.GRAY + "• Increased defense in natural areas");
+                lore.add(ChatColor.GRAY + "• Defensive bonuses when stationary");
+                lore.add(ChatColor.GRAY + "• Survival instincts when wounded");
+            } else if ("Healing Path".equals(branchName)) {
+                material = Material.GOLDEN_APPLE;
+                lore.add(ChatColor.GRAY + "Focus on healing and regeneration");
+                lore.add(ChatColor.GRAY + "• Enhanced healing from all sources");
+                lore.add(ChatColor.GRAY + "• Health restoration abilities");
+                lore.add(ChatColor.GRAY + "• Healing bonuses for allies");
+            } else {
+                material = Material.GRASS_BLOCK;
+                lore.add(ChatColor.GRAY + "Focus on nature-based abilities");
+                lore.add(ChatColor.GRAY + "• Environmental resistance");
+                lore.add(ChatColor.GRAY + "• Entangling strikes against enemies");
+                lore.add(ChatColor.GRAY + "• Nature's blessing abilities");
             }
         } else {
             material = Material.PAPER;

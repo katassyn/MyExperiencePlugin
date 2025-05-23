@@ -35,7 +35,7 @@ public class BeastmasterSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node3 = new SkillNode(ID_OFFSET + 3, "Bear Summon", "Unlock bear summon, tanky companion (80% dmg/80hp).\nNote: You can only have 2 types of summons at once.", 1,
+        SkillNode node3 = new SkillNode(ID_OFFSET + 3, "Bear Summon", "Unlock bear summon, tanky companion (20 dmg/80hp).\nNote: You can only have 2 types of summons at once.", 1,
                 Material.HONEY_BOTTLE, 1, player -> {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Bear Summon skill");
@@ -327,8 +327,8 @@ public class BeastmasterSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
         plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 13) + " (Boar Critical) -> " + (ID_OFFSET + 19) + " (Boar Frenzy)");
 
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 14) + " (Pack Damage Plus) -> " + (ID_OFFSET + 19) + " (Boar Frenzy)");
+        // REMOVED: tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
+        // This connection shouldn't exist
 
         tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
         plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 19) + " (Boar Frenzy) -> " + (ID_OFFSET + 23) + " (Boar Speed)");
@@ -368,8 +368,10 @@ public class BeastmasterSkillManager extends BaseSkillManager {
             plugin.getLogger().info("Configured Beastmaster skill tree with " +
                     tree.getRootNodeIds().size() + " root nodes and complete connection paths");
 
-            // Log a summary of all connections for node 100012 (Wolf Vitality)
-            logNodeConnections(tree, ID_OFFSET + 12);
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
         }
     }
 
@@ -395,9 +397,11 @@ public class BeastmasterSkillManager extends BaseSkillManager {
         plugin.getLogger().info("[BEASTMASTER DEBUG] - Checking incoming connections...");
         boolean hasIncoming = false;
         for (SkillNode otherNode : tree.getAllNodes()) {
-            if (otherNode.getConnectedNodes().contains(node)) {
-                plugin.getLogger().info("[BEASTMASTER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
-                hasIncoming = true;
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[BEASTMASTER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
             }
         }
 

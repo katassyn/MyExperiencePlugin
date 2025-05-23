@@ -3,6 +3,10 @@ package com.maks.myexperienceplugin.Class.skills;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.EarthwardenSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ShadowstalkerSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -30,6 +34,13 @@ public class AscendancySkillEffectIntegrator implements Listener {
     // Task IDs for periodic effects
     private int beastmasterPeriodicTaskId = -1;
     private int berserkerPeriodicTaskId = -1;
+    private int shadowstalkerPeriodicTaskId = -1;
+    private int earthwardenPeriodicTaskId = -1;
+    private int flamewardenPeriodicTaskId = -1;
+    private int scaleguardianPeriodicTaskId = -1;
+
+    // Counter for periodic tasks to manage check frequency
+    private int schedulerCounter = 0;
 
     public AscendancySkillEffectIntegrator(MyExperiencePlugin plugin, SkillEffectsHandler skillEffectsHandler) {
         this.plugin = plugin;
@@ -61,6 +72,26 @@ public class AscendancySkillEffectIntegrator implements Listener {
         ascendancyHandlers.put("Berserker", berserkerHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Created BerserkerSkillEffectsHandler and added to ascendancyHandlers map");
 
+        // Create Shadowstalker handler
+        ShadowstalkerSkillEffectsHandler shadowstalkerHandler = new ShadowstalkerSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("Shadowstalker", shadowstalkerHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ShadowstalkerSkillEffectsHandler and added to ascendancyHandlers map");
+
+        // Create Earthwarden handler
+        EarthwardenSkillEffectsHandler earthwardenHandler = new EarthwardenSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("Earthwarden", earthwardenHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created EarthwardenSkillEffectsHandler and added to ascendancyHandlers map");
+
+        // Create FlameWarden handler
+        FlameWardenSkillEffectsHandler flameWardenHandler = new FlameWardenSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("FlameWarden", flameWardenHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created FlameWardenSkillEffectsHandler and added to ascendancyHandlers map");
+
+        // Create ScaleGuardian handler
+        ScaleGuardianSkillEffectsHandler scaleGuardianHandler = new ScaleGuardianSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("ScaleGuardian", scaleGuardianHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ScaleGuardianSkillEffectsHandler and added to ascendancyHandlers map");
+
         // Register with main SkillEffectsHandler
         skillEffectsHandler.registerClassHandler("Beastmaster", beastmasterHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Registered BeastmasterSkillEffectsHandler with main SkillEffectsHandler");
@@ -68,8 +99,20 @@ public class AscendancySkillEffectIntegrator implements Listener {
         skillEffectsHandler.registerClassHandler("Berserker", berserkerHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Registered BerserkerSkillEffectsHandler with main SkillEffectsHandler");
 
+        skillEffectsHandler.registerClassHandler("Shadowstalker", shadowstalkerHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ShadowstalkerSkillEffectsHandler with main SkillEffectsHandler");
+
+        skillEffectsHandler.registerClassHandler("Earthwarden", earthwardenHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered EarthwardenSkillEffectsHandler with main SkillEffectsHandler");
+
+        skillEffectsHandler.registerClassHandler("FlameWarden", flameWardenHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered FlameWardenSkillEffectsHandler with main SkillEffectsHandler");
+
+        skillEffectsHandler.registerClassHandler("ScaleGuardian", scaleGuardianHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ScaleGuardianSkillEffectsHandler with main SkillEffectsHandler");
+
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Registered Beastmaster and Berserker skill effect handlers");
+            plugin.getLogger().info("Registered Beastmaster, Berserker, Shadowstalker, Earthwarden, FlameWarden, and ScaleGuardian skill effect handlers");
         }
     }
 
@@ -77,21 +120,30 @@ public class AscendancySkillEffectIntegrator implements Listener {
      * Start periodic tasks for all ascendancy handlers
      */
     private void startPeriodicTasks() {
-        // Start Beastmaster periodic task (every 10 seconds)
+        // Start Beastmaster periodic task (every 60 seconds for creature checks)
         beastmasterPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
             if (ascendancyHandlers.containsKey("Beastmaster")) {
                 BeastmasterSkillEffectsHandler handler = (BeastmasterSkillEffectsHandler) ascendancyHandlers.get("Beastmaster");
 
-                // Apply periodic effects (heal bears, update name tags, etc.)
+                // Apply periodic effects (heal bears, update name tags, etc.) - still every 10 seconds
                 handler.applyPeriodicEffects();
 
-                // Check for all online Beastmasters and ensure they have their summons
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
-                    if ("Beastmaster".equals(ascendancy)) {
-                        handler.checkAndSummonCreatures(player);
+                // Only check summons every 6 cycles (60 seconds)
+                if (schedulerCounter % 6 == 0) {
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("[BEASTMASTER] Running summon check for all Beastmaster players");
+                    }
+
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
+                        if ("Beastmaster".equals(ascendancy)) {
+                            handler.checkAndSummonCreatures(player);
+                        }
                     }
                 }
+
+                // Increment counter
+                schedulerCounter++;
             }
         }, 200L, 200L); // Initial delay 10s, repeat every 10s (200 ticks)
 
@@ -100,6 +152,49 @@ public class AscendancySkillEffectIntegrator implements Listener {
             if (ascendancyHandlers.containsKey("Berserker")) {
                 BerserkerSkillEffectsHandler handler = (BerserkerSkillEffectsHandler) ascendancyHandlers.get("Berserker");
                 handler.checkCombatMomentum();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
+        // Start Shadowstalker periodic task (every 5 seconds)
+        shadowstalkerPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("Shadowstalker")) {
+                ShadowstalkerSkillEffectsHandler handler = (ShadowstalkerSkillEffectsHandler) ascendancyHandlers.get("Shadowstalker");
+                handler.applyPeriodicEffects();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
+        // Start Earthwarden periodic task (every 5 seconds)
+        earthwardenPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("Earthwarden")) {
+                EarthwardenSkillEffectsHandler handler = (EarthwardenSkillEffectsHandler) ascendancyHandlers.get("Earthwarden");
+                handler.applyPeriodicEffects();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
+        // Start FlameWarden periodic task (every 5 seconds)
+        flamewardenPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("FlameWarden")) {
+                FlameWardenSkillEffectsHandler handler = (FlameWardenSkillEffectsHandler) ascendancyHandlers.get("FlameWarden");
+                handler.applyPeriodicEffects();
+                handler.checkFireHealing();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
+        // Start ScaleGuardian periodic task (every 5 seconds)
+        scaleguardianPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("ScaleGuardian")) {
+                ScaleGuardianSkillEffectsHandler handler = (ScaleGuardianSkillEffectsHandler) ascendancyHandlers.get("ScaleGuardian");
+
+                // Apply periodic effects for each player with ScaleGuardian ascendancy
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
+                    if ("ScaleGuardian".equals(ascendancy)) {
+                        handler.checkProximityDefense(player);
+                        handler.checkSurroundedHealing(player);
+                        handler.checkAllyEffects(player);
+                        handler.checkHeavyArmorMastery(player);
+                    }
+                }
             }
         }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
 
@@ -120,6 +215,26 @@ public class AscendancySkillEffectIntegrator implements Listener {
         if (berserkerPeriodicTaskId != -1) {
             Bukkit.getScheduler().cancelTask(berserkerPeriodicTaskId);
             berserkerPeriodicTaskId = -1;
+        }
+
+        if (shadowstalkerPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(shadowstalkerPeriodicTaskId);
+            shadowstalkerPeriodicTaskId = -1;
+        }
+
+        if (earthwardenPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(earthwardenPeriodicTaskId);
+            earthwardenPeriodicTaskId = -1;
+        }
+
+        if (flamewardenPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(flamewardenPeriodicTaskId);
+            flamewardenPeriodicTaskId = -1;
+        }
+
+        if (scaleguardianPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(scaleguardianPeriodicTaskId);
+            scaleguardianPeriodicTaskId = -1;
         }
 
         if (debuggingFlag == 1) {
@@ -150,14 +265,8 @@ public class AscendancySkillEffectIntegrator implements Listener {
                             " with ascendancy " + ascendancy);
                 }
 
-                // Auto-summon creatures for Beastmasters
-                if ("Beastmaster".equals(ascendancy)) {
-                    BeastmasterSkillEffectsHandler handler = 
-                        (BeastmasterSkillEffectsHandler) ascendancyHandlers.get("Beastmaster");
-                    if (handler != null) {
-                        handler.checkAndSummonCreatures(player);
-                    }
-                }
+                // REMOVED auto-summon code from here since it will be handled by MyExperiencePlugin.java
+                // This prevents duplicate calls
             }
         }, 40L); // 2 second delay
     }
