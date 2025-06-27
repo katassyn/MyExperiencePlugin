@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 
 public class ShadowstalkerSkillManager extends BaseSkillManager {
 
-    // Use ID range starting from 500000 to avoid conflicts with base class skills, Beastmaster (100000), Berserker (200000), FlameWarden (300000), and ScaleGuardian (400000)
     private static final int ID_OFFSET = 500000;
 
     public ShadowstalkerSkillManager(MyExperiencePlugin plugin) {
@@ -20,9 +19,10 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
 
     @Override
     protected void initializeSkills() {
-        // Create nodes based on Specific_plugin_description.md
+        // === ŚCIEŻKA 1: STEALTH PATH (Skille 1, 4, 6, 7, 10, 12, 16, 22, 25) ===
         SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Shadow Speed", "+5% movement speed in shadows and at night", 1,
                 Material.LEATHER_BOOTS, 2, player -> {
+            player.sendMessage(ChatColor.DARK_GRAY + "You move swiftly through the shadows!");
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Shadow Speed skill");
             }
@@ -275,179 +275,147 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (Shadow Speed), " + 
-                (ID_OFFSET + 2) + " (Critical Precision), " + 
-                (ID_OFFSET + 3) + " (First Strike)");
+        // === ŚCIEŻKA 1: STEALTH PATH ===
+        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);    // 1 -> 4
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 6);    // 4 -> 6
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);    // 4 -> 7
+        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 12);   // 6 -> 12
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 10);   // 7 -> 10
+        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 16);  // 12 -> 16
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 22);  // 10 -> 22
+        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 25);  // 16 -> 25
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);  // 22 -> 25
 
-        // Path 1: Stealth/Evasion Path
-        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 1) + " (Shadow Speed) -> " + (ID_OFFSET + 4) + " (Sneaking Evasion)");
+        // === ŚCIEŻKA 2: CRITICAL PATH ===
+        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);    // 2 -> 5
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);    // 5 -> 8
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 11);   // 8 -> 11
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);  // 11 -> 17
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 18);  // 17 -> 18
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 20);  // 17 -> 20
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 23);  // 18 -> 23
+        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 26);  // 20 -> 26
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);  // 23 -> 26
 
-        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 6);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 1) + " (Shadow Speed) -> " + (ID_OFFSET + 6) + " (Shadow Evasion)");
+        // === ŚCIEŻKA 3: POISON PATH ===
+        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 9);    // 3 -> 9
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 13);   // 9 -> 13
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);   // 9 -> 14
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 15);   // 9 -> 15
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);  // 13 -> 19
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 21);  // 14 -> 21
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 21);  // 15 -> 21
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 24);  // 19 -> 24
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);  // 21 -> 24
+        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);  // 24 -> 27
 
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 4) + " (Sneaking Evasion) -> " + (ID_OFFSET + 7) + " (Stealth)");
-
-        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 12);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 6) + " (Shadow Evasion) -> " + (ID_OFFSET + 12) + " (Desperate Evasion)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 13);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Stealth) -> " + (ID_OFFSET + 13) + " (Patient Hunter)");
-
-        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 16);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 12) + " (Desperate Evasion) -> " + (ID_OFFSET + 16) + " (Shadow Step)");
-
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 16);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 13) + " (Patient Hunter) -> " + (ID_OFFSET + 16) + " (Shadow Step)");
-
-        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 22);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 16) + " (Shadow Step) -> " + (ID_OFFSET + 22) + " (Shadow Protection)");
-
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 24);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 22) + " (Shadow Protection) -> " + (ID_OFFSET + 24) + " (Wind Mastery)");
-
-        // Path 2: Critical/Damage Path
-        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 2) + " (Critical Precision) -> " + (ID_OFFSET + 5) + " (Critical Bleeding)");
-
-        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 8);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 2) + " (Critical Precision) -> " + (ID_OFFSET + 8) + " (Backstab)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 11);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Critical Bleeding) -> " + (ID_OFFSET + 11) + " (Critical Power)");
-
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 11);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 8) + " (Backstab) -> " + (ID_OFFSET + 11) + " (Critical Power)");
-
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 11) + " (Critical Power) -> " + (ID_OFFSET + 17) + " (Devastating Critical)");
-
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 18);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 11) + " (Critical Power) -> " + (ID_OFFSET + 18) + " (Critical Defense)");
-
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 20);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 17) + " (Devastating Critical) -> " + (ID_OFFSET + 20) + " (Opening Strike)");
-
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 19);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 18) + " (Critical Defense) -> " + (ID_OFFSET + 19) + " (Ambush)");
-
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 25);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 19) + " (Ambush) -> " + (ID_OFFSET + 25) + " (Ambush Speed)");
-
-        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 23);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 20) + " (Opening Strike) -> " + (ID_OFFSET + 23) + " (Precision Strike)");
-
-        // Path 3: Poison/Toxin Path
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 9);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 3) + " (First Strike) -> " + (ID_OFFSET + 9) + " (Poisoned Blade)");
-
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 10);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 3) + " (First Strike) -> " + (ID_OFFSET + 10) + " (Kill Rush)");
-
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 9) + " (Poisoned Blade) -> " + (ID_OFFSET + 14) + " (Toxic Exploitation)");
-
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 15);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 9) + " (Poisoned Blade) -> " + (ID_OFFSET + 15) + " (Potent Toxins)");
-
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 21);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 14) + " (Toxic Exploitation) -> " + (ID_OFFSET + 21) + " (Toxic Amplification)");
-
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 21);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 15) + " (Potent Toxins) -> " + (ID_OFFSET + 21) + " (Toxic Amplification)");
-
-        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 26);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 21) + " (Toxic Amplification) -> " + (ID_OFFSET + 26) + " (Toxic Focus)");
-
-        tree.connectNodes(ID_OFFSET + 26, ID_OFFSET + 27);
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Connected: " + (ID_OFFSET + 26) + " (Toxic Focus) -> " + (ID_OFFSET + 27) + " (Armor Penetration)");
+        // === POŁĄCZENIA MIĘDZY ŚCIEŻKAMI ===
+        tree.connectNodes(ID_OFFSET + 25, ID_OFFSET + 26);  // 25 -> 26 (Stealth -> Critical)
+        tree.connectNodes(ID_OFFSET + 26, ID_OFFSET + 27);  // 26 -> 27 (Critical -> Poison)
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Configured Shadowstalker skill tree with " +
-                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
-
-            // Log all connections to verify
-            for (int i = 1; i <= 27; i++) {
-                logNodeConnections(tree, ID_OFFSET + i);
-            }
+            plugin.getLogger().info("Shadowstalker skill tree initialized with all connections");
         }
     }
 
-    /**
-     * Log detailed information about a node's connections
-     */
-    private void logNodeConnections(SkillTree tree, int nodeId) {
-        SkillNode node = tree.getNode(nodeId);
-        if (node == null) {
-            plugin.getLogger().info("[SHADOWSTALKER DEBUG] Node " + nodeId + " not found in tree!");
-            return;
-        }
-
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
-
-        // Log outgoing connections
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
-        for (SkillNode connected : node.getConnectedNodes()) {
-            plugin.getLogger().info("[SHADOWSTALKER DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
-        }
-
-        // Log incoming connections
-        plugin.getLogger().info("[SHADOWSTALKER DEBUG] - Checking incoming connections...");
-        boolean hasIncoming = false;
-        for (SkillNode otherNode : tree.getAllNodes()) {
-            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
-                if (connectedNode.getId() == nodeId) {
-                    plugin.getLogger().info("[SHADOWSTALKER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
-                    hasIncoming = true;
-                }
-            }
-        }
-
-        if (!hasIncoming) {
-            plugin.getLogger().info("[SHADOWSTALKER DEBUG]   No incoming connections found!");
-        }
-    }
 
     @Override
     protected void applySkillStats(Player player, int skillId, int purchaseCount) {
-        // Most Shadowstalker skills apply effects that are handled in the effects handler
-        // This method is primarily for any direct effects on the player
+        int originalId = skillId - ID_OFFSET;
+        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Shadowstalker skill " + (skillId - ID_OFFSET) +
-                    " for player " + player.getName() + " will be handled by ShadowstalkerSkillEffectsHandler");
+            plugin.getLogger().info("Applying Shadowstalker skill " + originalId + 
+                    " for player " + player.getName() + " (purchase " + purchaseCount + ")");
         }
 
-        // Force refresh player stats to ensure any relevant effects are applied
+        switch (originalId) {
+            case 2: // Critical Precision: +2% critical hit chance (1/3)
+                // UWAGA: Musisz dodać addCriticalChance() do PlayerSkillStats!
+                // stats.addCriticalChance(2 * purchaseCount);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Would add " + (2 * purchaseCount) + 
+                            "% critical chance (requires PlayerSkillStats update)");
+                }
+                break;
+
+            case 4: // Sneaking Evasion: +4% evade chance while sneaking
+                // To jest warunkowe, obsługiwane w EffectsHandler
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Sneaking evasion will be handled dynamically");
+                }
+                break;
+
+            case 6: // Shadow Evasion: +3% evade chance in darkness (1/2)
+                // Warunkowe, ale możemy dodać bazowy evade jako przybliżenie
+                stats.addEvadeChance(3 * purchaseCount);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Added " + (3 * purchaseCount) + 
+                            "% base evade chance (full effect in darkness)");
+                }
+                break;
+
+            case 11: // Critical Power: +20% critical damage (1/2)
+                // UWAGA: Brak statystyki criticalDamageMultiplier w PlayerSkillStats
+                // To musi być obsługiwane dynamicznie w EffectsHandler
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Critical damage bonus will be handled dynamically " +
+                            "(+" + (20 * purchaseCount) + "%)");
+                }
+                break;
+
+            case 13: // Patient Hunter: +4% movement speed (statyczny bonus)
+                stats.addMovementSpeedBonus(4);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Added 4% movement speed from Patient Hunter");
+                }
+                break;
+
+            case 22: // Shadow Protection: +10% damage reduction in darkness (1/2)
+                // Warunkowe, ale możemy dodać bazową obronę
+                stats.addDefenseBonus(10 * purchaseCount);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Added " + (10 * purchaseCount) + 
+                            "% defense bonus (full effect in darkness)");
+                }
+                break;
+
+            // Wszystkie pozostałe umiejętności są dynamiczne i obsługiwane w EffectsHandler
+            default:
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Skill " + originalId + 
+                            " effects will be handled by ShadowstalkerSkillEffectsHandler");
+                }
+                break;
+        }
+
+        // Odśwież statystyki gracza
         plugin.getSkillEffectsHandler().refreshPlayerStats(player);
     }
 
     @Override
     public boolean isMultiPurchaseDiscountSkill(int skillId) {
-        // Check if this is a skill that can be purchased multiple times
         int originalId = skillId - ID_OFFSET;
 
-        // Skills that can be purchased multiple times (based on Specific_plugin_description.md)
+        // Lista umiejętności z wielokrotnym zakupem (z opisów (1/X))
         switch (originalId) {
-            case 1:  // Shadow Speed (1/2)
-            case 2:  // Critical Precision (1/3)
-            case 3:  // First Strike (1/2)
-            case 5:  // Critical Bleeding (1/2)
-            case 6:  // Shadow Evasion (1/2)
-            case 8:  // Backstab (1/2)
-            case 9:  // Poisoned Blade (1/2)
-            case 11: // Critical Power (1/2)
-            case 14: // Toxic Exploitation (1/2)
-            case 15: // Potent Toxins (1/2)
-            case 16: // Shadow Step (1/2)
-            case 17: // Devastating Critical (1/2)
-            case 20: // Opening Strike (1/2)
-            case 21: // Toxic Amplification (1/2)
-            case 22: // Shadow Protection (1/2)
-            case 24: // Wind Mastery (1/2)
-            case 26: // Toxic Focus (1/2)
+            case 1:   // Shadow Speed (1/2)
+            case 2:   // Critical Precision (1/3)
+            case 3:   // First Strike (1/2)
+            case 5:   // Critical Bleeding (1/2)
+            case 6:   // Shadow Evasion (1/2)
+            case 8:   // Backstab (1/2)
+            case 9:   // Poisoned Blade (1/2)
+            case 11:  // Critical Power (1/2)
+            case 14:  // Toxic Exploitation (1/2)
+            case 15:  // Potent Toxins (1/2)
+            case 16:  // Shadow Step (1/2)
+            case 17:  // Devastating Critical (1/2)
+            case 20:  // Opening Strike (1/2)
+            case 21:  // Toxic Amplification (1/2)
+            case 22:  // Shadow Protection (1/2)
+            case 24:  // Wind Mastery (1/2)
+            case 26:  // Toxic Focus (1/2)
                 return true;
             default:
                 return false;

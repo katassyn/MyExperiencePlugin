@@ -3,6 +3,7 @@ package com.maks.myexperienceplugin.Class.skills.effects.ascendancy;
 import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.party.PartyAPI;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -1209,13 +1210,21 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (entity instanceof Player) {
                 Player ally = (Player) entity;
 
+                // Check if the player is in the same party as the ally
+                if (!isInSameParty(player, ally)) {
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Skipping player " + ally.getName() + " - not in the same party as " + player.getName());
+                    }
+                    continue;
+                }
+
                 // Apply Protective Aura (ID 14) - 8 block range
                 if (hasProtectiveAura && player.getLocation().distance(ally.getLocation()) <= 8) {
                     SkillEffectsHandler.PlayerSkillStats allyStats = plugin.getSkillEffectsHandler().getPlayerStats(ally);
                     allyStats.addDefenseBonus(10);
 
                     if (debuggingFlag == 1) {
-                        plugin.getLogger().info("Protective Aura applied to ally " + ally.getName() + 
+                        plugin.getLogger().info("Protective Aura applied to party member " + ally.getName() + 
                                 " by " + player.getName() + " (+10% defense)");
                         player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Protective Aura applied to " + ally.getName());
                     }
@@ -1231,7 +1240,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     allyStats.addDamageMultiplier(0.05 * purchaseCount);
 
                     if (debuggingFlag == 1) {
-                        plugin.getLogger().info("Ally Protection applied to ally " + ally.getName() + 
+                        plugin.getLogger().info("Ally Protection applied to party member " + ally.getName() + 
                                 " by " + player.getName() + " (+" + (10 * purchaseCount) + "% shield block, +" + 
                                 (5 * purchaseCount) + "% damage)");
                         player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Ally Protection applied to " + ally.getName());
@@ -1245,7 +1254,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     allyStats.addDefenseBonus(15);
 
                     if (debuggingFlag == 1) {
-                        plugin.getLogger().info("Healthy Protection applied to ally " + ally.getName() + 
+                        plugin.getLogger().info("Healthy Protection applied to party member " + ally.getName() + 
                                 " by " + player.getName() + " (15% damage reduction)");
                         player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Healthy Protection applied to " + ally.getName());
                     }
@@ -1443,6 +1452,29 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         // Check if the player has moved significantly
         double distanceSquared = loc1.distanceSquared(loc2);
         return distanceSquared < 0.01; // Very small threshold for movement
+    }
+
+    /**
+     * Check if two players are in the same party using PartyAPI
+     * @param player1 First player
+     * @param player2 Second player
+     * @return true if both players are in the same party, false otherwise
+     */
+    private boolean isInSameParty(Player player1, Player player2) {
+        // If either player is null, they can't be in the same party
+        if (player1 == null || player2 == null) return false;
+
+        // If it's the same player, return true
+        if (player1.equals(player2)) return true;
+
+        // Check if player1 is in a party
+        if (!PartyAPI.isInParty(player1)) return false;
+
+        // Get all members of player1's party
+        List<Player> partyMembers = PartyAPI.getPartyMembers(player1);
+
+        // Check if player2 is in the list of party members
+        return partyMembers.contains(player2);
     }
 
     /**

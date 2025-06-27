@@ -57,7 +57,7 @@ public class TopCommand implements CommandExecutor {
 
             try (Connection connection = plugin.getDatabaseManager().getConnection();
                  PreparedStatement stmt = connection.prepareStatement(
-                         "SELECT name, level FROM players ORDER BY level DESC, xp DESC LIMIT 30")) {
+                         "SELECT name, level, rank_position FROM players ORDER BY rank_position ASC LIMIT 30")) {
 
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
@@ -76,13 +76,10 @@ public class TopCommand implements CommandExecutor {
                 List<String> topPlayers = new ArrayList<>();
 
                 for (PlayerData data : playerDataList) {
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(data.getName());
-                    if (!offlinePlayer.isOp()) {
-                        topPlayers.add(String.format("§6#%d: §a%s §7- Level §b%d",
-                                topPlayers.size() + 1, data.getName(), data.getLevel()));
-                        if (topPlayers.size() >= 10) {
-                            break;
-                        }
+                    topPlayers.add(String.format("§6#%d: §a%s §7- Level §b%d",
+                            topPlayers.size() + 1, data.getName(), data.getLevel()));
+                    if (topPlayers.size() >= 10) {
+                        break;
                     }
                 }
                 while (topPlayers.size() < 10) {

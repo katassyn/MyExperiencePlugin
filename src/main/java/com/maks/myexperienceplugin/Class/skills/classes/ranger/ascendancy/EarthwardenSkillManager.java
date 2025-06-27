@@ -433,7 +433,24 @@ public class EarthwardenSkillManager extends BaseSkillManager {
 
     @Override
     public boolean isMultiPurchaseDiscountSkill(int skillId) {
-        // Earthwarden doesn't have any multi-purchase discount skills
-        return false;
+        int originalId = skillId - ID_OFFSET;
+
+        // Skills that can be purchased multiple times (based on skill descriptions)
+        switch (originalId) {
+            case 1:  // +3% defense in grassy areas (1/2)
+            case 2:  // Heal 1 hp after killing (1/2)  
+            case 4:  // +2 hp per level (1/3)
+            case 5:  // Steadfast Defense (1/2)
+            case 6:  // Desperate Luck (1/2)
+            case 8:  // Entangling Strike (1/2)
+            case 9:  // Enhanced Regeneration (1/2)
+            case 10: // Reactive Defense (1/2)
+            case 13: // Vengeance (1/2)
+            case 20: // Healthy Speed (1/2)
+            case 26: // Allied Strength (1/2)
+                return true;
+            default:
+                return false;
+        }
     }
 }

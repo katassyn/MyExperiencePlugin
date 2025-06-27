@@ -1,12 +1,7 @@
 package com.maks.myexperienceplugin.Class.skills;
 
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
-import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
-import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler;
-import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.EarthwardenSkillEffectsHandler;
-import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler;
-import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler;
-import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ShadowstalkerSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.*;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -130,9 +125,9 @@ public class AscendancySkillEffectIntegrator implements Listener {
 
                 // Only check summons every 6 cycles (60 seconds)
                 if (schedulerCounter % 6 == 0) {
-                    if (debuggingFlag == 1) {
-                        plugin.getLogger().info("[BEASTMASTER] Running summon check for all Beastmaster players");
-                    }
+//                    if (debuggingFlag == 1) {
+//                        plugin.getLogger().info("[BEASTMASTER] Running summon check for all Beastmaster players");
+//                    }
 
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());

@@ -38,6 +38,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private final HashMap<UUID, Double> playerRequiredXP = new HashMap<>();
     public final HashMap<UUID, Double> playerCurrentXP = new HashMap<>();
     private final HashMap<Integer, Double> xpPerLevel = new HashMap<>();
+    private final HashMap<UUID, ExpBoost> playerExpBoosts = new HashMap<>();
     private File expTableFile;
     private FileConfiguration expTableConfig;
     private final Map<String, Double> xpPerMob = new HashMap<>();
@@ -62,6 +63,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private AscendancySkillTreeGUI ascendancySkillTreeGUI; // Add this field
     private SkillPurchaseManager skillPurchaseManager;
     private LuckPerms luckPerms;
+    private com.maks.myexperienceplugin.Class.skills.systems.CriticalStrikeSystem criticalStrikeSystem;
     public static MyExperiencePlugin getInstance() {
         return instance;
     }
@@ -171,10 +173,14 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new ClassGUIListener(this), this);
         getServer().getPluginManager().registerEvents(new ClassResetItemListener(this), this);
 
+        // Initialize critical strike system
+        criticalStrikeSystem = new com.maks.myexperienceplugin.Class.skills.systems.CriticalStrikeSystem(this);
+
         // Register skill system listeners
         getServer().getPluginManager().registerEvents(skillEffectsHandler, this);
         getServer().getPluginManager().registerEvents(new SkillTreeGUIListener(this, skillTreeManager, skillTreeGUI, skillPurchaseManager), this);
         getServer().getPluginManager().registerEvents(new AscendancySkillTreeGUIListener(this, skillTreeManager, ascendancySkillTreeGUI, skillPurchaseManager), this);
+        getServer().getPluginManager().registerEvents(new com.maks.myexperienceplugin.Class.skills.listeners.BerserkerEquipmentListener(this), this);
 
         // Register commands - Party
         PartyCommand partyCommand = new PartyCommand(this, partyManager);
@@ -208,6 +214,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("skillstats").setExecutor(new SkillStatsCommand(this, skillEffectsHandler));
         getCommand("skilltree2").setExecutor(new AscendancySkillTreeCommand(this, ascendancySkillTreeGUI));
         getCommand("playerattributes").setExecutor(new PlayerAttributesCommand(this, skillEffectsHandler));
+
+        // Register Scale Guardian test command
+        getCommand("sgtest").setExecutor(new com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.ScaleGuardianTestCommand(this));
 
         // Register commands - Reset attributes
         ResetAttributesCommand resetAttributesCommand = new ResetAttributesCommand(this, skillEffectsHandler);
@@ -276,6 +285,63 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 // Register the player join alchemy listener
 
 // Add this line to make sure the ActionBarUtils class is loaded
+
+        // Uruchom zadanie czyszczenia wygasłych exp boostów co 5 minut
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::cleanupExpiredBoosts, 6000L, 6000L); // 5 min = 6000 ticks
+
+        // Dodaj komendę do sprawdzania statusu exp boost
+        getCommand("expboost").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("§cThis command can only be used by players.");
+                return true;
+            }
+
+            Player player = (Player) sender;
+            showExpBoostStatus(player);
+            return true;
+        });
+
+        // Opcjonalnie - dodaj też komendę admin do nadawania boostów:
+        getCommand("giveexpboost").setExecutor((sender, cmd, label, args) -> {
+            if (!sender.hasPermission("myplugin.giveexpboost")) {
+                sender.sendMessage("§cYou don't have permission to use this command!");
+                return true;
+            }
+
+            if (args.length < 3) {
+                sender.sendMessage("§cUsage: /giveexpboost <player> <percent> <hours>");
+                return true;
+            }
+
+            try {
+                Player target = Bukkit.getPlayer(args[0]);
+                if (target == null) {
+                    sender.sendMessage("§cPlayer not found.");
+                    return true;
+                }
+
+                double percent = Double.parseDouble(args[1]);
+                int hours = Integer.parseInt(args[2]);
+
+                if (percent <= 0 || percent > 1000) {
+                    sender.sendMessage("§cPercent must be between 1 and 1000.");
+                    return true;
+                }
+
+                if (hours <= 0 || hours > 168) { // Max 7 days
+                    sender.sendMessage("§cHours must be between 1 and 168.");
+                    return true;
+                }
+
+                addExpBoost(target, percent, hours);
+                sender.sendMessage("§aGave " + target.getName() + " a +" + (int)percent + "% EXP boost for " + hours + " hours!");
+
+            } catch (NumberFormatException e) {
+                sender.sendMessage("§cInvalid number format!");
+            }
+
+            return true;
+        });
     }
     @Override
     public void onDisable() {
@@ -297,6 +363,10 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Save any remaining alchemy data
         AlchemyManager.getInstance().saveData();
+
+        // Wyczyść exp boosts
+        playerExpBoosts.clear();
+
         Bukkit.getLogger().info("MyExperiencePlugin has been disabled!");
     }
 
@@ -373,9 +443,24 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     // Add XP
     public void addXP(Player player, double xp) {
         UUID playerId = player.getUniqueId();
+
+        // Zastosuj player exp boost jeśli aktywny
+        double playerBoostMultiplier = 1.0 + (getPlayerExpBoost(player) / 100.0);
+
+        // Oblicz finalne XP z player boost
+        double finalXP = xp * playerBoostMultiplier;
+
+        // Dodaj XP
         double currentXP = playerCurrentXP.getOrDefault(playerId, 0.0);
-        currentXP += xp;
+        currentXP += finalXP;
         playerCurrentXP.put(playerId, currentXP);
+
+        // Debug info jeśli boost jest aktywny
+        if (playerBoostMultiplier > 1.0) {
+            getLogger().info("[EXP BOOST] " + player.getName() + " received " + 
+                    String.format("%.2f", finalXP) + " XP (base: " + String.format("%.2f", xp) + 
+                    " + " + (int)getPlayerExpBoost(player) + "% boost)");
+        }
 
         checkLevelUp(player);
         updatePlayerXPBar(player);
@@ -550,6 +635,48 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 getLogger().info("[SCALEGUARDIAN] Cleared all data for " + player.getName() + " on logout");
             }
         }
+
+        // Clean up Shadowstalker player data
+        if ("Shadowstalker".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ShadowstalkerSkillEffectsHandler handler = 
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ShadowstalkerSkillEffectsHandler) 
+                ascendancySkillEffectIntegrator.getHandler("Shadowstalker");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[SHADOWSTALKER] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up Earthwarden player data
+        if ("Earthwarden".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.EarthwardenSkillEffectsHandler handler = 
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.EarthwardenSkillEffectsHandler) 
+                ascendancySkillEffectIntegrator.getHandler("Earthwarden");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[EARTHWARDEN] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up Berserker player data
+        if ("Berserker".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler handler = 
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler) 
+                ascendancySkillEffectIntegrator.getHandler("Berserker");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[BERSERKER] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up CriticalStrikeSystem data
+        if (criticalStrikeSystem != null) {
+            criticalStrikeSystem.clearPlayerData(uuid);
+            getLogger().info("[CRITICAL] Cleared critical strike data for " + player.getName() + " on logout");
+        }
     }
     public SkillTreeManager getSkillTreeManager() {
         return skillTreeManager;
@@ -628,5 +755,124 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
     public AscendancySkillEffectIntegrator getAscendancySkillEffectIntegrator() {
         return ascendancySkillEffectIntegrator;
+    }
+
+    public com.maks.myexperienceplugin.Class.skills.systems.CriticalStrikeSystem getCriticalStrikeSystem() {
+        return criticalStrikeSystem;
+    }
+
+    // Dodaj tę klasę wewnętrzną do MyExperiencePlugin:
+    public static class ExpBoost {
+        private final double multiplier;
+        private final long expiryTime;
+
+        public ExpBoost(double multiplier, long expiryTime) {
+            this.multiplier = multiplier;
+            this.expiryTime = expiryTime;
+        }
+
+        public double getMultiplier() {
+            return multiplier;
+        }
+
+        public long getExpiryTime() {
+            return expiryTime;
+        }
+
+        public boolean isExpired() {
+            return System.currentTimeMillis() > expiryTime;
+        }
+
+        public long getRemainingMinutes() {
+            long remaining = expiryTime - System.currentTimeMillis();
+            return Math.max(0, remaining / (1000 * 60));
+        }
+    }
+
+    /**
+     * Dodaje exp boost dla gracza
+     */
+    public void addExpBoost(Player player, double multiplierPercent, int hours) {
+        UUID playerId = player.getUniqueId();
+        long expiryTime = System.currentTimeMillis() + (hours * 60L * 60L * 1000L);
+
+        ExpBoost existingBoost = playerExpBoosts.get(playerId);
+        if (existingBoost != null && !existingBoost.isExpired()) {
+            // Jeśli gracz ma już aktywny boost
+            if (existingBoost.getMultiplier() >= multiplierPercent) {
+                player.sendMessage("§cYou already have a better or equal EXP boost active! " +
+                        "Current: §6+" + (int)existingBoost.getMultiplier() + "%§c, remaining: §6" + 
+                        existingBoost.getRemainingMinutes() + " minutes");
+                return;
+            } else {
+                player.sendMessage("§aYour previous EXP boost has been replaced with a better one!");
+            }
+        }
+
+        ExpBoost boost = new ExpBoost(multiplierPercent, expiryTime);
+        playerExpBoosts.put(playerId, boost);
+
+        player.sendMessage("§aYou have activated §6+" + (int)multiplierPercent + "% EXP boost§a for §6" + hours + " hours§a!");
+
+        // Poinformuj gracza o statusie boost
+        showExpBoostStatus(player);
+    }
+
+    /**
+     * Pobiera aktualny exp boost gracza
+     */
+    public double getPlayerExpBoost(Player player) {
+        ExpBoost boost = playerExpBoosts.get(player.getUniqueId());
+        if (boost == null || boost.isExpired()) {
+            return 0.0; // Brak boost
+        }
+        return boost.getMultiplier();
+    }
+
+    /**
+     * Usuwa wygasły boost gracza
+     */
+    public void removeExpiredBoost(UUID playerId) {
+        ExpBoost boost = playerExpBoosts.get(playerId);
+        if (boost != null && boost.isExpired()) {
+            playerExpBoosts.remove(playerId);
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+                player.sendMessage("§eYour EXP boost has expired!");
+            }
+        }
+    }
+
+    /**
+     * Pokazuje status exp boost gracza
+     */
+    public void showExpBoostStatus(Player player) {
+        ExpBoost boost = playerExpBoosts.get(player.getUniqueId());
+        if (boost == null || boost.isExpired()) {
+            player.sendMessage("§7You don't have any active EXP boost.");
+        } else {
+            long remainingMinutes = boost.getRemainingMinutes();
+            long hours = remainingMinutes / 60;
+            long minutes = remainingMinutes % 60;
+
+            player.sendMessage("§aActive EXP Boost: §6+" + (int)boost.getMultiplier() + "%");
+            player.sendMessage("§aTime remaining: §6" + hours + "h " + minutes + "m");
+        }
+    }
+
+    /**
+     * Czyści wszystkie wygasłe boost
+     */
+    public void cleanupExpiredBoosts() {
+        playerExpBoosts.entrySet().removeIf(entry -> {
+            if (entry.getValue().isExpired()) {
+                Player player = Bukkit.getPlayer(entry.getKey());
+                if (player != null) {
+                    player.sendMessage("§eYour EXP boost has expired!");
+                }
+                return true;
+            }
+            return false;
+        });
     }
 }

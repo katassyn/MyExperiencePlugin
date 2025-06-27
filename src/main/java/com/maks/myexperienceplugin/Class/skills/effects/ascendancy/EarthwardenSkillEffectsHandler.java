@@ -54,6 +54,9 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     private final Map<UUID, Long> protectiveInstinctEndTimes = new ConcurrentHashMap<>();
     private final Map<UUID, Long> counterattackEndTimes = new ConcurrentHashMap<>();
 
+    // Custom immunity system to avoid using player.setInvulnerable(true)
+    private final Map<UUID, Long> immunityEndTimes = new ConcurrentHashMap<>();
+
     // Task IDs
     private BukkitTask periodicEffectsTask;
 
@@ -87,6 +90,18 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
      * Apply periodic effects for all online Earthwarden players
      */
     public void applyPeriodicEffects() {
+        // Cleanup expired effects
+        long currentTime = System.currentTimeMillis();
+
+        // Cleanup expired effects
+        reactiveDefenseEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+        survivalInstinctEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+        lastStandEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+        desperateEscapeEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+        protectiveInstinctEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+        counterattackEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+        immunityEndTimes.entrySet().removeIf(entry -> currentTime > entry.getValue());
+
         for (Player player : Bukkit.getOnlinePlayers()) {
             String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
             if (!"Earthwarden".equals(ascendancy)) {
@@ -167,12 +182,12 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 break;
 
             case 4: // +2 hp per level
-                // This is applied when the player's stats are calculated in the main SkillEffectsHandler
-                // We'll add a fixed bonus here that will be multiplied by the player's level later
-                double hpBonusPerLevel = 2 * purchaseCount;
-                stats.addMaxHealth(hpBonusPerLevel * 50); // Assuming average level of 50 for now
+                // This is a fixed bonus based on skill level (not player level)
+                // Each purchase (skill level) adds +2 HP
+                double hpBonus = 2 * purchaseCount;
+                stats.addMaxHealth(hpBonus);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 4: Added HP bonus of 2 per level, purchaseCount: " + purchaseCount);
+                    plugin.getLogger().info("EARTHWARDEN SKILL 4: Added " + hpBonus + " HP (skill level " + purchaseCount + "/3)");
                 }
                 break;
 
@@ -346,6 +361,15 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void handleEntityDamage(EntityDamageEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
 
+        // Check if player has immunity from custom immunity system
+        if (immunityEndTimes.containsKey(playerId) && System.currentTimeMillis() < immunityEndTimes.get(playerId)) {
+            event.setCancelled(true);
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Cancelled damage for " + player.getName() + " due to immunity");
+            }
+            return;
+        }
+
         // Update last damage taken time
         lastDamageTakenTime.put(playerId, System.currentTimeMillis());
 
@@ -408,14 +432,9 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // Cancel the damage
                 event.setCancelled(true);
 
-                // Apply immunity for 2 seconds
+                // Apply immunity for 2 seconds using custom immunity system
                 divineProtectionCooldowns.put(playerId, System.currentTimeMillis());
-                player.setInvulnerable(true);
-
-                // Remove invulnerability after 2 seconds
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    player.setInvulnerable(false);
-                }, 40L); // 2 seconds
+                immunityEndTimes.put(playerId, System.currentTimeMillis() + 2000); // 2 seconds
 
                 ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Divine Protection activated!");
                 if (debuggingFlag == 1) {
@@ -445,14 +464,9 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // Set health to 10% of max
                 player.setHealth(Math.max(1, player.getMaxHealth() * 0.1));
 
-                // Apply immunity for 2 seconds
+                // Apply immunity for 2 seconds using custom immunity system
                 secondChanceCooldowns.put(playerId, System.currentTimeMillis());
-                player.setInvulnerable(true);
-
-                // Remove invulnerability after 2 seconds
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    player.setInvulnerable(false);
-                }, 40L); // 2 seconds
+                immunityEndTimes.put(playerId, System.currentTimeMillis() + 2000); // 2 seconds
 
                 player.sendMessage(ChatColor.GOLD + "Your Second Chance has saved you from death!");
                 ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Second Chance activated!");
@@ -936,5 +950,6 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
         desperateEscapeEndTimes.remove(playerId);
         protectiveInstinctEndTimes.remove(playerId);
         counterattackEndTimes.remove(playerId);
+        immunityEndTimes.remove(playerId);
     }
 }

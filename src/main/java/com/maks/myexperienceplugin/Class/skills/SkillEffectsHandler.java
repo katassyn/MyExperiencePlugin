@@ -283,8 +283,43 @@ public class SkillEffectsHandler implements Listener {
             }
         }
 
-        // Apply damage multiplier
-        if (stats.getDamageMultiplier() != 1.0) {
+        // Check for critical hit
+        boolean isCritical = false;
+        if (plugin.getCriticalStrikeSystem() != null && event.getEntity() instanceof org.bukkit.entity.LivingEntity) {
+            isCritical = plugin.getCriticalStrikeSystem().rollForCritical(player);
+
+            if (isCritical) {
+                // Get critical damage multiplier
+                double critMultiplier = plugin.getCriticalStrikeSystem().getCriticalDamageMultiplier(player);
+
+                // Apply critical damage
+                double originalDamage = event.getDamage();
+                event.setDamage(originalDamage * critMultiplier);
+
+                // Show critical hit effects
+                com.maks.myexperienceplugin.Class.skills.effects.BerserkerVisualEffects.playCriticalHitEffect(
+                    player, (org.bukkit.entity.LivingEntity) event.getEntity());
+
+                // Notify player
+                ActionBarUtils.sendActionBar(player, 
+                    ChatColor.RED + "CRITICAL HIT! " + 
+                    ChatColor.GOLD + String.format("%.1fx", critMultiplier) + " " + 
+                    ChatColor.YELLOW + "damage");
+
+                if (debuggingFlag == 1) {
+                    player.sendMessage(ChatColor.DARK_GRAY + "Critical hit! x" + 
+                        String.format("%.2f", critMultiplier) + " damage (" + 
+                        String.format("%.1f", originalDamage) + " → " + 
+                        String.format("%.1f", event.getDamage()) + ")");
+                }
+
+                // Update last message time
+                lastDamageMessageTime.put(playerId, System.currentTimeMillis());
+            }
+        }
+
+        // Apply damage multiplier (if not already a critical hit)
+        if (!isCritical && stats.getDamageMultiplier() != 1.0) {
             double newDamage = event.getDamage() * stats.getDamageMultiplier();
             event.setDamage(newDamage);
             if (debuggingFlag == 1 &&
@@ -414,6 +449,27 @@ public class SkillEffectsHandler implements Listener {
             }
         }
 
+        // Initialize critical strike stats from the CriticalStrikeSystem
+        if (plugin.getCriticalStrikeSystem() != null) {
+            // Set critical chance from PlayerSkillStats to CriticalStrikeSystem
+            if (stats.getCriticalChance() > 0) {
+                plugin.getCriticalStrikeSystem().setBaseCritChance(player, stats.getCriticalChance());
+            }
+
+            // Set critical damage bonus from PlayerSkillStats to CriticalStrikeSystem
+            if (stats.getCriticalDamageBonus() > 0) {
+                // Default multiplier is 2.0, add the bonus
+                plugin.getCriticalStrikeSystem().setCritDamageMultiplier(
+                    player, 2.0 + stats.getCriticalDamageBonus());
+            }
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Initialized critical strike stats for " + player.getName() + ": " +
+                        "Chance=" + stats.getCriticalChance() + "%, " +
+                        "Multiplier=" + (2.0 + stats.getCriticalDamageBonus()) + "x");
+            }
+        }
+
         // Store the final stats
         playerStatsCache.put(uuid, stats);
 
@@ -421,7 +477,8 @@ public class SkillEffectsHandler implements Listener {
             plugin.getLogger().info("Calculated stats for player " + player.getName() + " (" + playerClass + "): " +
                     "HP+" + stats.getMaxHealthBonus() + ", " +
                     "DMG+" + stats.getBonusDamage() + " (total from all skills: " + totalBonusDamage + "), " +
-                    "MULT×" + stats.getDamageMultiplier());
+                    "MULT×" + stats.getDamageMultiplier() + 
+                    (stats.getCriticalChance() > 0 ? ", CRIT=" + stats.getCriticalChance() + "%" : ""));
         }
     }
 
@@ -459,6 +516,11 @@ public class SkillEffectsHandler implements Listener {
         private double spellDamageMultiplier = 1.0;
         private double spellCriticalChance = 0;
         private boolean hasFireResistance = false;
+        // Critical strike system
+        private double criticalChance = 0;
+        private double criticalDamageBonus = 0; // Bonus to base 2x dmg
+        // Attack speed bonus
+        private double attackSpeed = 0;
         public double getSpellDamageBonus() {
             return spellDamageBonus;
         }
@@ -501,6 +563,42 @@ public class SkillEffectsHandler implements Listener {
 
         public void setHasFireResistance(boolean hasFireResistance) {
             this.hasFireResistance = hasFireResistance;
+        }
+
+        public double getCriticalChance() {
+            return criticalChance;
+        }
+
+        public void setCriticalChance(double chance) {
+            this.criticalChance = chance;
+        }
+
+        public void addCriticalChance(double amount) {
+            this.criticalChance += amount;
+        }
+
+        public double getCriticalDamageBonus() {
+            return criticalDamageBonus;
+        }
+
+        public void setCriticalDamageBonus(double bonus) {
+            this.criticalDamageBonus = bonus;
+        }
+
+        public void addCriticalDamageBonus(double amount) {
+            this.criticalDamageBonus += amount;
+        }
+
+        public double getAttackSpeed() {
+            return attackSpeed;
+        }
+
+        public void setAttackSpeed(double attackSpeed) {
+            this.attackSpeed = attackSpeed;
+        }
+
+        public void addAttackSpeed(double amount) {
+            this.attackSpeed += amount;
         }
         public int getWindStacks() {
             return windStacks;

@@ -27,7 +27,7 @@ public class MythicMobXPHandler implements Listener {
     public void onMythicMobDeath(MythicMobDeathEvent event) {
         Entity killerEntity = event.getKiller();
         Player killer = null;
-        
+
         // Check if the killer is a player
         if (killerEntity instanceof Player) {
             killer = (Player) killerEntity;
@@ -39,18 +39,18 @@ public class MythicMobXPHandler implements Listener {
                 // Get the BeastmasterSkillEffectsHandler
                 BeastmasterSkillEffectsHandler beastmasterHandler = 
                     (BeastmasterSkillEffectsHandler) plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
-                
+
                 if (beastmasterHandler != null) {
                     // Check if the killer is a summon and get its owner
                     killer = beastmasterHandler.getSummonOwner(killerEntity);
-                    
+
                     if (killer != null && debuggingFlag == 1) {
                         Bukkit.getLogger().info("[DEBUG] MythicMob killed by a summon owned by " + killer.getName());
                     }
                 }
             }
         }
-        
+
         // Log if no valid killer was found
         if (killer == null && debuggingFlag == 1) {
             String mobName = event.getMobType().getInternalName();
@@ -61,7 +61,7 @@ public class MythicMobXPHandler implements Listener {
                 Bukkit.getLogger().info("[DEBUG] Killer entity is null");
             }
         }
-        
+
         // If we have a valid killer (either player or summon owner), award XP
         if (killer != null) {
             // Get mob's XP value
@@ -81,20 +81,30 @@ public class MythicMobXPHandler implements Listener {
             double requiredXP = plugin.getXpPerLevel().getOrDefault(playerLevel, 100.0);
             double tonicBonusXP = requiredXP * tonicBonusPercentage;
 
-            // Calculate final XP reward
-            double finalXpReward = (baseXpReward * bonusMultiplier * physisMultiplier) + tonicBonusXP;
+            // Apply Player Exp Boost (individual player boost)
+            double playerExpBoost = plugin.getPlayerExpBoost(killer);
+            double playerBoostMultiplier = 1.0 + (playerExpBoost / 100.0);
+
+            // Calculate final XP reward with all bonuses
+            double finalXpReward = (baseXpReward * bonusMultiplier * physisMultiplier * playerBoostMultiplier) + tonicBonusXP;
 
             if (debuggingFlag == 1) {
                 Bukkit.getLogger().info("[DEBUG] XP Calculation for " + killer.getName() + " killing " + mobName);
                 Bukkit.getLogger().info("  Base XP: " + baseXpReward);
                 Bukkit.getLogger().info("  Server Bonus Multiplier: " + bonusMultiplier);
                 Bukkit.getLogger().info("  Physis Bonus: " + (physisBonus * 100) + "% (multiplier: " + physisMultiplier + ")");
+                Bukkit.getLogger().info("  Player Exp Boost: " + playerExpBoost + "% (multiplier: " + playerBoostMultiplier + ")");
                 Bukkit.getLogger().info("  Tonic Bonus: " + (tonicBonusPercentage * 100) + "% of " + requiredXP + " = " + tonicBonusXP);
                 Bukkit.getLogger().info("  Final XP: " + finalXpReward);
             }
 
-            // Give full XP to killer
-            plugin.addXP(killer, finalXpReward);
+            // Give full XP to killer (but use direct method to avoid double boost application)
+            UUID killerId = killer.getUniqueId();
+            double currentXP = plugin.getPlayerCurrentXP().getOrDefault(killerId, 0.0);
+            currentXP += finalXpReward;
+            plugin.getPlayerCurrentXP().put(killerId, currentXP);
+            plugin.checkLevelUp(killer);
+            plugin.updatePlayerXPBar(killer);
 
             // Share XP with party members
             Party party = plugin.getPartyManager().getParty(killer);
@@ -104,13 +114,13 @@ public class MythicMobXPHandler implements Listener {
                         Player member = Bukkit.getPlayer(memberId);
                         if (member != null && member.getWorld().equals(killer.getWorld())) {
                             if (member.getLocation().distance(killer.getLocation()) <= 25) {
-                                // Give 30% of XP to party member, with bonus applied
-                                double partyXpReward = finalXpReward * 0.3;
-                                plugin.addXP(member, partyXpReward);
+                                // Give 30% of BASE XP to party member (they get their own boosts applied)
+                                double partyBaseXpReward = baseXpReward * bonusMultiplier * physisMultiplier * 0.3;
+                                plugin.addXP(member, partyBaseXpReward); // This will apply member's own player boost
 
                                 if (debuggingFlag == 1) {
                                     Bukkit.getLogger().info("[DEBUG] Party member " + member.getName() +
-                                            " received " + partyXpReward + " XP (30% of " + finalXpReward + ")");
+                                            " received base " + partyBaseXpReward + " XP (30% of killer's base, member's own boosts will be applied)");
                                 }
                             }
                         }

@@ -134,7 +134,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 break;
             case 8: // U gain -5 armor and +10% crit
                 stats.addShieldBlockChance(-5); // Using shield block as a proxy for armor
-                stats.addEvadeChance(10); // Using evade as a proxy for crit chance
+                stats.addCriticalChance(10);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 8: Added -5 armor, +10% critical chance");
                 }
@@ -195,7 +195,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
                 break;
             case 18: // U gain +10% crit chance
-                stats.addEvadeChance(10); // Using evade as a proxy for crit chance
+                stats.addCriticalChance(10);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 18: Added +10% critical chance");
                 }
@@ -350,7 +350,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             // Apply +25% damage and +15% crit chance
             SkillEffectsHandler.PlayerSkillStats playerStats = plugin.getSkillEffectsHandler().getPlayerStats(player);
             playerStats.addDamageMultiplier(0.25);
-            playerStats.addEvadeChance(15); // Using evade as a proxy for crit
+            playerStats.addCriticalChance(15);
 
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Applied low health damage boost for " + player.getName() +

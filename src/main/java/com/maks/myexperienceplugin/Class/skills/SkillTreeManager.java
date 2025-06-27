@@ -12,6 +12,9 @@ import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.
 import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.FlameWardenSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.ScaleGuardianSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.SpellWeaverSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ElementalistSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ChromomancerSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ArcaneProtectorSkillManager;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import org.bukkit.Bukkit;
@@ -103,10 +106,16 @@ public class SkillTreeManager {
         dragonKnightAscendancies.put("ScaleGuardian", new ScaleGuardianSkillManager(plugin));
         // Add other DragonKnight ascendancies when implemented
 
+        // SpellWeaver ascendancies
+        Map<String, BaseSkillManager> spellWeaverAscendancies = new HashMap<>();
+        spellWeaverAscendancies.put("Elementalist", new ElementalistSkillManager(plugin));
+        spellWeaverAscendancies.put("Chronomancer", new ChromomancerSkillManager(plugin));
+        spellWeaverAscendancies.put("ArcaneProtector", new ArcaneProtectorSkillManager(plugin));
+
         // Add to map
         ascendancyManagers.put("Ranger", rangerAscendancies);
         ascendancyManagers.put("DragonKnight", dragonKnightAscendancies);
-        // Add SpellweaverSkillManager ascendancies when implemented
+        ascendancyManagers.put("SpellWeaver", spellWeaverAscendancies);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Initialized class managers: " + classManagers.keySet());

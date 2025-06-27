@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class DatabaseManager {
@@ -58,7 +60,9 @@ public class DatabaseManager {
                     "uuid VARCHAR(36) PRIMARY KEY," +
                     "name VARCHAR(16)," +
                     "level INT," +
-                    "xp DOUBLE)";
+                    "xp DOUBLE," +
+                    "rank_position INT DEFAULT 0," +
+                    "is_admin BOOLEAN DEFAULT FALSE)";
 
             // Player classes table
             String createClassesTable = "CREATE TABLE IF NOT EXISTS player_classes (" +
@@ -92,14 +96,18 @@ public class DatabaseManager {
     public void savePlayerData(Player player, int level, double xp) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try (Connection connection = getConnection()) {
-                String sql = "REPLACE INTO players (uuid, name, level, xp) VALUES (?, ?, ?, ?)";
+                String sql = "REPLACE INTO players (uuid, name, level, xp, is_admin) VALUES (?, ?, ?, ?, ?)";
                 try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                     stmt.setString(1, player.getUniqueId().toString());
                     stmt.setString(2, player.getName());
                     stmt.setInt(3, level);
                     stmt.setDouble(4, xp);
+                    stmt.setBoolean(5, player.isOp());
                     stmt.executeUpdate();
                 }
+
+                // Update player rankings after saving data
+                updatePlayerRankings();
             } catch (SQLException e) {
                 plugin.getLogger().severe("Failed to save player data: " + e.getMessage());
                 e.printStackTrace();
@@ -107,16 +115,56 @@ public class DatabaseManager {
         });
     }
 
+    /**
+     * Updates the rank_position for all players based on their level.
+     * Admin players are placed at the end of the ranking.
+     */
+    public void updatePlayerRankings() {
+        try (Connection connection = getConnection()) {
+            // First, get all players sorted by level (non-admins first, then admins)
+            String selectSql = "SELECT uuid FROM players ORDER BY is_admin ASC, level DESC, xp DESC";
+            List<String> playerUuids = new ArrayList<>();
+
+            try (PreparedStatement stmt = connection.prepareStatement(selectSql)) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        playerUuids.add(rs.getString("uuid"));
+                    }
+                }
+            }
+
+            // Then update each player's rank_position
+            String updateSql = "UPDATE players SET rank_position = ? WHERE uuid = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
+                for (int i = 0; i < playerUuids.size(); i++) {
+                    stmt.setInt(1, i + 1); // Rank positions start at 1
+                    stmt.setString(2, playerUuids.get(i));
+                    stmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to update player rankings: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void loadPlayerData(Player player) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try (Connection connection = getConnection()) {
-                String sql = "SELECT level, xp FROM players WHERE uuid = ?";
+                String sql = "SELECT level, xp, rank_position, is_admin FROM players WHERE uuid = ?";
                 try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                     stmt.setString(1, player.getUniqueId().toString());
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
                             int level = rs.getInt("level");
                             double xp = rs.getDouble("xp");
+                            int rankPosition = rs.getInt("rank_position");
+                            boolean isAdmin = rs.getBoolean("is_admin");
+
+                            // Update is_admin if it doesn't match current op status
+                            if (isAdmin != player.isOp()) {
+                                updatePlayerAdminStatus(player);
+                            }
 
                             Bukkit.getScheduler().runTask(plugin, () -> {
                                 plugin.playerLevels.put(player.getUniqueId(), level);
@@ -136,6 +184,29 @@ public class DatabaseManager {
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Failed to load player data: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     * Updates the admin status of a player in the database.
+     * This is called when a player's op status changes.
+     */
+    public void updatePlayerAdminStatus(Player player) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (Connection connection = getConnection()) {
+                String sql = "UPDATE players SET is_admin = ? WHERE uuid = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setBoolean(1, player.isOp());
+                    stmt.setString(2, player.getUniqueId().toString());
+                    stmt.executeUpdate();
+                }
+
+                // Update rankings after changing admin status
+                updatePlayerRankings();
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to update player admin status: " + e.getMessage());
                 e.printStackTrace();
             }
         });

@@ -10,7 +10,7 @@ import java.util.Map;
 
 public abstract class BaseSkillManager {
     protected final MyExperiencePlugin plugin;
-    protected final int debuggingFlag = 1;
+    protected final int debuggingFlag;
     protected final String className;
 
     // Map of skill ID to SkillNode for this class
@@ -19,6 +19,13 @@ public abstract class BaseSkillManager {
     public BaseSkillManager(MyExperiencePlugin plugin, String className) {
         this.plugin = plugin;
         this.className = className;
+
+        // Disable debugging for the three basic classes
+        if (className.equals("DragonKnight") || className.equals("Ranger") || className.equals("SpellWeaver")) {
+            this.debuggingFlag = 0; // Debugging disabled for basic classes
+        } else {
+            this.debuggingFlag = 1; // Debugging enabled for other classes
+        }
 
         // Initialize skills
         initializeSkills();

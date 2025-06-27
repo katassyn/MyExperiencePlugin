@@ -99,6 +99,9 @@ public class CustomItemHandler implements Listener {
         } else if (displayName.contains("Deluxe Package")) {
             handleDeluxePackage(player, item, displayName);
             event.setCancelled(true);
+        } else if (displayName.contains("Exp Boost")) {
+            handleExpBoost(player, item, displayName);
+            event.setCancelled(true);
         }
     }
 
@@ -457,6 +460,59 @@ public class CustomItemHandler implements Listener {
             return String.format("%.2fK", amount / 1_000);
         } else {
             return String.format("%.2f", amount);
+        }
+    }
+
+    private void handleExpBoost(Player player, ItemStack item, String displayName) {
+        try {
+            // Wyciągnij procent z nazwy itemu
+            double boostPercent = 0;
+            int hours = 6; // Domyślnie 6 godzin
+
+            if (displayName.contains("+10%")) {
+                boostPercent = 10.0;
+            } else if (displayName.contains("+50%")) {
+                boostPercent = 50.0;
+            } else {
+                // Spróbuj sparsować z nazwy - backup metoda
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\+(\\d+)%");
+                java.util.regex.Matcher matcher = pattern.matcher(org.bukkit.ChatColor.stripColor(displayName));
+                if (matcher.find()) {
+                    boostPercent = Double.parseDouble(matcher.group(1));
+                }
+            }
+
+            // Wyciągnij godziny z nazwy (jeśli różne od 6h)
+            java.util.regex.Pattern hourPattern = java.util.regex.Pattern.compile("(\\d+)h");
+            java.util.regex.Matcher hourMatcher = hourPattern.matcher(org.bukkit.ChatColor.stripColor(displayName));
+            if (hourMatcher.find()) {
+                hours = Integer.parseInt(hourMatcher.group(1));
+            }
+
+            if (boostPercent > 0) {
+                // Dodaj exp boost dla gracza
+                plugin.addExpBoost(player, boostPercent, hours);
+
+                // Skonsumuj item
+                consumeItem(player, item);
+
+                if (debuggingFlag == 1) {
+                    Bukkit.getLogger().info("[CustomItem] Player " + player.getName() + 
+                            " activated " + boostPercent + "% EXP boost for " + hours + " hours");
+                }
+            } else {
+                player.sendMessage("§cInvalid EXP boost item!");
+                if (debuggingFlag == 1) {
+                    Bukkit.getLogger().warning("[CustomItem] Could not parse EXP boost from: " + displayName);
+                }
+            }
+
+        } catch (Exception e) {
+            player.sendMessage("§cError activating EXP boost!");
+            if (debuggingFlag == 1) {
+                Bukkit.getLogger().severe("[CustomItem] Error handling EXP boost: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 }
