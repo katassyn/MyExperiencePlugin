@@ -276,100 +276,45 @@ public class EarthwardenSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (+3% Defense in Grassy Areas), " + 
-                (ID_OFFSET + 2) + " (Kill Heal), " + 
-                (ID_OFFSET + 3) + " (Environmental Resistance)");
-
         // Path 1: Defense Path
+        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 5);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 1) + " (+3% Defense in Grassy Areas) -> " + (ID_OFFSET + 5) + " (Steadfast Defense)");
-
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
         tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 10);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 5) + " (Steadfast Defense) -> " + (ID_OFFSET + 10) + " (Reactive Defense)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 11);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 5) + " (Steadfast Defense) -> " + (ID_OFFSET + 11) + " (Strength in Numbers)");
-
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 17);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 10) + " (Reactive Defense) -> " + (ID_OFFSET + 17) + " (Surrounded Defense)");
-
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 26);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 11) + " (Strength in Numbers) -> " + (ID_OFFSET + 26) + " (Allied Strength)");
-
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 23);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 17) + " (Surrounded Defense) -> " + (ID_OFFSET + 23) + " (Surrounded Strength)");
-
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 27);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 23) + " (Surrounded Strength) -> " + (ID_OFFSET + 27) + " (Second Chance)");
-
-        tree.connectNodes(ID_OFFSET + 26, ID_OFFSET + 27);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 26) + " (Allied Strength) -> " + (ID_OFFSET + 27) + " (Second Chance)");
-
-        // Path 2: Survival Path
-        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 4);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 2) + " (Kill Heal) -> " + (ID_OFFSET + 4) + " (HP Per Level)");
-
-        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 6);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 2) + " (Kill Heal) -> " + (ID_OFFSET + 6) + " (Desperate Luck)");
-
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 9);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 4) + " (HP Per Level) -> " + (ID_OFFSET + 9) + " (Enhanced Regeneration)");
-
-        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 7);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 6) + " (Desperate Luck) -> " + (ID_OFFSET + 7) + " (Survival Instinct)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 15);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 7) + " (Survival Instinct) -> " + (ID_OFFSET + 15) + " (Last Stand)");
-
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 9) + " (Enhanced Regeneration) -> " + (ID_OFFSET + 14) + " (Lifesteal)");
-
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 22);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 14) + " (Lifesteal) -> " + (ID_OFFSET + 22) + " (Healing Strikes)");
-
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 19);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 15) + " (Last Stand) -> " + (ID_OFFSET + 19) + " (Desperate Strength)");
-
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 25);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 15) + " (Last Stand) -> " + (ID_OFFSET + 25) + " (Desperate Escape)");
-
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 16);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 19) + " (Desperate Strength) -> " + (ID_OFFSET + 16) + " (Divine Protection)");
-
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 16);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 22) + " (Healing Strikes) -> " + (ID_OFFSET + 16) + " (Divine Protection)");
-
-        tree.connectNodes(ID_OFFSET + 25, ID_OFFSET + 16);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 25) + " (Desperate Escape) -> " + (ID_OFFSET + 16) + " (Divine Protection)");
-
-        // Path 3: Combat Path
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 8);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 3) + " (Environmental Resistance) -> " + (ID_OFFSET + 8) + " (Entangling Strike)");
-
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 12);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 3) + " (Environmental Resistance) -> " + (ID_OFFSET + 12) + " (Counterattack)");
-
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 8) + " (Entangling Strike) -> " + (ID_OFFSET + 13) + " (Vengeance)");
-
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 16);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 12) + " (Counterattack) -> " + (ID_OFFSET + 18) + " (Immovable)");
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 23);
+        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 25);
 
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 20);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 13) + " (Vengeance) -> " + (ID_OFFSET + 20) + " (Healthy Speed)");
-
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 21);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 13) + " (Vengeance) -> " + (ID_OFFSET + 21) + " (Protective Instinct)");
-
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 24);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 18) + " (Immovable) -> " + (ID_OFFSET + 24) + " (Ambush)");
-
-        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 20) + " (Healthy Speed) -> " + (ID_OFFSET + 24) + " (Ambush)");
-
+        // Path 2: Healing Path
+        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 6);
+        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 9);
+        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 13);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 17);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 21);
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 24);
         tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
-        plugin.getLogger().info("[EARTHWARDEN DEBUG] Connected: " + (ID_OFFSET + 21) + " (Protective Instinct) -> " + (ID_OFFSET + 24) + " (Ambush)");
+        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 26);
+
+        // Path 3: Nature Path
+        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 8);
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 14);
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20);
+        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 22);
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 27);
+
+        // Cross-path connections
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 20);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 21);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 24);
+        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Configured Earthwarden skill tree with " +

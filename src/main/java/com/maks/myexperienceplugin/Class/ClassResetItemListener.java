@@ -22,7 +22,7 @@ public class ClassResetItemListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getItem() == null) return;
         ItemStack item = event.getItem();
-        if (item.getType() == Material.BLACK_WOOL && item.hasItemMeta()) {
+        if (item.getType() == Material.POTATO && item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             if (meta != null && ChatColor.stripColor(meta.getDisplayName()).equalsIgnoreCase("Class Reset")) {
                 event.setCancelled(true);

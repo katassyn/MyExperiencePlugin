@@ -277,7 +277,7 @@ public class SkillEffectsHandler implements Listener {
             if (!lastDamageMessageTime.containsKey(playerId) ||
                     currentTime - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN) {
                 if (debuggingFlag == 1) {
-                    player.sendMessage(ChatColor.DARK_GRAY + "Skill bonus damage: +" + stats.getBonusDamage());
+                    player.sendMessage(SkillMessages.format(SkillMessages.DEBUG_BONUS_DAMAGE, stats.getBonusDamage()));
                 }
                 lastDamageMessageTime.put(playerId, currentTime);
             }
@@ -302,15 +302,12 @@ public class SkillEffectsHandler implements Listener {
 
                 // Notify player
                 ActionBarUtils.sendActionBar(player, 
-                    ChatColor.RED + "CRITICAL HIT! " + 
-                    ChatColor.GOLD + String.format("%.1fx", critMultiplier) + " " + 
-                    ChatColor.YELLOW + "damage");
+                    SkillMessages.format(SkillMessages.CRITICAL_HIT_WITH_MULTIPLIER, critMultiplier));
 
                 if (debuggingFlag == 1) {
-                    player.sendMessage(ChatColor.DARK_GRAY + "Critical hit! x" + 
-                        String.format("%.2f", critMultiplier) + " damage (" + 
-                        String.format("%.1f", originalDamage) + " → " + 
-                        String.format("%.1f", event.getDamage()) + ")");
+                    player.sendMessage(
+                        SkillMessages.format(SkillMessages.DEBUG_CRITICAL_HIT, 
+                        critMultiplier, originalDamage, event.getDamage()));
                 }
 
                 // Update last message time
@@ -325,7 +322,7 @@ public class SkillEffectsHandler implements Listener {
             if (debuggingFlag == 1 &&
                     (!lastDamageMessageTime.containsKey(playerId) ||
                             System.currentTimeMillis() - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN)) {
-                player.sendMessage(ChatColor.DARK_GRAY + "Damage multiplier: x" + String.format("%.2f", stats.getDamageMultiplier()));
+                player.sendMessage(SkillMessages.format(SkillMessages.DEBUG_DAMAGE_MULTIPLIER, stats.getDamageMultiplier()));
                 lastDamageMessageTime.put(playerId, System.currentTimeMillis());
             }
         }
@@ -483,11 +480,18 @@ public class SkillEffectsHandler implements Listener {
     }
 
     public PlayerSkillStats getPlayerStats(Player player) {
+        if (player == null) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("Attempted to get stats for null player");
+            }
+            return new PlayerSkillStats(); // Return empty stats to prevent NPE
+        }
+
         UUID uuid = player.getUniqueId();
         if (!playerStatsCache.containsKey(uuid)) {
             calculatePlayerStats(player);
         }
-        return playerStatsCache.get(uuid);
+        return playerStatsCache.getOrDefault(uuid, new PlayerSkillStats()); // Use getOrDefault to prevent NPE
     }
 
     // Method to recalculate stats when skills change

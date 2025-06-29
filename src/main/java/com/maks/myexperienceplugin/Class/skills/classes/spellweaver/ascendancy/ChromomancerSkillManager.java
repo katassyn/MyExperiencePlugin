@@ -21,7 +21,7 @@ public class ChromomancerSkillManager extends BaseSkillManager {
     @Override
     protected void initializeSkills() {
         // Create nodes for Chronomancer - Time Manipulation Path, Haste Path, Temporal Control Path
-        
+
         // Time Manipulation Path
         SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Time Mastery", "Increase time manipulation spell damage by 5% per level.", 1,
                 Material.CLOCK, 3, player -> {
@@ -279,98 +279,47 @@ public class ChromomancerSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (Time Mastery), " + 
-                (ID_OFFSET + 2) + " (Haste Mastery), " + 
-                (ID_OFFSET + 3) + " (Temporal Control)");
-
-        // Path 1: Time Manipulation Path
+        // Path 1: Time Magic Path
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 1) + " (Time Mastery) -> " + (ID_OFFSET + 4) + " (Time Slow)");
-
         tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 4) + " (Time Slow) -> " + (ID_OFFSET + 7) + " (Temporal Shift)");
-
         tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Temporal Shift) -> " + (ID_OFFSET + 11) + " (Time Bubble)");
-
         tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Temporal Shift) -> " + (ID_OFFSET + 12) + " (Rewind)");
-
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 11) + " (Time Bubble) -> " + (ID_OFFSET + 17) + " (Time Stop)");
-
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 12) + " (Rewind) -> " + (ID_OFFSET + 18) + " (Echo)");
-
         tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 17) + " (Time Stop) -> " + (ID_OFFSET + 22) + " (Temporal Mastery)");
-
         tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 18) + " (Echo) -> " + (ID_OFFSET + 22) + " (Temporal Mastery)");
-
         tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 22) + " (Temporal Mastery) -> " + (ID_OFFSET + 25) + " (Chronobreak)");
 
-        // Path 2: Haste Path
+        // Path 2: Mana Path
         tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 2) + " (Haste Mastery) -> " + (ID_OFFSET + 5) + " (Swift Casting)");
-
         tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Swift Casting) -> " + (ID_OFFSET + 8) + " (Accelerate)");
-
         tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Swift Casting) -> " + (ID_OFFSET + 9) + " (Time Flux)");
-
         tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 8) + " (Accelerate) -> " + (ID_OFFSET + 13) + " (Quickstep)");
-
         tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 9) + " (Time Flux) -> " + (ID_OFFSET + 14) + " (Time Dilation)");
-
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 13) + " (Quickstep) -> " + (ID_OFFSET + 19) + " (Temporal Rush)");
-
         tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 14) + " (Time Dilation) -> " + (ID_OFFSET + 19) + " (Temporal Rush)");
-
         tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 19) + " (Temporal Rush) -> " + (ID_OFFSET + 23) + " (Hastened Mind)");
-
         tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 23) + " (Hastened Mind) -> " + (ID_OFFSET + 26) + " (Time Warp)");
 
         // Path 3: Temporal Control Path
         tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 3) + " (Temporal Control) -> " + (ID_OFFSET + 6) + " (Precognition)");
-
         tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 6) + " (Precognition) -> " + (ID_OFFSET + 10) + " (Time Loop)");
-
         tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 10) + " (Time Loop) -> " + (ID_OFFSET + 15) + " (Temporal Anchor)");
-
         tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 10) + " (Time Loop) -> " + (ID_OFFSET + 16) + " (Paradox)");
-
         tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 15) + " (Temporal Anchor) -> " + (ID_OFFSET + 20) + " (Temporal Chains)");
-
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 16) + " (Paradox) -> " + (ID_OFFSET + 21) + " (Fate Sealing)");
-
         tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 20) + " (Temporal Chains) -> " + (ID_OFFSET + 24) + " (Time Fracture)");
-
         tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 21) + " (Fate Sealing) -> " + (ID_OFFSET + 24) + " (Time Fracture)");
-
         tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
-        plugin.getLogger().info("[CHRONOMANCER DEBUG] Connected: " + (ID_OFFSET + 24) + " (Time Fracture) -> " + (ID_OFFSET + 27) + " (Temporal Singularity)");
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Configured Chronomancer skill tree with " +
                     tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
         }
     }
 
@@ -378,10 +327,10 @@ public class ChromomancerSkillManager extends BaseSkillManager {
     protected void applySkillStats(Player player, int skillId, int purchaseCount) {
         // Get player stats
         SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-        
+
         // Apply stats based on skill ID
         int originalId = skillId - ID_OFFSET;
-        
+
         switch (originalId) {
             case 1: // Time Mastery
                 stats.addSpellDamageBonus(5 * purchaseCount);
@@ -420,8 +369,43 @@ public class ChromomancerSkillManager extends BaseSkillManager {
     @Override
     public boolean isMultiPurchaseDiscountSkill(int skillId) {
         int originalId = skillId - ID_OFFSET;
-        
+
         // Only mastery skills can be purchased multiple times
         return originalId == 1 || originalId == 2 || originalId == 3;
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[CHRONOMANCER DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[CHRONOMANCER DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[CHRONOMANCER DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[CHRONOMANCER DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[CHRONOMANCER DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[CHRONOMANCER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[CHRONOMANCER DEBUG]   No incoming connections found!");
+        }
     }
 }

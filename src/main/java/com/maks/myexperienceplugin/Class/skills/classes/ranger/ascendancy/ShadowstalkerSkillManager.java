@@ -1,6 +1,7 @@
 package com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy;
 
 import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.SkillIdOffsets;
 import com.maks.myexperienceplugin.Class.skills.base.BaseSkillManager;
 import com.maks.myexperienceplugin.Class.skills.base.SkillNode;
 import com.maks.myexperienceplugin.Class.skills.base.SkillTree;
@@ -11,7 +12,8 @@ import org.bukkit.entity.Player;
 
 public class ShadowstalkerSkillManager extends BaseSkillManager {
 
-    private static final int ID_OFFSET = 500000;
+    // Use centralized ID offset from SkillIdOffsets class
+    private static final int ID_OFFSET = SkillIdOffsets.SHADOWSTALKER_OFFSET;
 
     public ShadowstalkerSkillManager(MyExperiencePlugin plugin) {
         super(plugin, "Shadowstalker");
@@ -275,46 +277,50 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        // === ŚCIEŻKA 1: STEALTH PATH ===
-        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);    // 1 -> 4
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 6);    // 4 -> 6
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);    // 4 -> 7
-        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 12);   // 6 -> 12
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 10);   // 7 -> 10
-        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 16);  // 12 -> 16
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 22);  // 10 -> 22
-        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 25);  // 16 -> 25
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);  // 22 -> 25
+        // Path 1: Stealth Path
+        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 6);
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
+        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 12);
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 10);
+        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 16);
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 22);
+        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
 
-        // === ŚCIEŻKA 2: CRITICAL PATH ===
-        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);    // 2 -> 5
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);    // 5 -> 8
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 11);   // 8 -> 11
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);  // 11 -> 17
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 18);  // 17 -> 18
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 20);  // 17 -> 20
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 23);  // 18 -> 23
-        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 26);  // 20 -> 26
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);  // 23 -> 26
+        // Path 2: Critical Path
+        tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 11);
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 18);
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 20);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 23);
+        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 26);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
 
-        // === ŚCIEŻKA 3: POISON PATH ===
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 9);    // 3 -> 9
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 13);   // 9 -> 13
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);   // 9 -> 14
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 15);   // 9 -> 15
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);  // 13 -> 19
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 21);  // 14 -> 21
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 21);  // 15 -> 21
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 24);  // 19 -> 24
-        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);  // 21 -> 24
-        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);  // 24 -> 27
-
-        // === POŁĄCZENIA MIĘDZY ŚCIEŻKAMI ===
-        tree.connectNodes(ID_OFFSET + 25, ID_OFFSET + 26);  // 25 -> 26 (Stealth -> Critical)
-        tree.connectNodes(ID_OFFSET + 26, ID_OFFSET + 27);  // 26 -> 27 (Critical -> Poison)
+        // Path 3: Poison Path
+        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 9);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 13);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 15);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 18);
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 21);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 23);
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 24);
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 27);
+        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Shadowstalker skill tree initialized with all connections");
+            plugin.getLogger().info("Configured Shadowstalker skill tree with " +
+                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
         }
     }
 
@@ -331,11 +337,10 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
 
         switch (originalId) {
             case 2: // Critical Precision: +2% critical hit chance (1/3)
-                // UWAGA: Musisz dodać addCriticalChance() do PlayerSkillStats!
-                // stats.addCriticalChance(2 * purchaseCount);
+                stats.addCriticalChance(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Would add " + (2 * purchaseCount) + 
-                            "% critical chance (requires PlayerSkillStats update)");
+                    plugin.getLogger().info("Added " + (2 * purchaseCount) + 
+                            "% critical chance to player stats");
                 }
                 break;
 
@@ -356,11 +361,10 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
                 break;
 
             case 11: // Critical Power: +20% critical damage (1/2)
-                // UWAGA: Brak statystyki criticalDamageMultiplier w PlayerSkillStats
-                // To musi być obsługiwane dynamicznie w EffectsHandler
+                stats.addCriticalDamageBonus(0.2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Critical damage bonus will be handled dynamically " +
-                            "(+" + (20 * purchaseCount) + "%)");
+                    plugin.getLogger().info("Added " + (20 * purchaseCount) + 
+                            "% critical damage bonus to player stats");
                 }
                 break;
 
@@ -419,6 +423,41 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[SHADOWSTALKER DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[SHADOWSTALKER DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[SHADOWSTALKER DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[SHADOWSTALKER DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[SHADOWSTALKER DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[SHADOWSTALKER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[SHADOWSTALKER DEBUG]   No incoming connections found!");
         }
     }
 }

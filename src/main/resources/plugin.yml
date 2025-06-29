@@ -112,6 +112,18 @@ commands:
     usage: /resetranks <all|premium|deluxe> [player]
     permission: myplugin.resetranks
     aliases: [rankreset, resetrank]
+  sgtest:
+    description: Test Scale Guardian skills and effects
+    usage: /sgtest <setclass|giveskill|giveall|stats|debug|simulate>
+    permission: myplugin.sgtest
+    aliases: [scaletest, guardiantest]
+  expboost:
+    description: Check your current EXP boost status
+    usage: /expboost
+  giveexpboost:
+    description: Give a player an EXP boost (admin command)
+    usage: /giveexpboost <player> <percent> <hours>
+    permission: myplugin.giveexpboost
 # Add these permissions to your plugin.yml (if you have a permissions section)
 
 permissions:
@@ -133,4 +145,12 @@ permissions:
 
   myplugin.resetranks.others:
     description: Allows resetting other players' Premium and Deluxe ranks
+    default: op
+
+  myplugin.giveexpboost:
+    description: Allows giving EXP boosts to players
+    default: op
+
+  myplugin.sgtest:
+    description: Allows using Scale Guardian test commands
     default: op

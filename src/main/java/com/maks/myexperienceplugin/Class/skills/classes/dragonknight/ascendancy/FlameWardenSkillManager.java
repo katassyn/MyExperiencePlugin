@@ -298,7 +298,7 @@ public class FlameWardenSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 26);
         tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 26);
 
-        // Path 3: Fire Defense Path
+        // Path 3: Fire Defense Path  
         tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
         tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
         tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 11);
@@ -313,6 +313,11 @@ public class FlameWardenSkillManager extends BaseSkillManager {
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Configured FlameWarden skill tree with " +
                     tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
         }
     }
 
@@ -399,5 +404,40 @@ public class FlameWardenSkillManager extends BaseSkillManager {
         // Skills with (1/X) notation in Specific_plugin_description.md
         return originalId == 1 || originalId == 2 || originalId == 5 || originalId == 9 || 
                originalId == 11 || originalId == 18 || originalId == 20 || originalId == 26;
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[FLAMEWARDEN DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[FLAMEWARDEN DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[FLAMEWARDEN DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[FLAMEWARDEN DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[FLAMEWARDEN DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[FLAMEWARDEN DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[FLAMEWARDEN DEBUG]   No incoming connections found!");
+        }
     }
 }

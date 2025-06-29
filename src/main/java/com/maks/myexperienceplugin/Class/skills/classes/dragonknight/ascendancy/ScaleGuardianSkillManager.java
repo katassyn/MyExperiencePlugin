@@ -278,12 +278,7 @@ public class ScaleGuardianSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[SCALE GUARDIAN DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (Shield Block Chance), " + 
-                (ID_OFFSET + 2) + " (Damage Reflection), " + 
-                (ID_OFFSET + 3) + " (Proximity Defense)");
-
-        // Path 1: Shield Block Path
+        // Path 1: Shield Path
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
         tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 9);
         tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 13);
@@ -319,6 +314,11 @@ public class ScaleGuardianSkillManager extends BaseSkillManager {
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Configured Scale Guardian skill tree with " +
                     tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
         }
     }
 
@@ -420,5 +420,40 @@ public class ScaleGuardianSkillManager extends BaseSkillManager {
         return originalId == 1 || originalId == 2 || originalId == 4 || originalId == 6 || 
                originalId == 8 || originalId == 12 || originalId == 17 || originalId == 20 || 
                originalId == 26;
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[SCALE GUARDIAN DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[SCALE GUARDIAN DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[SCALE GUARDIAN DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[SCALE GUARDIAN DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[SCALE GUARDIAN DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[SCALE GUARDIAN DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[SCALE GUARDIAN DEBUG]   No incoming connections found!");
+        }
     }
 }

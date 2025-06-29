@@ -311,7 +311,13 @@ public class BerserkerSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 26, ID_OFFSET + 27);  // 26 -> 27 (Critical -> Frenzy)
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Berserker skill tree initialized with all connections");
+            plugin.getLogger().info("Configured Berserker skill tree with " +
+                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
         }
     }
 
@@ -430,6 +436,41 @@ public class BerserkerSkillManager extends BaseSkillManager {
                 return true;
             default:
                 return false;
+        }
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[BERSERKER DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[BERSERKER DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[BERSERKER DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[BERSERKER DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[BERSERKER DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[BERSERKER DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[BERSERKER DEBUG]   No incoming connections found!");
         }
     }
 }

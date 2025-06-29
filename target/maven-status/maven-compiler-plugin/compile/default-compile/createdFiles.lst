@@ -2,6 +2,7 @@ com\maks\myexperienceplugin\alchemy\PhysisPercentageDamageEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffectFactory.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager$AlchemyCategory.class
 com\maks\myexperienceplugin\alchemy\TonicExpEffect.class
+com\maks\myexperienceplugin\Class\skills\listeners\BerserkerEquipmentListener$1.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BerserkerSkillEffectsHandler$1.class
 com\maks\myexperienceplugin\Class\skills\PlayerSkillEffectsListener.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeGUI.class
@@ -13,6 +14,7 @@ com\maks\myexperienceplugin\alchemy\AlchemyItemListener.class
 com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\ScaleGuardianSkillManager.class
 com\maks\myexperienceplugin\DatabaseManager.class
 com\maks\myexperienceplugin\Class\skills\effects\RangerSkillEffectsHandler.class
+com\maks\myexperienceplugin\Class\skills\SkillMessages.class
 com\maks\myexperienceplugin\alchemy\TonicLuckEffect.class
 com\maks\myexperienceplugin\exp\ReloadBonusCommand.class
 com\maks\myexperienceplugin\alchemy\NightVisionEffect.class
@@ -37,8 +39,10 @@ com\maks\myexperienceplugin\alchemy\AlchemyEffect.class
 com\maks\myexperienceplugin\MyExperiencePlugin.class
 com\maks\myexperienceplugin\Class\skills\base\SkillNode.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\EarthwardenSkillEffectsHandler.class
+com\maks\myexperienceplugin\Class\skills\effects\BerserkerVisualEffects$1.class
 com\maks\myexperienceplugin\Class\skills\effects\DragonKnightSkillEffectsHandler.class
 com\maks\myexperienceplugin\alchemy\AlchemyResetCommand.class
+com\maks\myexperienceplugin\Class\skills\listeners\BerserkerEquipmentListener.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeManager.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager.class
 com\maks\myexperienceplugin\party\PartyCommand.class
@@ -56,6 +60,7 @@ com\maks\myexperienceplugin\Class\SkillTreeCommand.class
 com\maks\myexperienceplugin\Class\skills\effects\SpellWeaverSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUI.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUIListener.class
+com\maks\myexperienceplugin\Class\skills\effects\BerserkerVisualEffects.class
 com\maks\myexperienceplugin\alchemy\AbsorptionEffect.class
 com\maks\myexperienceplugin\alchemy\OverTimeHealingEffect.class
 com\maks\myexperienceplugin\Class\skills\events\SkillPurchasedEvent.class
@@ -91,8 +96,10 @@ com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\EarthwardenSk
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler.class
 com\maks\myexperienceplugin\alchemy\LifestealEffect.class
 com\maks\myexperienceplugin\exp\TopCommand.class
+com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\ScaleGuardianTestCommand.class
 com\maks\myexperienceplugin\alchemy\InstantHealingEffect.class
 com\maks\myexperienceplugin\exp\TopCommand$PlayerData.class
+com\maks\myexperienceplugin\Class\skills\SkillIdOffsets.class
 com\maks\myexperienceplugin\exp\MythicMobXPHandler.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageHealthEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand$1.class
@@ -104,8 +111,10 @@ com\maks\myexperienceplugin\alchemy\TonicMovementSpeedEffect.class
 com\maks\myexperienceplugin\Class\skills\effects\BaseSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\SkillPurchaseManager.class
 com\maks\myexperienceplugin\alchemy\LifestealManager.class
+com\maks\myexperienceplugin\Class\skills\systems\CriticalStrikeSystem.class
 com\maks\myexperienceplugin\alchemy\TonicExpManager.class
 com\maks\myexperienceplugin\listener\PlayerJoinListener.class
+com\maks\myexperienceplugin\MyExperiencePlugin$ExpBoost.class
 com\maks\myexperienceplugin\alchemy\TonicDamageEffect.class
 com\maks\myexperienceplugin\alchemy\BerserkerEffect.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ScaleGuardianSkillEffectsHandler.class
