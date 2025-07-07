@@ -275,98 +275,50 @@ public class BeastmasterSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (Wolf Summon), " + 
-                (ID_OFFSET + 2) + " (Boar Summon), " + 
-                (ID_OFFSET + 3) + " (Bear Summon)");
+        // === UNIVERSAL STRUCTURE FROM Drzewko Podklas.md ===
 
-        // Path 1: Wolf Path
+        // Poziom 1->2
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 1) + " (Wolf Summon) -> " + (ID_OFFSET + 4) + " (Wolf Speed)");
-
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 4) + " (Wolf Speed) -> " + (ID_OFFSET + 7) + " (Wolf Attack Speed)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Wolf Attack Speed) -> " + (ID_OFFSET + 11) + " (Wolf Critical)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 7) + " (Wolf Attack Speed) -> " + (ID_OFFSET + 12) + " (Wolf Vitality)");
-
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 11) + " (Wolf Critical) -> " + (ID_OFFSET + 17) + " (Wolf Healing)");
-
-        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 12) + " (Wolf Vitality) -> " + (ID_OFFSET + 18) + " (Pack Speed)");
-
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 17) + " (Wolf Healing) -> " + (ID_OFFSET + 22) + " (Wolf Health)");
-
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 18) + " (Pack Speed) -> " + (ID_OFFSET + 22) + " (Wolf Health)");
-
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 22) + " (Wolf Health) -> " + (ID_OFFSET + 25) + " (Wolf Pack)");
-
-        // Path 2: Boar Path
         tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 2) + " (Boar Summon) -> " + (ID_OFFSET + 5) + " (Boar Damage)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Boar Damage) -> " + (ID_OFFSET + 8) + " (Boar Attack Speed)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 5) + " (Boar Damage) -> " + (ID_OFFSET + 9) + " (Pack Damage)");
-
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 8) + " (Boar Attack Speed) -> " + (ID_OFFSET + 13) + " (Boar Critical)");
-
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 9) + " (Pack Damage) -> " + (ID_OFFSET + 14) + " (Pack Damage Plus)");
-
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 13) + " (Boar Critical) -> " + (ID_OFFSET + 19) + " (Boar Frenzy)");
-
-        // REMOVED: tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
-        // This connection shouldn't exist
-
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 19) + " (Boar Frenzy) -> " + (ID_OFFSET + 23) + " (Boar Speed)");
-
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 23) + " (Boar Speed) -> " + (ID_OFFSET + 26) + " (Boar Rage)");
-
-        // Path 3: Bear Path
         tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 3) + " (Bear Summon) -> " + (ID_OFFSET + 6) + " (Bear Health)");
 
+        // Poziom 2->3
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);  // Node 5 ma DWA wyjścia!
         tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 6) + " (Bear Health) -> " + (ID_OFFSET + 10) + " (Bear Defense)");
 
+        // Poziom 3->4
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12); // Node 7 ma DWA wyjścia!
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
         tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 10) + " (Bear Defense) -> " + (ID_OFFSET + 15) + " (Bear Guardian)");
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16); // Node 10 ma DWA wyjścia!
 
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 10) + " (Bear Defense) -> " + (ID_OFFSET + 16) + " (Bear Vitality)");
-
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 15) + " (Bear Guardian) -> " + (ID_OFFSET + 20) + " (Bear Regeneration)");
-
+        // Poziom 4->5
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
+        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 16) + " (Bear Vitality) -> " + (ID_OFFSET + 21) + " (Pack Vitality)");
 
+        // Poziom 5->6
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22); // Oba 17 i 18 -> 22!
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
         tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 20) + " (Bear Regeneration) -> " + (ID_OFFSET + 24) + " (Pack Defense)");
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24); // Też 21 -> 24!
 
-        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 21) + " (Pack Vitality) -> " + (ID_OFFSET + 24) + " (Pack Defense)");
-
+        // Poziom 6->7
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
         tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
-        plugin.getLogger().info("[BEASTMASTER DEBUG] Connected: " + (ID_OFFSET + 24) + " (Pack Defense) -> " + (ID_OFFSET + 27) + " (Pack Healing)");
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Configured Beastmaster skill tree with " +
-                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+            plugin.getLogger().info("Configured Beastmaster skill tree with UNIVERSAL structure from Drzewko Podklas.md");
+            plugin.getLogger().info("Structure: 3 paths merging at nodes 20, 22, and 24");
 
             // Log all connections to verify
             for (int i = 1; i <= 27; i++) {

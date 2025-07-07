@@ -21,7 +21,7 @@ public class ArcaneProtectorSkillManager extends BaseSkillManager {
     @Override
     protected void initializeSkills() {
         // Create nodes for ArcaneProtector - Shield Path, Warding Path, Aura Path
-        
+
         // Shield Path
         SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Arcane Shield", "Increase shield strength by 5% per level.", 1,
                 Material.SHIELD, 3, player -> {
@@ -279,98 +279,90 @@ public class ArcaneProtectorSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (Arcane Shield), " + 
-                (ID_OFFSET + 2) + " (Arcane Warding), " + 
-                (ID_OFFSET + 3) + " (Protective Aura)");
+        // === UNIVERSAL STRUCTURE FROM Drzewko Podklas.md ===
 
-        // Path 1: Shield Path
+        // Poziom 1->2
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 1) + " (Arcane Shield) -> " + (ID_OFFSET + 4) + " (Mana Barrier)");
-
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 4) + " (Mana Barrier) -> " + (ID_OFFSET + 7) + " (Arcane Reflection)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 7) + " (Arcane Reflection) -> " + (ID_OFFSET + 11) + " (Spell Absorption)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 7) + " (Arcane Reflection) -> " + (ID_OFFSET + 12) + " (Fortified Barrier)");
-
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 11) + " (Spell Absorption) -> " + (ID_OFFSET + 17) + " (Spell Ward)");
-
-        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 12) + " (Fortified Barrier) -> " + (ID_OFFSET + 18) + " (Arcane Aegis)");
-
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 17) + " (Spell Ward) -> " + (ID_OFFSET + 22) + " (Spell Deflection)");
-
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 18) + " (Arcane Aegis) -> " + (ID_OFFSET + 22) + " (Spell Deflection)");
-
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 22) + " (Spell Deflection) -> " + (ID_OFFSET + 25) + " (Arcane Fortress)");
-
-        // Path 2: Warding Path
         tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 2) + " (Arcane Warding) -> " + (ID_OFFSET + 5) + " (Protective Runes)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 5) + " (Protective Runes) -> " + (ID_OFFSET + 8) + " (Arcane Armor)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 5) + " (Protective Runes) -> " + (ID_OFFSET + 9) + " (Dispel Magic)");
-
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 8) + " (Arcane Armor) -> " + (ID_OFFSET + 13) + " (Arcane Resistance)");
-
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 9) + " (Dispel Magic) -> " + (ID_OFFSET + 14) + " (Cleansing Aura)");
-
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 13) + " (Arcane Resistance) -> " + (ID_OFFSET + 19) + " (Spell Barrier)");
-
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 14) + " (Cleansing Aura) -> " + (ID_OFFSET + 19) + " (Spell Barrier)");
-
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 19) + " (Spell Barrier) -> " + (ID_OFFSET + 23) + " (Arcane Immunity)");
-
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 23) + " (Arcane Immunity) -> " + (ID_OFFSET + 26) + " (Nullification Field)");
-
-        // Path 3: Aura Path
         tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 3) + " (Protective Aura) -> " + (ID_OFFSET + 6) + " (Mana Link)");
 
+        // Poziom 2->3
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);  // Node 5 ma DWA wyjścia!
         tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 6) + " (Mana Link) -> " + (ID_OFFSET + 10) + " (Healing Circle)");
 
+        // Poziom 3->4
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12); // Node 7 ma DWA wyjścia!
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
         tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 10) + " (Healing Circle) -> " + (ID_OFFSET + 15) + " (Arcane Resonance)");
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16); // Node 10 ma DWA wyjścia!
 
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 10) + " (Healing Circle) -> " + (ID_OFFSET + 16) + " (Mana Shield)");
-
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 15) + " (Arcane Resonance) -> " + (ID_OFFSET + 20) + " (Arcane Bond)");
-
+        // Poziom 4->5
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
+        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 16) + " (Mana Shield) -> " + (ID_OFFSET + 21) + " (Protective Ward)");
 
+        // Poziom 5->6
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22); // Oba 17 i 18 -> 22!
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
         tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 20) + " (Arcane Bond) -> " + (ID_OFFSET + 24) + " (Mass Protection)");
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24); // Też 21 -> 24!
 
-        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 21) + " (Protective Ward) -> " + (ID_OFFSET + 24) + " (Mass Protection)");
-
+        // Poziom 6->7
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
         tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
-        plugin.getLogger().info("[ARCANEPROTECTOR DEBUG] Connected: " + (ID_OFFSET + 24) + " (Mass Protection) -> " + (ID_OFFSET + 27) + " (Sanctuary)");
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Configured ArcaneProtector skill tree with " +
-                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+            plugin.getLogger().info("Configured ArcaneProtector skill tree with UNIVERSAL structure from Drzewko Podklas.md");
+            plugin.getLogger().info("Structure: 3 paths merging at nodes 20, 22, and 24");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
+        }
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG]   No incoming connections found!");
         }
     }
 
@@ -378,10 +370,10 @@ public class ArcaneProtectorSkillManager extends BaseSkillManager {
     protected void applySkillStats(Player player, int skillId, int purchaseCount) {
         // Get player stats
         SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-        
+
         // Apply stats based on skill ID
         int originalId = skillId - ID_OFFSET;
-        
+
         switch (originalId) {
             case 1: // Arcane Shield
                 stats.addDefenseBonus(5 * purchaseCount);
@@ -416,7 +408,7 @@ public class ArcaneProtectorSkillManager extends BaseSkillManager {
     @Override
     public boolean isMultiPurchaseDiscountSkill(int skillId) {
         int originalId = skillId - ID_OFFSET;
-        
+
         // Only mastery skills can be purchased multiple times
         return originalId == 1 || originalId == 2 || originalId == 3;
     }

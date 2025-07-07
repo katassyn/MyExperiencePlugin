@@ -148,19 +148,35 @@ public class ClassManager {
 
         // Check if player was a Beastmaster and remove all summons
         String currentAscendancy = getPlayerAscendancy(uuid);
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Current ascendancy: " + currentAscendancy);
+        }
+
         if ("Beastmaster".equals(currentAscendancy)) {
             if (plugin.getAscendancySkillEffectIntegrator() != null) {
-                // Get the Beastmaster handler and remove all summons
-                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
-                    (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
-                    plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
+                try {
+                    // Get the Beastmaster handler and remove all summons
+                    com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
+                        (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
+                        plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
 
-                if (handler != null) {
-                    handler.removeAllSummons(player);
-                    if (debuggingFlag == 1) {
-                        plugin.getLogger().info("Removed all summons for Beastmaster: " + player.getName());
+                    if (handler != null) {
+                        plugin.getLogger().info("Found Beastmaster handler, removing all summons for: " + player.getName());
+                        handler.removeAllSummons(player);
+
+                        // Force a delay to ensure summons are removed before continuing
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                            plugin.getLogger().info("Delayed check: All summons should be removed for: " + player.getName());
+                        }, 20L); // 1 second delay
+                    } else {
+                        plugin.getLogger().warning("Beastmaster handler is null for player: " + player.getName());
                     }
+                } catch (Exception e) {
+                    plugin.getLogger().severe("Error removing Beastmaster summons: " + e.getMessage());
+                    e.printStackTrace();
                 }
+            } else {
+                plugin.getLogger().warning("AscendancySkillEffectIntegrator is null");
             }
         }
 

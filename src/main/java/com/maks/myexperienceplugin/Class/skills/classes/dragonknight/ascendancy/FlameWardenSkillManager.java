@@ -278,41 +278,50 @@ public class FlameWardenSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        // Path 1: Ignite Path
-        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
-        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 17);
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 21);
-        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 25);
+        // === UNIVERSAL STRUCTURE FROM Drzewko Podklas.md ===
 
-        // Path 2: Burning Damage Path
+        // Poziom 1->2
+        tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
         tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
+        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
+
+        // Poziom 2->3
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
         tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);  // Node 5 ma DWA wyjścia!
+        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
+
+        // Poziom 3->4
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12); // Node 7 ma DWA wyjścia!
         tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
         tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20);
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 24);
-        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 26);
-        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 26);
-
-        // Path 3: Fire Defense Path  
-        tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
-        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
-        tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 11);
         tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 16);
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 18);
-        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 22);
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 23);
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 23);
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 27);
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16); // Node 10 ma DWA wyjścia!
+
+        // Poziom 4->5
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
+        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
+
+        // Poziom 5->6
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22); // Oba 17 i 18 -> 22!
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
+        tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24); // Też 21 -> 24!
+
+        // Poziom 6->7
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
+        tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Configured FlameWarden skill tree with " +
-                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+            plugin.getLogger().info("Configured FlameWarden skill tree with UNIVERSAL structure from Drzewko Podklas.md");
+            plugin.getLogger().info("Structure: 3 paths merging at nodes 20, 22, and 24");
 
             // Log all connections to verify
             for (int i = 1; i <= 27; i++) {

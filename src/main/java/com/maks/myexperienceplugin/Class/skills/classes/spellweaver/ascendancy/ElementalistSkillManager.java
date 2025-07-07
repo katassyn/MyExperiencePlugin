@@ -279,98 +279,90 @@ public class ElementalistSkillManager extends BaseSkillManager {
         tree.addRootNode(ID_OFFSET + 2);
         tree.addRootNode(ID_OFFSET + 3);
 
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Added root nodes: " + 
-                (ID_OFFSET + 1) + " (Fire Mastery), " + 
-                (ID_OFFSET + 2) + " (Ice Mastery), " + 
-                (ID_OFFSET + 3) + " (Lightning Mastery)");
+        // === UNIVERSAL STRUCTURE FROM Drzewko Podklas.md ===
 
-        // Path 1: Fire Path
+        // Poziom 1->2
         tree.connectNodes(ID_OFFSET + 1, ID_OFFSET + 4);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 1) + " (Fire Mastery) -> " + (ID_OFFSET + 4) + " (Flame Burst)");
-
-        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 4) + " (Flame Burst) -> " + (ID_OFFSET + 7) + " (Heat Wave)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 7) + " (Heat Wave) -> " + (ID_OFFSET + 11) + " (Fire Shield)");
-
-        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 7) + " (Heat Wave) -> " + (ID_OFFSET + 12) + " (Inferno)");
-
-        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 11) + " (Fire Shield) -> " + (ID_OFFSET + 17) + " (Phoenix Form)");
-
-        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 12) + " (Inferno) -> " + (ID_OFFSET + 18) + " (Fire Nova)");
-
-        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 17) + " (Phoenix Form) -> " + (ID_OFFSET + 22) + " (Combustion)");
-
-        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 18) + " (Fire Nova) -> " + (ID_OFFSET + 22) + " (Combustion)");
-
-        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 22) + " (Combustion) -> " + (ID_OFFSET + 25) + " (Meteor Strike)");
-
-        // Path 2: Ice Path
         tree.connectNodes(ID_OFFSET + 2, ID_OFFSET + 5);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 2) + " (Ice Mastery) -> " + (ID_OFFSET + 5) + " (Frost Nova)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 5) + " (Frost Nova) -> " + (ID_OFFSET + 8) + " (Chilling Touch)");
-
-        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 5) + " (Frost Nova) -> " + (ID_OFFSET + 9) + " (Ice Barrier)");
-
-        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 8) + " (Chilling Touch) -> " + (ID_OFFSET + 13) + " (Deep Freeze)");
-
-        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 9) + " (Ice Barrier) -> " + (ID_OFFSET + 14) + " (Ice Reflection)");
-
-        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 13) + " (Deep Freeze) -> " + (ID_OFFSET + 19) + " (Absolute Zero)");
-
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 14) + " (Ice Reflection) -> " + (ID_OFFSET + 19) + " (Absolute Zero)");
-
-        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 19) + " (Absolute Zero) -> " + (ID_OFFSET + 23) + " (Winter's Embrace)");
-
-        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 23) + " (Winter's Embrace) -> " + (ID_OFFSET + 26) + " (Blizzard)");
-
-        // Path 3: Lightning Path
         tree.connectNodes(ID_OFFSET + 3, ID_OFFSET + 6);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 3) + " (Lightning Mastery) -> " + (ID_OFFSET + 6) + " (Chain Lightning)");
 
+        // Poziom 2->3
+        tree.connectNodes(ID_OFFSET + 4, ID_OFFSET + 7);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 8);
+        tree.connectNodes(ID_OFFSET + 5, ID_OFFSET + 9);  // Node 5 ma DWA wyjścia!
         tree.connectNodes(ID_OFFSET + 6, ID_OFFSET + 10);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 6) + " (Chain Lightning) -> " + (ID_OFFSET + 10) + " (Static Charge)");
 
+        // Poziom 3->4
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 11);
+        tree.connectNodes(ID_OFFSET + 7, ID_OFFSET + 12); // Node 7 ma DWA wyjścia!
+        tree.connectNodes(ID_OFFSET + 8, ID_OFFSET + 13);
+        tree.connectNodes(ID_OFFSET + 9, ID_OFFSET + 14);
         tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 15);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 10) + " (Static Charge) -> " + (ID_OFFSET + 15) + " (Thunderstrike)");
+        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16); // Node 10 ma DWA wyjścia!
 
-        tree.connectNodes(ID_OFFSET + 10, ID_OFFSET + 16);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 10) + " (Static Charge) -> " + (ID_OFFSET + 16) + " (Electrified)");
-
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 15) + " (Thunderstrike) -> " + (ID_OFFSET + 20) + " (Overcharge)");
-
+        // Poziom 4->5
+        tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
+        tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
+        tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 16) + " (Electrified) -> " + (ID_OFFSET + 21) + " (Conduction)");
 
+        // Poziom 5->6
+        tree.connectNodes(ID_OFFSET + 17, ID_OFFSET + 22);
+        tree.connectNodes(ID_OFFSET + 18, ID_OFFSET + 22); // Oba 17 i 18 -> 22!
+        tree.connectNodes(ID_OFFSET + 19, ID_OFFSET + 23);
         tree.connectNodes(ID_OFFSET + 20, ID_OFFSET + 24);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 20) + " (Overcharge) -> " + (ID_OFFSET + 24) + " (Storm Shield)");
+        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24); // Też 21 -> 24!
 
-        tree.connectNodes(ID_OFFSET + 21, ID_OFFSET + 24);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 21) + " (Conduction) -> " + (ID_OFFSET + 24) + " (Storm Shield)");
-
+        // Poziom 6->7
+        tree.connectNodes(ID_OFFSET + 22, ID_OFFSET + 25);
+        tree.connectNodes(ID_OFFSET + 23, ID_OFFSET + 26);
         tree.connectNodes(ID_OFFSET + 24, ID_OFFSET + 27);
-        plugin.getLogger().info("[ELEMENTALIST DEBUG] Connected: " + (ID_OFFSET + 24) + " (Storm Shield) -> " + (ID_OFFSET + 27) + " (Thunderstorm)");
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Configured Elementalist skill tree with " +
-                    tree.getRootNodeIds().size() + " root nodes and complete connection paths");
+            plugin.getLogger().info("Configured Elementalist skill tree with UNIVERSAL structure from Drzewko Podklas.md");
+            plugin.getLogger().info("Structure: 3 paths merging at nodes 20, 22, and 24");
+
+            // Log all connections to verify
+            for (int i = 1; i <= 27; i++) {
+                logNodeConnections(tree, ID_OFFSET + i);
+            }
+        }
+    }
+
+    /**
+     * Log detailed information about a node's connections
+     */
+    private void logNodeConnections(SkillTree tree, int nodeId) {
+        SkillNode node = tree.getNode(nodeId);
+        if (node == null) {
+            plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] Node " + nodeId + " not found in tree!");
+            return;
+        }
+
+        plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] Node " + nodeId + " (" + node.getName() + ") connections:");
+
+        // Log outgoing connections
+        plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] - Outgoing connections: " + node.getConnectedNodes().size());
+        for (SkillNode connected : node.getConnectedNodes()) {
+            plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG]   -> " + connected.getId() + " (" + connected.getName() + ")");
+        }
+
+        // Log incoming connections
+        plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG] - Checking incoming connections...");
+        boolean hasIncoming = false;
+        for (SkillNode otherNode : tree.getAllNodes()) {
+            for (SkillNode connectedNode : otherNode.getConnectedNodes()) {
+                if (connectedNode.getId() == nodeId) {
+                    plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG]   <- " + otherNode.getId() + " (" + otherNode.getName() + ")");
+                    hasIncoming = true;
+                }
+            }
+        }
+
+        if (!hasIncoming) {
+            plugin.getLogger().info("[" + getClass().getSimpleName().replace("SkillManager", "").toUpperCase() + " DEBUG]   No incoming connections found!");
         }
     }
 

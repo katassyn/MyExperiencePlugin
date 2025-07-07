@@ -93,6 +93,11 @@ Each base class can evolve into one of three specialized ascendancy classes at l
 ## Dependencies
 - Vault - For economy integration
 - MythicMobs - For custom mob XP rewards
+- LuckPerms - For permissions management
+
+## Requirements
+- Java 8 or higher
+- Spigot/Paper server 1.20.1 or higher
 
 ## Database Schema
 
@@ -129,3 +134,44 @@ CREATE TABLE player_classes (
 - Class-specific quests and challenges
 - Enhanced party features
 - Alchemy system implementation
+
+## Debugging and Error Handling
+The plugin includes a comprehensive logging system to help diagnose issues:
+
+- Error messages are logged to the server console
+- Debug mode can be enabled in the config.yml file:
+  ```yaml
+  debug:
+    enabled: true
+    level: 1  # 0=off, 1=basic, 2=verbose
+  ```
+- Common error messages and their solutions:
+  - Database connection issues: Check your database credentials in config.yml
+  - Missing dependencies: Ensure all required plugins are installed
+  - Permission errors: Verify permission nodes are correctly set in your permissions plugin
+
+## Building from Source
+To build the plugin from source:
+
+1. Clone the repository
+2. Make sure you have Maven installed
+3. Run `mvn clean package` in the project directory
+4. The compiled JAR will be in the `target` folder
+
+## Contributing
+Contributions are welcome! Please follow these guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code follows the existing style and includes appropriate documentation.
+
+## Support
+If you encounter any issues or have questions:
+
+1. Check the [common issues](#debugging-and-error-handling) section
+2. Submit an issue on the project's issue tracker
+3. Contact the plugin author for direct support
