@@ -303,8 +303,8 @@ public class ScaleGuardianSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19); // Fixed: Changed from 14->20 to 14->19
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
 
         // Poziom 5->6
@@ -338,9 +338,12 @@ public class ScaleGuardianSkillManager extends BaseSkillManager {
 
         switch (originalId) {
             case 1: // +5% shield block chance (1/2)
+                // Apply the shield block chance bonus
                 stats.addShieldBlockChance(5 * purchaseCount);
+                
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Applied +" + (5 * purchaseCount) + "% shield block chance to " + player.getName());
+                    plugin.getLogger().info("[SCALE GUARDIAN] Applied +" + (5 * purchaseCount) + "% shield block chance to " + player.getName());
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Scale Guardian Shield Block: +" + (5 * purchaseCount) + "% shield block chance");
                 }
                 break;
 

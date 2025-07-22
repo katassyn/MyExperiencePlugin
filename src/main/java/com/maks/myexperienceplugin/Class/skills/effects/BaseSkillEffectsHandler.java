@@ -21,7 +21,7 @@ public abstract class BaseSkillEffectsHandler {
     /**
      * Apply class-specific skill effects to player stats
      */
-    public abstract void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount);
+    public abstract void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player);
 
     /**
      * Handle entity damage event for class-specific effects (e.g., evade, block)

@@ -304,8 +304,8 @@ public class ChromomancerSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19); // Fixed: Changed from 14->20 to 14->19
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
 
         // Poziom 5->6

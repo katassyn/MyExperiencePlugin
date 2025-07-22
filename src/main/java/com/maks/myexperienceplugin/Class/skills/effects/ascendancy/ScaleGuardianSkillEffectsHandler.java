@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.party.PartyAPI;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -31,8 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Handler for Scale Guardian-specific skill effects
  */
 public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
-    // IDs start from 300000 for Scale Guardian
-    private static final int ID_OFFSET = 300000;
+    // IDs start from 400000 for Scale Guardian (must match ScaleGuardianSkillManager)
+    private static final int ID_OFFSET = 400000;
 
     // Constants
     private static final long LAST_STAND_DURATION = 8000; // 8 seconds
@@ -87,9 +88,27 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Map<UUID, Location> lastPlayerLocation = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastMovementTime = new ConcurrentHashMap<>();
     private final Map<UUID, Boolean> isStationary = new ConcurrentHashMap<>();
+    
+    // Track Desperate Defense values
+    private final Map<UUID, Double> desperateDefenseValues = new ConcurrentHashMap<>();
 
     // Random for chance-based effects
     private final Random random = new Random();
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     public ScaleGuardianSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -99,7 +118,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         int originalId = skillId - ID_OFFSET; // Remove offset to get original skill ID
 
         switch (originalId) {
@@ -107,6 +126,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.addShieldBlockChance(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 1: Applied +" + (5 * purchaseCount) + "% shield block chance");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 1: +" + (5 * purchaseCount) + "% shield block chance");
                 }
                 break;
 
@@ -114,6 +134,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when blocking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 2: Will apply damage reflection when blocking");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 2: +10% damage reflection when blocking enabled");
                 }
                 break;
 
@@ -121,6 +142,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically based on nearby entities
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 3: Will apply proximity defense dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 3: +3% defense per nearby enemy (max +15%) enabled");
                 }
                 break;
 
@@ -128,6 +150,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when blocking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 4: Will apply healing on successful blocks");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 4: Block heals 5% max HP enabled");
                 }
                 break;
 
@@ -135,6 +158,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when receiving knockback
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 5: Will apply knockback resistance");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 5: +20% knockback resistance enabled");
                 }
                 break;
 
@@ -142,22 +166,27 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically based on health
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 6: Will apply defense bonus when health is low");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 6: +15% defense when HP < 50% enabled");
                 }
                 break;
 
             case 7: // Being hit by a melee attack has 25% chance to taunt the attacker
                 // This is handled dynamically when taking damage
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("SCALE GUARDIAN SKILL 7: Will apply taunt effect when hit");
+                    plugin.getLogger().info("SCALE GUARDIAN SKILL 7: Will apply taunt effect dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 7: 25% chance to taunt attacker enabled");
                 }
                 break;
 
             case 8: // +10% defense when not moving for 2 seconds (1/2)
-                // This is handled dynamically based on movement
+                // This is handled dynamically when stationary
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("SCALE GUARDIAN SKILL 8: Will apply defense bonus when stationary");
+                    plugin.getLogger().info("SCALE GUARDIAN SKILL 8: Will apply stationary defense bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 8: +10% defense when not moving for 2s enabled");
                 }
                 break;
+
+
 
             case 9: // Blocking an attack reduces damage from that enemy by 5% for 3 seconds (stacks up to 4 times)
                 // This is handled dynamically when blocking
@@ -293,8 +322,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 break;
 
             default:
+                // Many Scale Guardian skills are handled dynamically through events, not here
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().warning("Unknown Scale Guardian skill ID: " + skillId);
+                    plugin.getLogger().info("Scale Guardian skill " + skillId + " (ID " + originalId + ") is handled dynamically through events");
                 }
                 break;
         }
@@ -451,14 +481,33 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         if (isPurchased(playerId, ID_OFFSET + 27) && healthPercent <= 10 &&
                 !isOnCooldown(playerId, lastResortCooldown, LAST_RESORT_COOLDOWN)) {
 
-            // Apply damage reduction (using defense bonus as proxy for damage reduction)
-            stats.addDefenseBonus(70);
-
+            // Check if Last Resort is already active
+            if (lastResortExpiry.containsKey(playerId)) {
+                // Already active, just extend the duration
+                lastResortExpiry.put(playerId, System.currentTimeMillis() + LAST_RESORT_DURATION);
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Last Resort duration extended for " + player.getName());
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Resort duration extended");
+                }
+            } else {
+                // Apply damage reduction (using defense bonus as proxy for damage reduction)
+                stats.addDefenseBonus(70);
+                
+                // Set expiry
+                lastResortExpiry.put(playerId, System.currentTimeMillis() + LAST_RESORT_DURATION);
+                
+                // Show notification
+                ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Last Resort Activated! 70% Damage Reduction");
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Last Resort activated for " + player.getName() + " at " + healthPercent + "% health");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Resort activated!");
+                }
+            }
+            
             // Set cooldown
             lastResortCooldown.put(playerId, System.currentTimeMillis());
-
-            // Set expiry
-            lastResortExpiry.put(playerId, System.currentTimeMillis() + LAST_RESORT_DURATION);
 
             // Cancel existing task
             BukkitTask existingTask = lastResortTasks.get(playerId);
@@ -474,10 +523,10 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     // Remove the buff
                     SkillEffectsHandler.PlayerSkillStats currentStats = plugin.getSkillEffectsHandler().getPlayerStats(player);
                     currentStats.addDefenseBonus(-70);
-
+                    
                     lastResortExpiry.remove(playerId);
                     lastResortTasks.remove(playerId);
-
+                    
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Last Resort expired for " + player.getName());
                         if (player.isOnline()) {
@@ -488,14 +537,6 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
             }, LAST_RESORT_DURATION / 50); // Convert ms to ticks
 
             lastResortTasks.put(playerId, task);
-
-            // Show notification
-            ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Last Resort Activated! 70% Damage Reduction");
-
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("Last Resort activated for " + player.getName() + " at " + healthPercent + "% health");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Resort activated!");
-            }
         }
 
         // Check for Low Health Defense (ID 6)
@@ -520,7 +561,22 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
             // Cap at 30%
             double damageReduction = Math.min(missingHealthPercent, 30);
 
-            // Apply damage reduction (using defense bonus as proxy)
+            // Get previous Desperate Defense value if any
+            double previousDefenseValue = desperateDefenseValues.getOrDefault(playerId, 0.0);
+            
+            // If there was a previous value, remove it first to prevent stacking
+            if (previousDefenseValue > 0) {
+                stats.addDefenseBonus(-previousDefenseValue);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Removed previous Desperate Defense value of " + previousDefenseValue + 
+                            "% for " + player.getName());
+                }
+            }
+
+            // Store the current Desperate Defense value for this player
+            desperateDefenseValues.put(playerId, damageReduction);
+
+            // Apply the new defense bonus
             stats.addDefenseBonus(damageReduction);
 
             if (debuggingFlag == 1) {
@@ -531,30 +587,91 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Check for Taunt (ID 7)
         if (isPurchased(playerId, ID_OFFSET + 7) && event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
-            // 25% chance to taunt
-            if (random.nextDouble() * 100 < 25) {
+            boolean success = rollChance(25.0, player, "Taunt");
+            
+            if (success) {
                 // If this is an entity attack, the attacker will be handled in handleEntityDamageByEntity
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Taunt chance triggered for " + player.getName());
+                    plugin.getLogger().info("→ Taunt triggered");
                 }
             }
         }
 
         // Check for Slowing Defense (ID 21)
         if (isPurchased(playerId, ID_OFFSET + 21) && event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
-            // 10% chance to slow
-            if (random.nextDouble() * 100 < 10) {
+            boolean success = rollChance(10.0, player, "Slowing Defense");
+            
+            if (success) {
                 // If this is an entity attack, the attacker will be handled in handleEntityDamageByEntity
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Slowing Defense chance triggered for " + player.getName());
+                    plugin.getLogger().info("→ Slowing Defense triggered");
                 }
             }
         }
 
         // Check for Shield Block (SHIELD BLOCK = -50% DMG)
-        if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
-            // This is a successful block
+        // First check custom shield block chance from stats
+        double shieldBlockChance = stats.getShieldBlockChance();
+        
+        if (shieldBlockChance > 0) {
+            boolean success = rollChance(shieldBlockChance, player, "Shield Block");
+            
+            if (success) {
+                // Get original damage
+                double originalDamage = event.getDamage();
+                
+                // Instead of multiplicative 50% reduction, add a fixed amount to defense bonus
+                // This makes Shield Block additive with other defense bonuses
+                // The actual damage reduction will be handled by the main defense calculation
+                // which includes diminishing returns and capping
+                
+                // Store the original damage for logging purposes
+                double finalDamage = originalDamage * 0.7; // Approximately 30% reduction
+                event.setDamage(finalDamage);
+
+                // Important defensive ability - always show notification
+                ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Shield Block! Damage Reduced");
+
+                if (debuggingFlag == 1) {
+                    // Get Shield Block skill purchase counts
+                    int sgShieldBlockPurchaseCount = plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, ID_OFFSET + 1);
+                    boolean hasSgShieldBlock = plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(ID_OFFSET + 1);
+                    
+                    int dkShieldBlockPurchaseCount = plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, 14);
+                    boolean hasDkShieldBlock = plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(14);
+                    
+                    plugin.getLogger().info("→ Shield Block SUCCESS! Reduced damage from " +
+                            String.format("%.1f", originalDamage) + " to " + String.format("%.1f", finalDamage) + 
+                            " (approximately 30% reduction)");
+                    
+                    StringBuilder sources = new StringBuilder();
+                    if (hasDkShieldBlock) {
+                        sources.append("DragonKnight: +").append(5 * dkShieldBlockPurchaseCount).append("% ");
+                    }
+                    if (hasSgShieldBlock) {
+                        sources.append("ScaleGuardian: +").append(5 * sgShieldBlockPurchaseCount).append("%");
+                    }
+                    
+                    plugin.getLogger().info("  Shield Block Sources: " + sources.toString());
+                    
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] → Shield Block reduced damage: " + 
+                        String.format("%.1f", originalDamage) + " → " + String.format("%.1f", finalDamage) + 
+                        " (30% reduction)");
+                }
+                
+                // Process additional effects for successful blocks
+                handleSuccessfulBlock(player, event);
+            }
+        }
+        // Also check for vanilla shield blocking as a fallback
+        else if (event.isApplicable(EntityDamageEvent.DamageModifier.BLOCKING)) {
+            // This is a successful block from vanilla mechanics
             handleSuccessfulBlock(player, event);
+            
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Player " + player.getName() + " blocked with vanilla shield mechanics");
+                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Vanilla Shield Block!");
+            }
         }
     }
 
@@ -733,8 +850,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         if (isPurchased(playerId, ID_OFFSET + 24) && event instanceof EntityDamageByEntityEvent &&
                 !isOnCooldown(playerId, shieldBashCooldown, SHIELD_BASH_COOLDOWN)) {
 
-            // 25% chance to stun
-            if (random.nextDouble() * 100 < 25) {
+            boolean success = rollChance(25.0, player, "Shield Bash");
+            
+            if (success) {
                 EntityDamageByEntityEvent entityEvent = (EntityDamageByEntityEvent) event;
                 Entity attacker = entityEvent.getDamager();
 
@@ -751,6 +869,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Shield Bash! Enemy Stunned");
 
                     if (debuggingFlag == 1) {
+                        plugin.getLogger().info("→ Stunned enemy for 1 second");
                         plugin.getLogger().info("Shield Bash stunned enemy " + attacker.getType() + 
                                 " by " + player.getName());
                         player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Shield Bash stunned enemy!");
@@ -848,8 +967,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Apply Weakening Strike (ID 11)
         if (isPurchased(playerId, ID_OFFSET + 11) && target instanceof LivingEntity) {
-            // 15% chance to weaken
-            if (random.nextDouble() * 100 < 15) {
+            boolean success = rollChance(15.0, player, "Weakening Strike");
+            
+            if (success) {
                 LivingEntity livingTarget = (LivingEntity) target;
                 UUID targetId = livingTarget.getUniqueId();
 
@@ -894,6 +1014,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Weakening Strike! Enemy Damage -10%");
 
                 if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Weakened enemy for 5 seconds (-10% damage)");
                     plugin.getLogger().info("Weakening Strike applied to enemy " + targetId + 
                             " by " + player.getName());
                     player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike applied to enemy");
@@ -911,8 +1032,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Apply Taunt (ID 7)
         if (isPurchased(playerId, ID_OFFSET + 7) && attacker instanceof LivingEntity) {
-            // 25% chance to taunt
-            if (random.nextDouble() * 100 < 25) {
+            boolean success = rollChance(25.0, player, "Taunt");
+            
+            if (success) {
                 LivingEntity livingAttacker = (LivingEntity) attacker;
 
                 // Set the attacker's target to the player
@@ -925,6 +1047,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Taunt! Enemy Focused on You");
 
                     if (debuggingFlag == 1) {
+                        plugin.getLogger().info("→ Taunted enemy to focus on player");
                         plugin.getLogger().info("Taunt applied to enemy " + attacker.getType() + 
                                 " by " + player.getName());
                         player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Taunt applied to enemy");
@@ -935,8 +1058,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Apply Slowing Defense (ID 21)
         if (isPurchased(playerId, ID_OFFSET + 21) && attacker instanceof LivingEntity) {
-            // 10% chance to slow
-            if (random.nextDouble() * 100 < 10) {
+            boolean success = rollChance(10.0, player, "Slowing Defense");
+            
+            if (success) {
                 LivingEntity livingAttacker = (LivingEntity) attacker;
 
                 // Apply slowness effect (20% slower for 3 seconds)
@@ -946,6 +1070,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Slowing Defense! Enemy Slowed");
 
                 if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Slowed enemy for 3 seconds (-20% speed)");
                     plugin.getLogger().info("Slowing Defense applied to enemy " + attacker.getType() + 
                             " by " + player.getName());
                     player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Slowing Defense applied to enemy");
@@ -963,16 +1088,22 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 Integer stacks = weakened.get(attackerId);
                 if (stacks != null && stacks > 0) {
                     // Apply damage reduction (5% per stack)
-                    double reduction = 0.05 * stacks;
+                    double baseReduction = 0.05 * stacks;
                     double originalDamage = event.getDamage();
-                    double reducedDamage = originalDamage * (1 - reduction);
+            
+                    // Scale reduction based on current damage to prevent near-immunity when stacked
+                    // with other defensive mechanics
+                    double scaledReduction = baseReduction * Math.min(1.0, originalDamage / 5.0);
+            
+                    // Ensure damage doesn't go below a reasonable minimum (0.5)
+                    double reducedDamage = Math.max(0.5, originalDamage * (1 - scaledReduction));
                     event.setDamage(reducedDamage);
 
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Weakening Block reduced damage from enemy " + attackerId + 
-                                " by " + (reduction * 100) + "% (" + stacks + " stacks)");
+                                " by " + (scaledReduction * 100) + "% (scaled from " + (baseReduction * 100) + "%, " + stacks + " stacks)");
                         player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Block: -" + 
-                                (reduction * 100) + "% damage (" + stacks + " stacks)");
+                                (scaledReduction * 100) + "% damage (scaled from " + (baseReduction * 100) + "%, " + stacks + " stacks)");
                     }
                 }
             }
@@ -989,13 +1120,17 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (stacks != null && stacks > 0) {
                     // Apply damage reduction (10%)
                     double originalDamage = event.getDamage();
-                    double reducedDamage = originalDamage * 0.9;
+                    // Reduce effectiveness when damage is already low
+                    double reductionFactor = Math.min(0.1, 0.1 * (originalDamage / 5.0)); // Scale reduction based on damage
+                    // Ensure damage doesn't go below a reasonable minimum
+                    double reducedDamage = Math.max(0.5, originalDamage * (1 - reductionFactor));
                     event.setDamage(reducedDamage);
 
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Weakening Strike reduced damage from enemy " + attackerId + 
-                                " by 10%");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike: -10% damage");
+                                " by " + (reductionFactor * 100) + "% (scaled based on current damage)");
+                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike: -" + 
+                                String.format("%.1f", reductionFactor * 100) + "% damage (scaled from 10%)");
                     }
                 }
             }
@@ -1150,8 +1285,8 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Apply healing bonus if surrounded by 3+ enemies
         if (nearbyEnemies >= 3) {
-            // Calculate healing bonus (5% per enemy)
-            double healingBonus = nearbyEnemies * 5;
+            // Fixed healing bonus of 5% when surrounded by 3+ enemies
+            double healingBonus = 5.0;
 
             // Store the current modifier to avoid stacking
             Double currentModifier = playerHealingModifier.getOrDefault(playerId, 0.0);
@@ -1165,9 +1300,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Surrounded Healing activated for " + player.getName() + 
-                            " (+" + healingBonus + "% healing from " + nearbyEnemies + " nearby enemies)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Surrounded Healing: +" + 
-                            healingBonus + "% healing (" + nearbyEnemies + " enemies)");
+                            " (+5% healing when surrounded by 3+ enemies)");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Surrounded Healing: +5% healing (surrounded by " + 
+                            nearbyEnemies + " enemies)");
                 }
             }
         } else {
@@ -1333,46 +1468,68 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         // Count heavy armor pieces
         int heavyArmorPieces = 0;
         EntityEquipment equipment = player.getEquipment();
+        StringBuilder armorTypes = new StringBuilder();
 
         if (equipment != null) {
             // Check helmet
             ItemStack helmet = equipment.getHelmet();
             if (isHeavyArmor(helmet)) {
                 heavyArmorPieces++;
+                armorTypes.append(helmet.getType().name()).append(" ");
             }
 
             // Check chestplate
             ItemStack chestplate = equipment.getChestplate();
             if (isHeavyArmor(chestplate)) {
                 heavyArmorPieces++;
+                armorTypes.append(chestplate.getType().name()).append(" ");
             }
 
             // Check leggings
             ItemStack leggings = equipment.getLeggings();
             if (isHeavyArmor(leggings)) {
                 heavyArmorPieces++;
+                armorTypes.append(leggings.getType().name()).append(" ");
             }
 
             // Check boots
             ItemStack boots = equipment.getBoots();
             if (isHeavyArmor(boots)) {
                 heavyArmorPieces++;
+                armorTypes.append(boots.getType().name()).append(" ");
             }
         }
 
         // Get purchase count for stacking effect
         int purchaseCount = getPurchaseCount(playerId, ID_OFFSET + 12);
 
-        // Apply armor bonus
-        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-        int armorBonus = 3 * heavyArmorPieces * purchaseCount;
-        stats.addShieldBlockChance(armorBonus); // Using shield block as a proxy for armor
+        // Apply armor as actual armor value to the player
+        AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
+        if (armorAttribute != null) {
+            // Remove any existing modifiers from this skill
+            armorAttribute.getModifiers().stream()
+                    .filter(mod -> mod.getName().equals("skill.heavyArmorMastery"))
+                    .forEach(armorAttribute::removeModifier);
 
-        if (debuggingFlag == 1 && heavyArmorPieces > 0) {
-            plugin.getLogger().info("Heavy Armor Mastery activated for " + player.getName() + 
-                    " (+" + armorBonus + " armor from " + heavyArmorPieces + " heavy armor pieces)");
-            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Heavy Armor Mastery: +" + 
-                    armorBonus + " armor (" + heavyArmorPieces + " pieces)");
+            // Add new modifier if we have heavy armor pieces
+            if (heavyArmorPieces > 0) {
+                double armorBonus = 3.0 * heavyArmorPieces * purchaseCount;
+                AttributeModifier armorModifier = new AttributeModifier(
+                        UUID.randomUUID(),
+                        "skill.heavyArmorMastery",
+                        armorBonus,
+                        AttributeModifier.Operation.ADD_NUMBER
+                );
+                armorAttribute.addModifier(armorModifier);
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Heavy Armor Mastery activated for " + player.getName() + 
+                            " (+" + armorBonus + " armor from " + heavyArmorPieces + " heavy armor pieces)");
+                    plugin.getLogger().info("  Armor pieces: " + armorTypes.toString());
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Heavy Armor Mastery: +" + 
+                            armorBonus + " armor (" + heavyArmorPieces + " pieces: " + armorTypes.toString() + ")");
+                }
+            }
         }
     }
 
@@ -1393,6 +1550,11 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
     /**
      * Apply Potion Master (ID 20) to extend potion durations
+     * 
+     * NOTE: This currently only works with vanilla Minecraft potions.
+     * It does not work with custom alchemy effects from the plugin due to the way
+     * AlchemyEffect is implemented (duration is final and set in constructor).
+     * To make it work with custom effects would require significant changes to the alchemy system.
      */
     public void extendPotionDuration(Player player, PotionEffect effect) {
         UUID playerId = player.getUniqueId();
@@ -1512,6 +1674,9 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         playerDefenseModifier.remove(playerId);
         playerDamageModifier.remove(playerId);
         playerHealingModifier.remove(playerId);
+        
+        // Clear Desperate Defense values
+        desperateDefenseValues.remove(playerId);
 
         lastStandCooldown.remove(playerId);
         guardianAngelCooldown.remove(playerId);

@@ -155,24 +155,25 @@ public class ClassManager {
         if ("Beastmaster".equals(currentAscendancy)) {
             if (plugin.getAscendancySkillEffectIntegrator() != null) {
                 try {
-                    // Get the Beastmaster handler and remove all summons
+                    // Get the Beastmaster handler and clear all data (including additional wolves)
                     com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
                         (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
                         plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
 
                     if (handler != null) {
-                        plugin.getLogger().info("Found Beastmaster handler, removing all summons for: " + player.getName());
-                        handler.removeAllSummons(player);
+                        plugin.getLogger().info("Found Beastmaster handler, clearing all data for: " + player.getName());
+                        // Use clearPlayerData instead of removeAllSummons for complete cleanup
+                        handler.clearPlayerData(uuid);
 
-                        // Force a delay to ensure summons are removed before continuing
+                        // Force a delay to ensure all data is cleared before continuing
                         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                            plugin.getLogger().info("Delayed check: All summons should be removed for: " + player.getName());
+                            plugin.getLogger().info("Delayed check: All Beastmaster data should be cleared for: " + player.getName());
                         }, 20L); // 1 second delay
                     } else {
                         plugin.getLogger().warning("Beastmaster handler is null for player: " + player.getName());
                     }
                 } catch (Exception e) {
-                    plugin.getLogger().severe("Error removing Beastmaster summons: " + e.getMessage());
+                    plugin.getLogger().severe("Error clearing Beastmaster data: " + e.getMessage());
                     e.printStackTrace();
                 }
             } else {

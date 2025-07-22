@@ -3,11 +3,14 @@ package com.maks.myexperienceplugin.Class.skills.effects;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -25,6 +28,21 @@ import java.util.UUID;
 public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Random random = new Random();
     private final int debuggingFlag = 1; // Set to 0 in production
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     // Track Battle Rhythm (skill 2) attack speed buff
     private final Map<UUID, Long> battleRhythmCooldowns = new HashMap<>();
@@ -48,66 +66,76 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         switch (skillId) {
             case 1: // +3% def
                 stats.addDefenseBonus(3 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 1: Added " + (3 * purchaseCount) + "% defense bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 1: +" + (3 * purchaseCount) + "% defense bonus");
                 }
                 break;
             case 2: // After successful hit gain +5% as for 5s
                 // This effect is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 2: Battle Rhythm will be applied on hits");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 2: Battle Rhythm enabled (+5% attack speed on hit)");
                 }
                 break;
             case 3: // +1% dmg
                 stats.addDamageMultiplier(0.01 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 3: Added " + (0.01 * purchaseCount) + " to damage multiplier");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 3: +" + (1 * purchaseCount) + "% damage multiplier");
                 }
                 break;
             case 4: // When hp<50% gain +2% def
                 // This effect is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 4: Endurance will be applied when HP is low");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 4: Endurance enabled (+2% defense when HP < 50%)");
                 }
                 break;
             case 5: // +1% ms (1/2)
                 stats.addMovementSpeedBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 5: Added " + (1 * purchaseCount) + "% movement speed bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 5: +" + (1 * purchaseCount) + "% movement speed bonus");
                 }
                 break;
             case 6: // For every 100 damage dealt, you increase your damage by 1% for 5 seconds (stack up to 3 times)
                 // This effect is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 6: Battle Fury will be applied when dealing damage");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 6: Battle Fury enabled (+1% dmg per 100 damage dealt, max 3 stacks)");
                 }
                 break;
             case 7: // When hp<20% gain 20hp for 5s (cd 1min)
                 // This effect is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 7: Dragon Heart will be applied when HP is very low");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 7: Dragon Heart enabled (+20 HP when HP < 20%, 60s cd)");
                 }
                 break;
             case 8: // +2hp (1/2)
                 stats.addMaxHealth(2 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 8: Added " + (2 * purchaseCount) + " max health bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 8: +" + (2 * purchaseCount) + " max health");
                 }
                 break;
             case 9: // +1% luck (1/2)
                 stats.addLuckBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 9: Added " + (1 * purchaseCount) + "% luck bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 9: +" + (1 * purchaseCount) + "% luck bonus");
                 }
                 break;
             case 10: // +7 dmg (1/2) - FIXED VALUE
                 stats.addBonusDamage(7 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 10: Added " + (7 * purchaseCount) + " bonus damage");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 10: +" + (7 * purchaseCount) + " bonus damage");
                 }
                 break;
             case 11: // +5% dmg, -2% ms
@@ -116,24 +144,28 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 11: Added " + (5 * purchaseCount) + "% damage multiplier and " +
                             "reduced movement speed by " + (2 * purchaseCount) + "%");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 11: +" + (5 * purchaseCount) + "% damage, -" + (2 * purchaseCount) + "% movement speed");
                 }
                 break;
             case 12: // After killing a mob u heal 2hp
                 // This effect is handled in the EntityDeathEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 12: Life Drain will be applied on kill");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 12: Life Drain enabled (+2 HP on kill)");
                 }
                 break;
             case 13: // +10 dmg - FIXED VALUE
                 stats.addBonusDamage(10);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 13: Added 10 bonus damage");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 13: +10 bonus damage");
                 }
                 break;
             case 14: // +5% shield block chance
                 stats.addShieldBlockChance(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("DRAGONKNIGHT SKILL 14: Added " + (5 * purchaseCount) + "% shield block chance");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] DRAGONKNIGHT SKILL 14: +" + (5 * purchaseCount) + "% shield block chance");
                 }
                 break;
             default:
@@ -144,13 +176,16 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
         }
     }
 
+    // Constant for flame reflection
+    private static final double FLAME_REFLECTION_PERCENT = 0.25; // 25% damage reflection
+
     @Override
     public void handleEntityDamage(EntityDamageEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
 
         // Check for shield block chance - it's a passive damage reduction ability
         // not related to actually having a shield equipped
-        if (stats.getShieldBlockChance() > 0 && random.nextDouble() * 100 < stats.getShieldBlockChance()) {
+        if (stats.getShieldBlockChance() > 0 && rollChance(stats.getShieldBlockChance(), player, "Shield Block")) {
             // Get original damage
             double originalDamage = event.getDamage();
             // Apply 50% damage reduction
@@ -165,6 +200,38 @@ public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
                         originalDamage + " to " + event.getDamage() + " (50% reduction)");
                 plugin.getLogger().info("Shield Block chance was: " + stats.getShieldBlockChance() + "%");
                 player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Shield Block! " + originalDamage + " → " + event.getDamage() + " dmg");
+            }
+            
+            // Check for Flame Reflection skill
+            if (plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(18)) {
+                // Only apply if damage is from an entity
+                if (event instanceof EntityDamageByEntityEvent) {
+                    EntityDamageByEntityEvent entityEvent = (EntityDamageByEntityEvent) event;
+                    Entity damager = entityEvent.getDamager();
+                    
+                    if (damager instanceof LivingEntity) {
+                        LivingEntity attacker = (LivingEntity) damager;
+                        // Calculate reflection damage (25% of original damage)
+                        double reflectionDamage = originalDamage * FLAME_REFLECTION_PERCENT;
+                        
+                        // Apply fire damage to attacker
+                        attacker.damage(reflectionDamage, player);
+                        
+                        // Set attacker on fire for 3 seconds (60 ticks)
+                        attacker.setFireTicks(60);
+                        
+                        // Show notification
+                        ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Flame Reflection! (" + 
+                                String.format("%.1f", reflectionDamage) + " damage)");
+                        
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Flame Reflection activated for " + player.getName() + 
+                                    ", reflected " + reflectionDamage + " damage to " + attacker.getType());
+                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Flame Reflection: " + 
+                                    reflectionDamage + " damage to " + attacker.getType());
+                        }
+                    }
+                }
             }
         }
 

@@ -30,7 +30,7 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node2 = new SkillNode(ID_OFFSET + 2, "Critical Precision", "+2% critical hit chance", 1,
+        SkillNode node2 = new SkillNode(ID_OFFSET + 2, "Critical Precision", "+2% critical hit chance (CRIT = 200% DMG)", 1,
                 Material.ARROW, 3, player -> {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Critical Precision skill");
@@ -84,7 +84,7 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node9 = new SkillNode(ID_OFFSET + 9, "Poisoned Blade", "+15% chance for attacks to apply poison for 4 seconds", 2,
+        SkillNode node9 = new SkillNode(ID_OFFSET + 9, "Poisoned Blade", "+15% chance for attacks to apply poison for 4 seconds (POISON = 10% DMG/s)", 2,
                 Material.SPIDER_EYE, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "Your attacks now have a chance to poison enemies!");
             if (debuggingFlag == 1) {
@@ -100,7 +100,7 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node11 = new SkillNode(ID_OFFSET + 11, "Critical Power", "+20% critical damage", 3,
+        SkillNode node11 = new SkillNode(ID_OFFSET + 11, "Critical Power", "+20% critical damage (CRIT = 200% DMG)", 3,
                 Material.DIAMOND_SWORD, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "Your critical hits deal more damage!");
             if (debuggingFlag == 1) {
@@ -148,7 +148,7 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node17 = new SkillNode(ID_OFFSET + 17, "Devastating Critical", "Critical hits have 10% chance to deal +50% additional damage", 3,
+        SkillNode node17 = new SkillNode(ID_OFFSET + 17, "Devastating Critical", "Critical hits have 10% chance to deal +50% additional damage (CRIT = 200% DMG)", 3,
                 Material.NETHERITE_SWORD, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "Your critical hits sometimes deal devastating damage!");
             if (debuggingFlag == 1) {
@@ -180,7 +180,7 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node21 = new SkillNode(ID_OFFSET + 21, "Toxic Amplification", "Critical hits against poisoned targets have 25% chance to amplify poison effect, dealing double damage", 3,
+        SkillNode node21 = new SkillNode(ID_OFFSET + 21, "Toxic Amplification", "Critical hits against poisoned targets have 25% chance to amplify poison effect, dealing double damage (POISON = 10% DMG/s)", 3,
                 Material.DRAGON_BREATH, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "Your critical hits can amplify poison effects!");
             if (debuggingFlag == 1) {
@@ -196,7 +196,7 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node23 = new SkillNode(ID_OFFSET + 23, "Precision Strike", "Every third attack on the same target is automatically a critical hit", 5,
+        SkillNode node23 = new SkillNode(ID_OFFSET + 23, "Precision Strike", "Every third attack on the same target is automatically a critical hit (CRIT = 200% DMG)", 5,
                 Material.TARGET, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "Every third attack on the same target is guaranteed to be a critical hit!");
             if (debuggingFlag == 1) {
@@ -302,8 +302,8 @@ public class ShadowstalkerSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19); // Fixed: Changed from 14->20 to 14->19
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
 
         // Poziom 5->6

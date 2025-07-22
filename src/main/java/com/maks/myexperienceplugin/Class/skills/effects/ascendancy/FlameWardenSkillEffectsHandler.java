@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -15,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
@@ -88,13 +90,28 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
 
     // Random for chance calculations
     private final Random random = new Random();
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     public FlameWardenSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         int originalId = skillId - ID_OFFSET; // Remove offset to get original skill ID
 
         switch (originalId) {
@@ -102,96 +119,115 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 1: Will apply ignite chance dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 1: 15% chance to ignite enemies enabled");
                 }
                 break;
             case 2: // +10% damage against burning enemies (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 2: Will apply burning damage bonus dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 2: +10% damage vs burning enemies enabled");
                 }
                 break;
             case 3: // Gain fire resistance potion effect infinity
-                // This is handled when the player joins or when skills are refreshed
+                // Apply fire resistance potion effect (infinite duration, hidden)
+                player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
+                player.sendMessage(ChatColor.GOLD + "You feel protected from fire! (Fire Resistance effect applied)");
+                
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("FLAMEWARDEN SKILL 3: Will apply fire resistance effect when player joins");
+                    plugin.getLogger().info("FLAMEWARDEN SKILL 3: Applied hidden fire resistance effect to " + player.getName());
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 3: Hidden Fire Resistance effect enabled");
                 }
                 break;
             case 4: // When hp<50%, your attacks have +10% chance to ignite enemies
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 4: Will apply desperate ignition dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 4: +10% ignite chance when HP < 50% enabled");
                 }
                 break;
             case 5: // Burning enemies deal -15% damage to you (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 5: Will apply flame shield dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 5: -15% damage from burning enemies enabled");
                 }
                 break;
             case 6: // Taking damage has 20% chance to trigger a fire nova dealing 30 damage to nearby enemies and ignite them
                 // This is handled dynamically when taking damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 6: Will apply fire nova dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 6: 20% chance fire nova on damage taken (30 dmg) enabled");
                 }
                 break;
             case 7: // +5% damage for each burning enemy within 10 blocks (max +15%)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 7: Will apply burning aura dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 7: +5% damage per burning enemy (max +15%) enabled");
                 }
                 break;
             case 8: // Ignited enemies spread burn to nearby enemies within 3 blocks (30% chance)
                 // This is handled dynamically when enemies are ignited
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 8: Will apply spreading flames dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 8: 30% chance to spread flames to nearby enemies enabled");
                 }
                 break;
             case 9: // Critical hits deal additional 5 fire damage over 3 seconds (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 9: Will apply critical burn dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 9: Critical hits deal +5 fire damage over 3s enabled");
                 }
                 break;
             case 10: // When surrounded by 3+ enemies, gain +15% defense
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 10: Will apply surrounded defense dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 10: +15% defense when surrounded by 3+ enemies enabled");
                 }
                 break;
             case 11: // Attacks deal splash damage (20% of damage) to enemies within 2 blocks of target (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 11: Will apply splash damage dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 11: 20% splash damage to enemies within 2 blocks enabled");
                 }
                 break;
             case 12: // After killing a burning enemy, gain +5% damage and movement speed for 5 seconds (stacks up to 3 times)
                 // This is handled dynamically when killing enemies
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 12: Will apply burning momentum dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 12: +5% damage/speed per burning enemy kill (max 3 stacks) enabled");
                 }
                 break;
             case 13: // Standing in fire heals you instead of dealing damage
                 // This is handled dynamically when taking fire damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 13: Will apply fire healing dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 13: Fire heals instead of damages enabled");
                 }
                 break;
             case 14: // Every third attack on the same enemy deals +40% damage as fire damage
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 14: Will apply third strike dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 14: Every 3rd attack on same enemy +40% fire damage enabled");
                 }
                 break;
             case 15: // When hp<30%, ignite all enemies within 5 blocks (30 second cooldown)
                 // This is handled dynamically when health is low
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 15: Will apply desperate nova dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 15: Ignite all enemies within 5 blocks when HP < 30% enabled (30s cd)");
                 }
                 break;
             case 16: // +15% chance for burning duration to extend by 2 seconds whenever the enemy takes damage
                 // This is handled dynamically when enemies take damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 16: Will apply extended burn dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 16: 15% chance to extend burn duration by 2s enabled");
                 }
                 break;
             case 17: // While you have 3+ burning enemies nearby, gain +20% damage and +10% defense
@@ -299,11 +335,14 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
         }
 
         // Check for Fire Nova (ID 6)
-        if (isPurchased(playerId, ID_OFFSET + 6) && random.nextDouble() < FIRE_NOVA_CHANCE) {
-            triggerFireNova(player, FIRE_NOVA_DAMAGE);
-
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("Fire Nova triggered for " + player.getName());
+        if (isPurchased(playerId, ID_OFFSET + 6)) {
+            boolean success = rollChance(FIRE_NOVA_CHANCE * 100, player, "Fire Nova");
+            
+            if (success) {
+                triggerFireNova(player, FIRE_NOVA_DAMAGE);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Fire Nova triggered, damage: " + FIRE_NOVA_DAMAGE);
+                }
             }
         }
 
@@ -412,6 +451,9 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             int burningEnemiesCount = countBurningEnemiesNearby(player, 10);
             double damageBonus = Math.min(BURNING_AURA_MAX, burningEnemiesCount * BURNING_AURA_BONUS);
 
+            // Send chat message with burning enemies count
+            player.sendMessage(ChatColor.GOLD + "[Burning Aura] " + burningEnemiesCount + " burning enemies nearby");
+
             if (damageBonus > 0) {
                 double originalDamage = event.getDamage();
                 double bonusDamage = originalDamage * (1 + damageBonus);
@@ -427,6 +469,10 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
         // Apply Burning Presence (ID 17)
         if (isPurchased(playerId, ID_OFFSET + 17)) {
             int burningEnemiesCount = countBurningEnemiesNearby(player, 10);
+            
+            // Send chat message with burning enemies count
+            player.sendMessage(ChatColor.GOLD + "[Burning Presence] " + burningEnemiesCount + " burning enemies nearby" + 
+                    (burningEnemiesCount >= 3 ? " - ACTIVE!" : " - Need 3+ for activation"));
 
             if (burningEnemiesCount >= 3) {
                 // Apply damage and defense bonuses
@@ -506,28 +552,40 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Apply Splash Damage (ID 11)
         if (isPurchased(playerId, ID_OFFSET + 11)) {
-            int purchaseCount = getPurchaseCount(playerId, ID_OFFSET + 11);
-            double splashPercent = SPLASH_DAMAGE_PERCENT * purchaseCount;
-            double originalDamage = event.getDamage();
-            double splashDamage = originalDamage * splashPercent;
-
-            // Apply splash damage to nearby entities
-            List<Entity> nearbyEntities = target.getNearbyEntities(2, 2, 2);
-            for (Entity nearby : nearbyEntities) {
-                if (nearby instanceof LivingEntity && nearby != player && nearby != target) {
-                    LivingEntity nearbyTarget = (LivingEntity) nearby;
-                    nearbyTarget.damage(splashDamage, player);
-
-                    if (debuggingFlag == 1) {
-                        plugin.getLogger().info("Splash damage of " + splashDamage + " applied to " + 
-                                nearbyTarget.getType() + " from " + player.getName() + "'s attack");
+            // Check if this is a splash damage event to prevent chaining
+            if (event.getCause() != EntityDamageEvent.DamageCause.CUSTOM) {
+                int purchaseCount = getPurchaseCount(playerId, ID_OFFSET + 11);
+                double splashPercent = SPLASH_DAMAGE_PERCENT * purchaseCount;
+                double originalDamage = event.getDamage();
+                double splashDamage = originalDamage * splashPercent;
+    
+                // Apply splash damage to nearby entities
+                List<Entity> nearbyEntities = target.getNearbyEntities(2, 2, 2);
+                for (Entity nearby : nearbyEntities) {
+                    if (nearby instanceof LivingEntity && nearby != player && nearby != target) {
+                        LivingEntity nearbyTarget = (LivingEntity) nearby;
+                        // Use CUSTOM damage cause to prevent chaining
+                        nearbyTarget.damage(splashDamage);
+                        // Set the last damage cause to the player for proper attribution
+                        nearbyTarget.setLastDamageCause(new EntityDamageByEntityEvent(player, nearbyTarget, 
+                                EntityDamageEvent.DamageCause.CUSTOM, splashDamage));
+    
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Splash damage of " + splashDamage + " applied to " + 
+                                    nearbyTarget.getType() + " from " + player.getName() + "'s attack");
+                        }
                     }
                 }
-            }
-
-            if (!nearbyEntities.isEmpty() && debuggingFlag == 1) {
-                plugin.getLogger().info("Splash Damage applied to " + nearbyEntities.size() + 
-                        " entities for " + player.getName());
+    
+                if (!nearbyEntities.isEmpty()) {
+                    // Show notification
+                    ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Splash Damage! (" + nearbyEntities.size() + " entities)");
+                    
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Splash Damage applied to " + nearbyEntities.size() + 
+                                " entities for " + player.getName());
+                    }
+                }
             }
         }
 
@@ -535,7 +593,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
         boolean isCrit = false;
         double critChance = getCriticalChance(player, target, targetHealthPercent);
 
-        if (random.nextDouble() < critChance) {
+        if (rollChance(critChance * 100, player, "Critical Hit")) {
             isCrit = true;
 
             // Apply Critical Burn (ID 9)
@@ -599,27 +657,34 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
         }
 
         // Check if ignite should be applied
-        if (igniteChance > 0 && random.nextDouble() < igniteChance) {
-            igniteEntity(player, target, IGNITE_DURATION);
-
-            // Apply Spreading Flames (ID 8)
-            if (isPurchased(playerId, ID_OFFSET + 8) && random.nextDouble() < SPREADING_FLAMES_CHANCE) {
-                List<Entity> nearbyEntities = target.getNearbyEntities(3, 3, 3);
-                for (Entity nearby : nearbyEntities) {
-                    if (nearby instanceof LivingEntity && nearby != player && nearby != target) {
-                        LivingEntity nearbyTarget = (LivingEntity) nearby;
-                        igniteEntity(player, nearbyTarget, IGNITE_DURATION);
-
-                        if (debuggingFlag == 1) {
-                            plugin.getLogger().info("Spreading Flames ignited " + nearbyTarget.getType() + 
-                                    " from " + target.getType());
-                        }
-                    }
+        if (igniteChance > 0) {
+            boolean success = rollChance(igniteChance * 100, player, "Ignite");
+            
+            if (success) {
+                igniteEntity(player, target, IGNITE_DURATION);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Ignited " + target.getType() + " for " + (IGNITE_DURATION/1000) + "s");
                 }
 
-                if (!nearbyEntities.isEmpty() && debuggingFlag == 1) {
-                    plugin.getLogger().info("Spreading Flames applied to " + nearbyEntities.size() + 
-                            " entities from " + target.getType());
+                // Apply Spreading Flames (ID 8)
+                if (isPurchased(playerId, ID_OFFSET + 8)) {
+                    boolean spreadSuccess = rollChance(SPREADING_FLAMES_CHANCE * 100, player, "Spreading Flames");
+                    
+                    if (spreadSuccess) {
+                        List<Entity> nearbyEntities = target.getNearbyEntities(3, 3, 3);
+                        int spreadCount = 0;
+                        for (Entity nearby : nearbyEntities) {
+                            if (nearby instanceof LivingEntity && nearby != player && nearby != target) {
+                                LivingEntity nearbyTarget = (LivingEntity) nearby;
+                                igniteEntity(player, nearbyTarget, IGNITE_DURATION);
+                                spreadCount++;
+                            }
+                        }
+                        
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("→ Spreading Flames ignited " + spreadCount + " entities");
+                        }
+                    }
                 }
             }
         }
@@ -752,14 +817,15 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 playerBurnDuration.put(entityId, seconds);
 
                 // Apply Extended Burn (ID 16)
-                if (isPurchased(playerId, ID_OFFSET + 16) && random.nextDouble() < EXTENDED_BURN_CHANCE) {
-                    // Extend burn duration by 2 seconds
-                    long newEndTime = burnEndTime + 2000;
-                    playerBurningEntities.put(entityId, newEndTime);
-
-                    if (debuggingFlag == 1) {
-                        plugin.getLogger().info("Extended burn duration on " + target.getType() + 
-                                " for player " + player.getName() + " by 2 seconds");
+                if (isPurchased(playerId, ID_OFFSET + 16)) {
+                    boolean success = rollChance(EXTENDED_BURN_CHANCE * 100, player, "Extended Burn");
+                    
+                    if (success) {
+                        long newEndTime = burnEndTime + 2000;
+                        playerBurningEntities.put(entityId, newEndTime);
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("→ Extended burn duration by 2 seconds");
+                        }
                     }
                 }
 
@@ -776,16 +842,15 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // Apply Burning Retaliation (ID 24)
                 if (isPurchased(playerId, ID_OFFSET + 24) && target.getLastDamageCause() instanceof EntityDamageByEntityEvent) {
                     EntityDamageByEntityEvent damageEvent = (EntityDamageByEntityEvent) target.getLastDamageCause();
-                    if (damageEvent.getDamager() instanceof LivingEntity && 
-                            damageEvent.getDamager() != player && 
-                            random.nextDouble() < BURNING_RETALIATION_CHANCE) {
-
-                        LivingEntity attacker = (LivingEntity) damageEvent.getDamager();
-                        igniteEntity(player, attacker, IGNITE_DURATION);
-
-                        if (debuggingFlag == 1) {
-                            plugin.getLogger().info("Burning Retaliation ignited " + attacker.getType() + 
-                                    " for attacking burning " + target.getType());
+                    if (damageEvent.getDamager() instanceof LivingEntity && damageEvent.getDamager() != player) {
+                        boolean success = rollChance(BURNING_RETALIATION_CHANCE * 100, player, "Burning Retaliation");
+                        
+                        if (success) {
+                            LivingEntity attacker = (LivingEntity) damageEvent.getDamager();
+                            igniteEntity(player, attacker, IGNITE_DURATION);
+                            if (debuggingFlag == 1) {
+                                plugin.getLogger().info("→ Burning Retaliation ignited " + attacker.getType());
+                            }
                         }
                     }
                 }
@@ -928,19 +993,15 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
      * Count burning enemies near the player
      */
     private int countBurningEnemiesNearby(Player player, double radius) {
-        UUID playerId = player.getUniqueId();
-        Map<UUID, Long> playerBurningEntities = burningEntities.get(playerId);
-        if (playerBurningEntities == null || playerBurningEntities.isEmpty()) {
-            return 0;
-        }
-
         int count = 0;
         List<Entity> nearbyEntities = player.getNearbyEntities(radius, radius, radius);
 
         for (Entity entity : nearbyEntities) {
-            if (entity instanceof LivingEntity && 
-                    playerBurningEntities.containsKey(entity.getUniqueId())) {
-                count++;
+            if (entity instanceof LivingEntity) {
+                LivingEntity livingEntity = (LivingEntity) entity;
+                if (isEntityBurning(player, livingEntity)) {
+                    count++;
+                }
             }
         }
 
@@ -1061,6 +1122,67 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         long lastUse = cooldownMap.get(playerId);
         return System.currentTimeMillis() - lastUse < cooldownDuration;
+    }
+
+    /**
+     * Handle player death for Phoenix Rebirth
+     */
+    public void handlePlayerDeath(PlayerDeathEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
+        UUID playerId = player.getUniqueId();
+
+        // Check for Phoenix Rebirth (ID 27)
+        if (isPurchased(playerId, ID_OFFSET + 27) && 
+                !isOnCooldown(playerId, phoenixRebirthCooldown, PHOENIX_REBIRTH_COOLDOWN)) {
+
+            // Get player's location for the explosion
+            org.bukkit.Location deathLocation = player.getLocation();
+
+            // Schedule the explosion for after respawn
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                // Create visual explosion effect
+                deathLocation.getWorld().createExplosion(deathLocation, 0, false, false, player);
+
+                // Create flame particles
+                deathLocation.getWorld().spawnParticle(
+                        org.bukkit.Particle.FLAME,
+                        deathLocation,
+                        100, 5, 3, 5, 0.2);
+
+                // Apply damage to all nearby entities
+                List<Entity> nearbyEntities = (List<Entity>) deathLocation.getWorld().getNearbyEntities(deathLocation, 10, 10, 10);
+                for (Entity entity : nearbyEntities) {
+                    if (entity instanceof LivingEntity && entity != player) {
+                        LivingEntity target = (LivingEntity) entity;
+                        
+                        // Calculate massive damage (5000% = 50x base damage)
+                        double baseDamage = player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue();
+                        double phoenixDamage = baseDamage * PHOENIX_REBIRTH_DAMAGE;
+                        
+                        target.damage(phoenixDamage, player);
+                        igniteEntity(player, target, IGNITE_DURATION * 2); // Double ignite duration
+
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Phoenix Rebirth dealt " + phoenixDamage + 
+                                    " damage to " + target.getType());
+                        }
+                    }
+                }
+
+                // Set cooldown
+                phoenixRebirthCooldown.put(playerId, System.currentTimeMillis());
+
+                // Show notification to player when they respawn
+                if (player.isOnline()) {
+                    ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "☀ Phoenix Rebirth Activated! ☀");
+                    player.sendMessage(ChatColor.GOLD + "You exploded in a fiery rebirth! (5 minute cooldown)");
+                }
+
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Phoenix Rebirth activated for " + player.getName() + 
+                            " upon death, dealing massive damage to " + nearbyEntities.size() + " entities");
+                }
+            }, 1L); // Execute 1 tick after death
+        }
     }
 
     /**

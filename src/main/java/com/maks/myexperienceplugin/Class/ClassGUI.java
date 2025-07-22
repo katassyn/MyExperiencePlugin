@@ -104,11 +104,11 @@ public class ClassGUI {
                     ChatColor.GRAY + "for support & defense"
             )));
         } else if ("Dragonknight".equalsIgnoreCase(baseClass)) {
-            inv.setItem(2, createAscendItem(org.bukkit.Material.CAMPFIRE, "Flame Warden", Arrays.asList(
+            inv.setItem(2, createAscendItem(org.bukkit.Material.CAMPFIRE, "FlameWarden", Arrays.asList(
                     ChatColor.GRAY + "Focuses on fire power,",
                     ChatColor.GRAY + "burning, and melee strength"
             )));
-            inv.setItem(4, createAscendItem(org.bukkit.Material.SHIELD, "Scale Guardian", Arrays.asList(
+            inv.setItem(4, createAscendItem(org.bukkit.Material.SHIELD, "ScaleGuardian", Arrays.asList(
                     ChatColor.GRAY + "A living shield,",
                     ChatColor.GRAY + "high defense & taunts"
             )));
@@ -125,7 +125,7 @@ public class ClassGUI {
                     ChatColor.GRAY + "Manipulates time for",
                     ChatColor.GRAY + "unique offense & support"
             )));
-            inv.setItem(6, createAscendItem(org.bukkit.Material.ENDER_EYE, "Arcane Protector", Arrays.asList(
+            inv.setItem(6, createAscendItem(org.bukkit.Material.ENDER_EYE, "ArcaneProtector", Arrays.asList(
                     ChatColor.GRAY + "Shields allies with arcane",
                     ChatColor.GRAY + "magic & protective spells"
             )));

@@ -49,9 +49,9 @@ commands:
     usage: /skilltree
     permission: myplugin.skilltree
   class:
-    description: Force-change your class (OP-only)
-    permission: myplugin.class
+    description: Opens the class GUI
     usage: /class
+    permission: myplugin.class
   chose_class:
     description: Manually open the base class GUI
     permission: myplugin.class
@@ -124,6 +124,19 @@ commands:
     description: Give a player an EXP boost (admin command)
     usage: /giveexpboost <player> <percent> <hours>
     permission: myplugin.giveexpboost
+  updaterankings:
+    description: Force update player rankings
+    usage: /updaterankings
+    permission: myplugin.updaterankings
+    aliases: [rankupdate, updateranks]
+  admincheck:
+    description: Check admin status in database
+    usage: /admincheck
+    permission: myplugin.admincheck
+  fixadmins:
+    description: Fix admin statuses and rebuild rankings
+    usage: /fixadmins
+    permission: myplugin.fixadmins
 # Add these permissions to your plugin.yml (if you have a permissions section)
 
 permissions:
@@ -153,4 +166,16 @@ permissions:
 
   myplugin.sgtest:
     description: Allows using Scale Guardian test commands
+    default: op
+    
+  myplugin.updaterankings:
+    description: Allows forcing player ranking updates
+    default: op
+    
+  myplugin.admincheck:
+    description: Allows checking admin status in database
+    default: op
+    
+  myplugin.fixadmins:
+    description: Allows fixing admin statuses and rebuilding rankings
     default: op

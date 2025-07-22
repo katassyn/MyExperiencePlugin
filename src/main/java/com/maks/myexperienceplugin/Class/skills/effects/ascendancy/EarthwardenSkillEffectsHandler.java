@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -33,11 +34,23 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     // ID offset for Earthwarden skills
     private static final int ID_OFFSET = 600000;
 
-    // Debug flag
-    private final int debuggingFlag = 1;
-
     // Random for chance calculations
     private final Random random = new Random();
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     // Maps to track player states and cooldowns
     private final Map<UUID, Long> lastMovementTime = new ConcurrentHashMap<>();
@@ -59,6 +72,31 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
     // Task IDs
     private BukkitTask periodicEffectsTask;
+    
+    /**
+     * Clean up all player data
+     */
+    public void clearPlayerData(UUID playerId) {
+        // Clear all maps
+        lastMovementTime.remove(playerId);
+        lastDamageTakenTime.remove(playerId);
+        divineProtectionCooldowns.remove(playerId);
+        entanglingStrikeCooldowns.remove(playerId);
+        entanglingStrikeReady.remove(playerId);
+        secondChanceCooldowns.remove(playerId);
+        playerAttackers.remove(playerId);
+        reactiveDefenseEndTimes.remove(playerId);
+        survivalInstinctEndTimes.remove(playerId);
+        lastStandEndTimes.remove(playerId);
+        desperateEscapeEndTimes.remove(playerId);
+        protectiveInstinctEndTimes.remove(playerId);
+        counterattackEndTimes.remove(playerId);
+        immunityEndTimes.remove(playerId);
+        
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Cleared all Earthwarden data for player ID: " + playerId);
+        }
+    }
 
     public EarthwardenSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -156,7 +194,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         int originalId = skillId - ID_OFFSET; // Remove offset to get original skill ID
 
         switch (originalId) {
@@ -164,6 +202,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 1: Will add 3% defense in grassy areas");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 1: +3% defense in grassy areas enabled");
                 }
                 break;
 
@@ -171,6 +210,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDeathEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 2: Will heal 1 hp after killing an enemy");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 2: Heal 1 HP after killing enemy enabled");
                 }
                 break;
 
@@ -178,6 +218,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 3: Will add 5% resistance to environmental damage");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 3: +5% resistance to environmental damage enabled");
                 }
                 break;
 
@@ -188,6 +229,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 stats.addMaxHealth(hpBonus);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 4: Added " + hpBonus + " HP (skill level " + purchaseCount + "/3)");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 4: +" + hpBonus + " HP (level " + purchaseCount + "/3)");
                 }
                 break;
 
@@ -195,6 +237,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 5: Will add 10% defense after standing still for 3 seconds");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 5: +10% defense after standing still for 3s enabled");
                 }
                 break;
 
@@ -202,6 +245,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled dynamically during gameplay
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 6: Will add 5% luck when below 50% hp");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 6: +5% luck when HP < 50% enabled");
                 }
                 break;
 
@@ -209,6 +253,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 7: Will add 5% defense for 3 seconds when hp<50%");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 7: +5% defense for 3s when HP < 50% enabled");
                 }
                 break;
 
@@ -216,6 +261,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDamageByEntityEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 8: Will root enemies every 10 seconds");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 8: Root enemies every 10s enabled");
                 }
                 break;
 
@@ -262,89 +308,93 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 }
                 break;
 
-            case 15: // When below 30% hp, gain +20% defense and +10% damage
+            case 15: // When hp<30%, gain +20% defense and +10% damage for 5 seconds
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 15: Will add 20% defense and 10% damage when below 30% hp");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 15: Will add 20% defense and 10% damage for 5 seconds when hp<30%");
                 }
                 break;
 
-            case 16: // Taking damage has 5% chance to grant immunity for 2 seconds
+            case 16: // 5% chance to negate all damage and gain immunity for 2 seconds
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 16: Will grant immunity for 2 seconds with 5% chance");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 16: Will negate all damage with 5% chance");
                 }
                 break;
 
-            case 17: // +3% defense for each enemy within 8 blocks (max +15%)
+            case 17: // +3% defense for each enemy within 5 blocks (max +15%)
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 17: Will add 3% defense for each nearby enemy");
                 }
                 break;
 
-            case 18: // Reduce knockback taken by 50% and gain +20% knockback dealt
-                // We'll use defense as a proxy for knockback resistance
-                stats.addDefenseBonus(0.5);
-                stats.addBonusDamage(0.2); // Using damage as a proxy for knockback dealt
+            case 18: // +5% defense for each piece of armor worn
+                // This is a fixed bonus based on armor
+                int armorCount = 0;
+                if (player.getInventory().getHelmet() != null) armorCount++;
+                if (player.getInventory().getChestplate() != null) armorCount++;
+                if (player.getInventory().getLeggings() != null) armorCount++;
+                if (player.getInventory().getBoots() != null) armorCount++;
+                stats.addDefenseBonus(0.05 * armorCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 18: Added 50% knockback resistance and 20% knockback dealt (using proxies)");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 18: Added " + (0.05 * armorCount) + " defense for " + armorCount + " armor pieces");
                 }
                 break;
 
-            case 19: // Gain +5% damage for every 30% of health you're missing
+            case 19: // When hp<20%, gain +15% damage for 5 seconds
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 19: Will add damage based on missing health");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 19: Will add 15% damage for 5 seconds when hp<20%");
                 }
                 break;
 
-            case 20: // While above 80% hp, gain +15% attack speed
+            case 20: // When hp>80%, gain +10% movement speed
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 20: Will add 15% attack speed when above 80% hp");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 20: Will add 10% movement speed when hp>80%");
                 }
                 break;
 
-            case 21: // When an ally takes damage, gain +10% movement speed and +5% damage for 5 seconds
-                // This is handled in a separate event listener
+            case 21: // When an ally within 15 blocks is attacked, gain +5% damage and +10% movement speed for 5 seconds
+                // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 21: Will add movement speed and damage when ally takes damage");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 21: Will add 5% damage and 10% movement speed when ally is attacked");
                 }
                 break;
 
-            case 22: // Attacks have 25% chance to restore 2% of your maximum health
+            case 22: // Attacks have 25% chance to heal you for 2% of your max health
                 // This is handled in the EntityDamageByEntityEvent
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 22: Will restore 2% max health with 25% chance on attacks");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 22: Will heal 2% of max health with 25% chance");
                 }
                 break;
 
-            case 23: // +15% defense when surrounded by 3+ enemies
+            case 23: // +2% damage for each enemy within 5 blocks (max +10%)
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 23: Will add 15% defense when surrounded by 3+ enemies");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 23: Will add 2% damage for each nearby enemy");
                 }
                 break;
 
-            case 24: // After not taking damage for 5 seconds, your next attack deals +30% damage
+            case 24: // +30% damage if you haven't taken damage in the last 5 seconds
                 // This is handled in the EntityDamageByEntityEvent
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 24: Will add 30% damage after not taking damage for 5 seconds");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 24: Will add 30% damage if no damage taken in 5 seconds");
                 }
                 break;
 
             case 25: // When hp<20%, gain +25% evade chance and +15% movement speed for 5 seconds
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 25: Will add evade chance and movement speed when hp<20%");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 25: Will add 25% evade and 15% speed when hp<20%");
                 }
                 break;
 
-            case 26: // +2% defense and +1% damage for each nearby ally (max 5 allies)
+            case 26: // +2% damage for each nearby ally within 10 blocks (max +10%)
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN SKILL 26: Will add defense and damage based on nearby allies");
+                    plugin.getLogger().info("EARTHWARDEN SKILL 26: Will add 2% damage for each nearby ally");
                 }
                 break;
 
@@ -394,20 +444,26 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
         }
 
         // Reactive Defense (Skill 10)
-        if (isPurchased(playerId, ID_OFFSET + 10) && random.nextDouble() < (0.15 * getPurchaseCount(playerId, ID_OFFSET + 10))) {
-            reactiveDefenseEndTimes.put(playerId, System.currentTimeMillis() + 5000); // 5 seconds
-            stats.addDefenseBonus(0.15); // 15% defense
-            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
-            ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Reactive Defense activated!");
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("EARTHWARDEN: Applied Reactive Defense for " + player.getName());
+        if (isPurchased(playerId, ID_OFFSET + 10)) {
+            double chance = 0.15 * getPurchaseCount(playerId, ID_OFFSET + 10);
+            boolean success = rollChance(chance * 100, player, "Reactive Defense");
+            
+            if (success) {
+                reactiveDefenseEndTimes.put(playerId, System.currentTimeMillis() + 5000); // 5 seconds
+                stats.addDefenseBonus(0.15); // 15% defense
+                plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Reactive Defense activated!");
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Applied +15% defense for 5 seconds");
+                    plugin.getLogger().info("EARTHWARDEN: Applied Reactive Defense for " + player.getName());
+                }
             }
         }
 
         // Counterattack (Skill 12)
         if (isPurchased(playerId, ID_OFFSET + 12) && player.isBlocking()) {
             counterattackEndTimes.put(playerId, System.currentTimeMillis() + 3000); // 3 seconds
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 60, 1, false, false, true)); // 20% speed for 3 seconds
+            applyMovementSpeedEffects(player); // Apply movement speed bonuses
             ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Counterattack activated!");
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("EARTHWARDEN: Applied Counterattack for " + player.getName());
@@ -428,7 +484,9 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
         // Divine Protection (Skill 16)
         if (isPurchased(playerId, ID_OFFSET + 16) && !isOnCooldown(playerId, divineProtectionCooldowns, 30000)) {
-            if (random.nextDouble() < 0.05) {
+            boolean success = rollChance(5.0, player, "Divine Protection");
+            
+            if (success) {
                 // Cancel the damage
                 event.setCancelled(true);
 
@@ -438,6 +496,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
                 ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Divine Protection activated!");
                 if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Cancelled damage and granted 2s immunity");
                     plugin.getLogger().info("EARTHWARDEN: Applied Divine Protection for " + player.getName());
                 }
             }
@@ -447,7 +506,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
         if (isPurchased(playerId, ID_OFFSET + 25) && player.getHealth() < player.getMaxHealth() * 0.2) {
             desperateEscapeEndTimes.put(playerId, System.currentTimeMillis() + 5000); // 5 seconds
             stats.addEvadeChance(25); // 25% evade
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 0, false, false, true)); // 15% speed for 5 seconds
+            applyMovementSpeedEffects(player); // Apply movement speed bonuses
             plugin.getSkillEffectsHandler().refreshPlayerStats(player);
             ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Desperate Escape activated!");
             if (debuggingFlag == 1) {
@@ -499,7 +558,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                                 SkillEffectsHandler.PlayerSkillStats nearbyStats = plugin.getSkillEffectsHandler().getPlayerStats(nearbyPlayer);
                                 nearbyStats.addBonusDamage(0.05); // 5% damage
                                 plugin.getSkillEffectsHandler().refreshPlayerStats(nearbyPlayer);
-                                nearbyPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100, 0, false, false, true)); // 10% speed for 5 seconds
+                                applyMovementSpeedEffects(nearbyPlayer); // Apply movement speed bonuses
                                 ActionBarUtils.sendActionBar(nearbyPlayer, ChatColor.GREEN + "Protective Instinct activated!");
                                 if (debuggingFlag == 1) {
                                     plugin.getLogger().info("EARTHWARDEN: Applied Protective Instinct for " + nearbyPlayer.getName());
@@ -572,22 +631,32 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
         }
 
         // Lifesteal (Skill 14)
-        if (isPurchased(playerId, ID_OFFSET + 14) && random.nextDouble() < 0.1) {
-            double healAmount = event.getFinalDamage() * 0.05; // 5% of damage dealt
-            player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + healAmount));
-            ActionBarUtils.sendActionBar(player, ChatColor.RED + "Lifesteal: +" + String.format("%.1f", healAmount) + " HP");
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("EARTHWARDEN: Applied Lifesteal for " + player.getName() + ", healed " + healAmount);
+        if (isPurchased(playerId, ID_OFFSET + 14)) {
+            boolean success = rollChance(10.0, player, "Lifesteal");
+            
+            if (success) {
+                double healAmount = event.getFinalDamage() * 0.05; // 5% of damage dealt
+                player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + healAmount));
+                ActionBarUtils.sendActionBar(player, ChatColor.RED + "Lifesteal: +" + String.format("%.1f", healAmount) + " HP");
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Healed " + String.format("%.1f", healAmount) + " HP (5% of damage dealt)");
+                    plugin.getLogger().info("EARTHWARDEN: Applied Lifesteal for " + player.getName() + ", healed " + healAmount);
+                }
             }
         }
 
         // Healing Strikes (Skill 22)
-        if (isPurchased(playerId, ID_OFFSET + 22) && random.nextDouble() < 0.25) {
-            double healAmount = player.getMaxHealth() * 0.02; // 2% of max health
-            player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + healAmount));
-            ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Healing Strike: +" + String.format("%.1f", healAmount) + " HP");
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("EARTHWARDEN: Applied Healing Strike for " + player.getName() + ", healed " + healAmount);
+        if (isPurchased(playerId, ID_OFFSET + 22)) {
+            boolean success = rollChance(25.0, player, "Healing Strikes");
+            
+            if (success) {
+                double healAmount = player.getMaxHealth() * 0.02; // 2% of max health
+                player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + healAmount));
+                ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Healing Strike: +" + String.format("%.1f", healAmount) + " HP");
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Healed " + String.format("%.1f", healAmount) + " HP (2% of max health)");
+                    plugin.getLogger().info("EARTHWARDEN: Applied Healing Strike for " + player.getName() + ", healed " + healAmount);
+                }
             }
         }
 
@@ -718,11 +787,8 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
         Block block = loc.getBlock();
         Block below = block.getRelative(BlockFace.DOWN);
 
-        boolean inGrassyArea = isGrassyBlock(below.getType());
-
-        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-
-        if (inGrassyArea) {
+        if (isGrassyArea(below)) {
+            SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
             double defenseBonus = 0.03 * getPurchaseCount(playerId, ID_OFFSET + 1); // 3% per purchase
             stats.addDefenseBonus(defenseBonus);
             plugin.getSkillEffectsHandler().refreshPlayerStats(player);
@@ -734,190 +800,256 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     }
 
     /**
-     * Check if a block type is considered "grassy"
-     */
-    private boolean isGrassyBlock(Material material) {
-        return material == Material.GRASS_BLOCK || 
-               material == Material.DIRT_PATH || 
-               material == Material.PODZOL || 
-               material == Material.MYCELIUM ||
-               material == Material.MOSS_BLOCK;
-    }
-
-    /**
-     * Check and update Entangling Strike cooldown
+     * Check for Entangling Strike cooldown
      */
     private void checkEntanglingStrikeCooldown(Player player) {
         UUID playerId = player.getUniqueId();
         long lastUse = entanglingStrikeCooldowns.getOrDefault(playerId, 0L);
 
         if (System.currentTimeMillis() - lastUse >= 10000) { // 10 seconds
-            if (!entanglingStrikeReady.getOrDefault(playerId, false)) {
-                entanglingStrikeReady.put(playerId, true);
-                ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Entangling Strike ready!");
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("EARTHWARDEN: Entangling Strike ready for " + player.getName());
-                }
+            entanglingStrikeReady.put(playerId, true);
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Entangling Strike ready for " + player.getName());
             }
         }
     }
 
     /**
-     * Apply Strength in Numbers effect
+     * Apply Strength in Numbers (Skill 11)
      */
     private void applyStrengthInNumbers(Player player) {
         UUID playerId = player.getUniqueId();
-        int allyCount = countNearbyAllies(player, 10);
-        double defenseBonus = Math.min(0.05, allyCount * 0.01); // 1% per ally, max 5%
+        int nearbyAllies = 0;
 
-        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-        stats.addDefenseBonus(defenseBonus);
-        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
-
-        if (debuggingFlag == 1 && defenseBonus > 0) {
-            plugin.getLogger().info("EARTHWARDEN: Applied Strength in Numbers for " + player.getName() + ", " + defenseBonus + " defense from " + allyCount + " allies");
+        for (Player otherPlayer : player.getWorld().getPlayers()) {
+            if (otherPlayer.equals(player)) continue;
+            if (otherPlayer.getLocation().distance(player.getLocation()) <= 10) {
+                nearbyAllies++;
+            }
         }
-    }
 
-    /**
-     * Apply Allied Strength effect
-     */
-    private void applyAlliedStrength(Player player) {
-        UUID playerId = player.getUniqueId();
-        int allyCount = Math.min(5, countNearbyAllies(player, 10)); // Max 5 allies
-        double defenseBonus = allyCount * 0.02 * getPurchaseCount(playerId, ID_OFFSET + 26); // 2% per ally per purchase
-        double damageBonus = allyCount * 0.01 * getPurchaseCount(playerId, ID_OFFSET + 26); // 1% per ally per purchase
+        // Cap at 5 allies
+        nearbyAllies = Math.min(nearbyAllies, 5);
 
-        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-        stats.addDefenseBonus(defenseBonus);
-        stats.addBonusDamage(damageBonus);
-        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
-
-        if (debuggingFlag == 1 && allyCount > 0) {
-            plugin.getLogger().info("EARTHWARDEN: Applied Allied Strength for " + player.getName() + ", " + defenseBonus + " defense and " + damageBonus + " damage from " + allyCount + " allies");
-        }
-    }
-
-    /**
-     * Apply Surrounded Defense effect
-     */
-    private void applySurroundedDefense(Player player) {
-        UUID playerId = player.getUniqueId();
-        int enemyCount = countNearbyEnemies(player, 8);
-        double defenseBonus = Math.min(0.15, enemyCount * 0.03); // 3% per enemy, max 15%
-
-        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-        stats.addDefenseBonus(defenseBonus);
-        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
-
-        if (debuggingFlag == 1 && defenseBonus > 0) {
-            plugin.getLogger().info("EARTHWARDEN: Applied Surrounded Defense for " + player.getName() + ", " + defenseBonus + " defense from " + enemyCount + " enemies");
-        }
-    }
-
-    /**
-     * Apply Surrounded Strength effect
-     */
-    private void applySurroundedStrength(Player player) {
-        UUID playerId = player.getUniqueId();
-        int enemyCount = countNearbyEnemies(player, 8);
-
-        if (enemyCount >= 3) {
+        if (nearbyAllies > 0) {
             SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-            stats.addDefenseBonus(0.15); // 15% defense
+            double defenseBonus = 0.01 * nearbyAllies * getPurchaseCount(playerId, ID_OFFSET + 11); // 1% per ally per purchase
+            stats.addDefenseBonus(defenseBonus);
             plugin.getSkillEffectsHandler().refreshPlayerStats(player);
 
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("EARTHWARDEN: Applied Surrounded Strength for " + player.getName() + ", 15% defense from " + enemyCount + " enemies");
+                plugin.getLogger().info("EARTHWARDEN: Applied Strength in Numbers for " + player.getName() + ", " + defenseBonus + " defense for " + nearbyAllies + " allies");
             }
         }
     }
 
     /**
-     * Apply Healthy Speed effect
+     * Apply Allied Strength (Skill 26)
+     */
+    private void applyAlliedStrength(Player player) {
+        UUID playerId = player.getUniqueId();
+        int nearbyAllies = 0;
+
+        for (Player otherPlayer : player.getWorld().getPlayers()) {
+            if (otherPlayer.equals(player)) continue;
+            if (otherPlayer.getLocation().distance(player.getLocation()) <= 10) {
+                nearbyAllies++;
+            }
+        }
+
+        // Cap at 5 allies
+        nearbyAllies = Math.min(nearbyAllies, 5);
+
+        if (nearbyAllies > 0) {
+            SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+            double damageBonus = 0.02 * nearbyAllies * getPurchaseCount(playerId, ID_OFFSET + 26); // 2% per ally per purchase
+            stats.addBonusDamage(damageBonus);
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Applied Allied Strength for " + player.getName() + ", " + damageBonus + " damage for " + nearbyAllies + " allies");
+            }
+        }
+    }
+
+    /**
+     * Apply Surrounded Defense (Skill 17)
+     */
+    private void applySurroundedDefense(Player player) {
+        UUID playerId = player.getUniqueId();
+        int nearbyEnemies = 0;
+
+        for (Entity entity : player.getNearbyEntities(5, 5, 5)) {
+            if (entity instanceof LivingEntity && !(entity instanceof Player)) {
+                nearbyEnemies++;
+            }
+        }
+
+        // Cap at 5 enemies
+        nearbyEnemies = Math.min(nearbyEnemies, 5);
+
+        if (nearbyEnemies > 0) {
+            SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+            double defenseBonus = 0.03 * nearbyEnemies * getPurchaseCount(playerId, ID_OFFSET + 17); // 3% per enemy per purchase
+            stats.addDefenseBonus(defenseBonus);
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Applied Surrounded Defense for " + player.getName() + ", " + defenseBonus + " defense for " + nearbyEnemies + " enemies");
+            }
+        }
+    }
+
+    /**
+     * Apply Surrounded Strength (Skill 23)
+     */
+    private void applySurroundedStrength(Player player) {
+        UUID playerId = player.getUniqueId();
+        int nearbyEnemies = 0;
+
+        for (Entity entity : player.getNearbyEntities(5, 5, 5)) {
+            if (entity instanceof LivingEntity && !(entity instanceof Player)) {
+                nearbyEnemies++;
+            }
+        }
+
+        // Cap at 5 enemies
+        nearbyEnemies = Math.min(nearbyEnemies, 5);
+
+        if (nearbyEnemies > 0) {
+            SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+            double damageBonus = 0.02 * nearbyEnemies * getPurchaseCount(playerId, ID_OFFSET + 23); // 2% per enemy per purchase
+            stats.addBonusDamage(damageBonus);
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Applied Surrounded Strength for " + player.getName() + ", " + damageBonus + " damage for " + nearbyEnemies + " enemies");
+            }
+        }
+    }
+
+    /**
+     * Apply Healthy Speed (Skill 20)
      */
     private void applyHealthySpeed(Player player) {
         UUID playerId = player.getUniqueId();
 
         if (player.getHealth() > player.getMaxHealth() * 0.8) {
-            SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-            double speedBonus = 0.15 * getPurchaseCount(playerId, ID_OFFSET + 20); // 15% per purchase
-            // Using damage multiplier as a proxy for attack speed
-            stats.addDamageMultiplier(speedBonus);
-            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
-
+            applyMovementSpeedEffects(player);
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("EARTHWARDEN: Applied Healthy Speed for " + player.getName() + ", " + speedBonus + " attack speed");
+                plugin.getLogger().info("EARTHWARDEN: Applied Healthy Speed for " + player.getName());
             }
+        }
+    }
+    
+    /**
+     * Apply all movement speed effects to a player
+     * This centralizes all movement speed bonuses to ensure they work together properly
+     */
+    private void applyMovementSpeedEffects(Player player) {
+        UUID playerId = player.getUniqueId();
+        float baseSpeed = 0.2f; // Base Minecraft walk speed
+        float totalBonus = 1.0f;
+        
+        // Get player stats for base movement speed bonus
+        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+        totalBonus += ((float)stats.getMovementSpeedBonus() / 100.0f);
+        
+        // Skill 20: When hp>80%, gain +10% movement speed
+        if (isPurchased(playerId, ID_OFFSET + 20) && player.getHealth() > player.getMaxHealth() * 0.8) {
+            int purchaseCount = getPurchaseCount(playerId, ID_OFFSET + 20);
+            totalBonus += 0.1f * purchaseCount; // 10% per purchase
+            
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Added Healthy Speed bonus: +" + 
+                        (10 * purchaseCount) + "% movement speed");
+            }
+        }
+        
+        // Skill 25: When hp<20%, gain +15% movement speed for 5 seconds
+        if (isPurchased(playerId, ID_OFFSET + 25) && 
+                desperateEscapeEndTimes.containsKey(playerId) && 
+                System.currentTimeMillis() < desperateEscapeEndTimes.get(playerId)) {
+            totalBonus += 0.15f; // 15% bonus
+            
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Added Desperate Escape bonus: +15% movement speed");
+            }
+        }
+        
+        // Skill 12: After blocking attack, gain +20% movement speed for 3 seconds
+        if (isPurchased(playerId, ID_OFFSET + 12) && 
+                counterattackEndTimes.containsKey(playerId) && 
+                System.currentTimeMillis() < counterattackEndTimes.get(playerId)) {
+            totalBonus += 0.2f; // 20% bonus
+            
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Added Counterattack bonus: +20% movement speed");
+            }
+        }
+        
+        // Skill 21: When an ally is attacked, gain +10% movement speed for 5 seconds
+        if (isPurchased(playerId, ID_OFFSET + 21) && 
+                protectiveInstinctEndTimes.containsKey(playerId) && 
+                System.currentTimeMillis() < protectiveInstinctEndTimes.get(playerId)) {
+            totalBonus += 0.1f; // 10% bonus
+            
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("EARTHWARDEN: Added Protective Instinct bonus: +10% movement speed");
+            }
+        }
+        
+        // Apply the total movement speed bonus
+        player.setWalkSpeed(Math.min(baseSpeed * totalBonus, 1.0f)); // Cap at 1.0
+        
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("EARTHWARDEN: Applied total movement speed for " + player.getName() + 
+                    ": " + (totalBonus * 100) + "% (walk speed: " + (baseSpeed * totalBonus) + ")");
         }
     }
 
     /**
-     * Apply Desperate Strength effect
+     * Apply Desperate Strength (Skill 19)
      */
     private void applyDesperateStrength(Player player) {
         UUID playerId = player.getUniqueId();
-        double healthPercent = player.getHealth() / player.getMaxHealth();
-        int missingHealthTiers = (int) ((1 - healthPercent) / 0.3); // Every 30% missing health
 
-        if (missingHealthTiers > 0) {
+        if (player.getHealth() < player.getMaxHealth() * 0.2) {
             SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-            double damageBonus = missingHealthTiers * 0.05; // 5% per 30% missing health
+            double damageBonus = 0.15 * getPurchaseCount(playerId, ID_OFFSET + 19); // 15% per purchase
             stats.addBonusDamage(damageBonus);
             plugin.getSkillEffectsHandler().refreshPlayerStats(player);
 
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("EARTHWARDEN: Applied Desperate Strength for " + player.getName() + ", " + damageBonus + " damage from " + missingHealthTiers + " tiers of missing health");
+                plugin.getLogger().info("EARTHWARDEN: Applied Desperate Strength for " + player.getName() + ", " + damageBonus + " damage");
             }
         }
-    }
-
-    /**
-     * Count nearby allies (other players)
-     */
-    private int countNearbyAllies(Player player, double radius) {
-        int count = 0;
-        for (Player other : player.getWorld().getPlayers()) {
-            if (!other.equals(player) && other.getLocation().distance(player.getLocation()) <= radius) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /**
-     * Count nearby enemies (hostile mobs)
-     */
-    private int countNearbyEnemies(Player player, double radius) {
-        int count = 0;
-        for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
-            if (entity instanceof LivingEntity && !(entity instanceof Player)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /**
-     * Check if a skill is purchased
-     */
-    private boolean isPurchased(UUID playerId, int skillId) {
-        return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
-    }
-
-    /**
-     * Get the purchase count for a skill
-     */
-    private int getPurchaseCount(UUID playerId, int skillId) {
-        return plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, skillId);
     }
 
     /**
      * Check if a skill is on cooldown
      */
     private boolean isOnCooldown(UUID playerId, Map<UUID, Long> cooldownMap, long cooldownDuration) {
-        long lastUse = cooldownMap.getOrDefault(playerId, 0L);
+        if (!cooldownMap.containsKey(playerId)) {
+            return false;
+        }
+
+        long lastUse = cooldownMap.get(playerId);
         return System.currentTimeMillis() - lastUse < cooldownDuration;
+    }
+
+    /**
+     * Get the number of times a skill has been purchased
+     */
+    private int getPurchaseCount(UUID playerId, int skillId) {
+        return plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, skillId);
+    }
+
+    /**
+     * Check if a skill has been purchased
+     */
+    private boolean isPurchased(UUID playerId, int skillId) {
+        return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
     }
 
     /**
@@ -934,22 +1066,14 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     }
 
     /**
-     * Clear player data when they disconnect
+     * Check if a block is in a grassy area
      */
-    public void clearPlayerData(UUID playerId) {
-        lastMovementTime.remove(playerId);
-        lastDamageTakenTime.remove(playerId);
-        divineProtectionCooldowns.remove(playerId);
-        entanglingStrikeCooldowns.remove(playerId);
-        entanglingStrikeReady.remove(playerId);
-        secondChanceCooldowns.remove(playerId);
-        playerAttackers.remove(playerId);
-        reactiveDefenseEndTimes.remove(playerId);
-        survivalInstinctEndTimes.remove(playerId);
-        lastStandEndTimes.remove(playerId);
-        desperateEscapeEndTimes.remove(playerId);
-        protectiveInstinctEndTimes.remove(playerId);
-        counterattackEndTimes.remove(playerId);
-        immunityEndTimes.remove(playerId);
+    private boolean isGrassyArea(Block block) {
+        Material material = block.getType();
+        return material == Material.GRASS_BLOCK ||
+               material == Material.DIRT ||
+               material == Material.PODZOL ||
+               material == Material.MYCELIUM ||
+               material == Material.FARMLAND;
     }
 }

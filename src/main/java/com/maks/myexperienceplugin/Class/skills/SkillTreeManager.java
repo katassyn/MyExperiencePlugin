@@ -461,22 +461,41 @@ public class SkillTreeManager {
         }
 
         SkillTree tree = ascendancySkillTrees.get(playerClass).get(ascendancy);
+        BaseSkillManager manager = ascendancyManagers.get(playerClass).get(ascendancy);
 
-        // Only count skill IDs that are part of ascendancy trees (IDs 100000+ for Beastmaster, 200000+ for Berserker)
+        // Only count skill IDs that are part of ascendancy trees (100000+ for Beastmaster, etc.)
         for (int skillId : purchasedSkills) {
             // Only process ascendancy skill IDs (100000+ or other high ranges)
             if (skillId >= 100000) {
                 SkillNode node = tree.getNode(skillId);
                 if (node != null) {
                     int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
-                    usedPoints += purchaseCount; // Ascendancy skills always cost 1 point
-
+                    
+                    // FIXED: Use actual node cost instead of always 1
+                    int actualCost;
+                    if (manager != null && manager.isMultiPurchaseDiscountSkill(skillId)) {
+                        actualCost = 1; // Special skills cost 1 point per purchase
+                    } else {
+                        actualCost = node.getCost(); // Use the actual cost from the node
+                    }
+                    
+                    int skillCost = actualCost * purchaseCount;
+                    usedPoints += skillCost;
+                    
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("[ASCENDANCY POINTS] Skill " + skillId + ": cost=" + actualCost + 
+                                ", count=" + purchaseCount + ", total=" + skillCost);
+                    }
                 }
             }
         }
 
         int unusedPoints = totalPoints - usedPoints;
-
+        
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[ASCENDANCY POINTS] Player " + uuid + ": total=" + totalPoints + 
+                    ", used=" + usedPoints + ", unused=" + unusedPoints);
+        }
 
         return unusedPoints;
     }
@@ -631,7 +650,20 @@ public class SkillTreeManager {
 
         // Check if player has enough points
         int unusedPoints = getUnusedAscendancySkillPoints(uuid);
-        if (unusedPoints < 1) { // Ascendancy skills always cost 1 point per purchase
+        
+        // FIXED: Use actual node cost instead of always 1
+        int actualCost;
+        if (manager.isMultiPurchaseDiscountSkill(skillId)) {
+            actualCost = 1; // Special skills cost 1 point per purchase
+        } else {
+            actualCost = node.getCost(); // Use the actual cost from the node
+        }
+        
+        if (unusedPoints < actualCost) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Player " + player.getName() + " doesn't have enough points for skill " + skillId + 
+                        " (has: " + unusedPoints + ", needs: " + actualCost + ")");
+            }
             return false;
         }
 

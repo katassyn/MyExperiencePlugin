@@ -3,6 +3,7 @@ package com.maks.myexperienceplugin.Class.skills.effects;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -22,84 +23,111 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Map<UUID, UUID> lastTargetMap = new HashMap<>();
     private final Random random = new Random();
     private final int debuggingFlag = 1; // Set to 0 in production
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     public RangerSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         switch (skillId) {
             case 1: // +1% movement speed
                 stats.addMovementSpeedBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 1: Added " + (1 * purchaseCount) + "% movement speed bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 1: +" + (1 * purchaseCount) + "% movement speed");
                 }
                 break;
             case 2: // Nature's Recovery - Gain Regeneration I
                 stats.setHasRegenerationEffect(true);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 2: Set regeneration effect flag");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 2: Enabled Regeneration I effect");
                 }
                 break;
             case 3: // +5 damage - FIXED VALUE
                 stats.addBonusDamage(5);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 3: Added 5 bonus damage");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 3: +5 bonus damage");
                 }
                 break;
             case 4: // +2% evade chance
                 stats.addEvadeChance(2 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 4: Added " + (2 * purchaseCount) + "% evade chance");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 4: +" + (2 * purchaseCount) + "% evade chance");
                 }
                 break;
             case 5: // +1 HP
                 stats.addMaxHealth(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 5: Added " + (1 * purchaseCount) + " max health");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 5: +" + (1 * purchaseCount) + " max health");
                 }
                 break;
             case 6: // +3$ per killed mob - FIXED VALUE
                 stats.addGoldPerKill(3);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 6: Added 3 gold per kill");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 6: +3 gold per kill");
                 }
                 break;
             case 8: // +1% evade chance (1/2)
                 stats.addEvadeChance(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 8: Added " + (1 * purchaseCount) + "% to evade chance");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 8: +" + (1 * purchaseCount) + "% evade chance");
                 }
                 break;
             case 9: // +1% luck (1/2)
                 stats.addLuckBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 9: Added " + (1 * purchaseCount) + "% luck bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 9: +" + (1 * purchaseCount) + "% luck bonus");
                 }
                 break;
             case 10: // each 3 hits deals +10 dmg - handled by a more complex system
                 stats.setHasTripleStrike(true);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 10: Set triple strike flag");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 10: Enabled Triple Strike (+10 dmg every 3rd hit)");
                 }
                 break;
             case 11: // +1% dmg (1/3)
                 stats.addDamageMultiplier(0.01 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 11: Added " + (0.01 * purchaseCount) + " to damage multiplier");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 11: +" + (1 * purchaseCount) + "% damage multiplier");
                 }
                 break;
             case 12: // Wind Mastery: +2 max stacks of wind
                 stats.setMaxWindStacks(5); // Default 3 + 2 from Wind Mastery
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 12: Set max wind stacks to 5");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 12: Max Wind Stacks set to 5 (was 3)");
                 }
                 break;
             case 13: // +1% def (1/2)
                 stats.addDefenseBonus(1 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 13: Added " + (1 * purchaseCount) + "% defense bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 13: +" + (1 * purchaseCount) + "% defense bonus");
                 }
                 break;
             case 14: // +4% evade chance, -2% dmg
@@ -107,6 +135,7 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.multiplyDamageMultiplier(1.0 - (0.02 * purchaseCount));
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("RANGER SKILL 14: Added " + (4 * purchaseCount) + "% evade chance and reduced damage multiplier by " + (0.02 * purchaseCount));
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] RANGER SKILL 14: +" + (4 * purchaseCount) + "% evade chance, -" + (2 * purchaseCount) + "% damage");
                 }
                 break;
             default:
@@ -139,7 +168,7 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
         }
 
         // Apply evade chance - important defensive ability, always notify
-        if (stats.getEvadeChance() > 0 && random.nextDouble() * 100 < stats.getEvadeChance()) {
+        if (stats.getEvadeChance() > 0 && rollChance(stats.getEvadeChance(), player, "Evade")) {
             event.setCancelled(true);
 
             // Important survival ability - show notification

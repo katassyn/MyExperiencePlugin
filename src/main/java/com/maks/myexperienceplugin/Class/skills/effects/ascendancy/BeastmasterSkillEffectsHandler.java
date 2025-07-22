@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -73,6 +74,21 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
     // Random for critical hit calculations
     private final Random random = new Random();
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     public BeastmasterSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -81,59 +97,79 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         int originalId = skillId - 100000; // Remove offset to get original skill ID
 
         switch (originalId) {
             case 1: // Wolf summon
                 // This is handled when player uses the summon command
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("BEASTMASTER SKILL 1: Wolf summon unlocked");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 1: Wolf summon unlocked (50 dmg/50 hp)");
+                }
                 break;
             case 2: // Boar summon
                 // This is handled when player uses the summon command
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("BEASTMASTER SKILL 2: Boar summon unlocked");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 2: Boar summon unlocked (80 dmg/20 hp)");
+                }
                 break;
             case 3: // Bear summon
                 // This is handled when player uses the summon command
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("BEASTMASTER SKILL 3: Bear summon unlocked");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 3: Bear summon unlocked (20 dmg/80 hp)");
+                }
                 break;
             case 4: // Wolves gain +5% ms
                 // Will be applied when wolf is summoned
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 4: Will add 5% movement speed to wolves when summoned");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 4: Wolf +5% movement speed enabled");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 4: Wolves will gain +5% movement speed");
                 }
                 break;
             case 5: // Boars gain +15% dmg
                 // Will be applied when boar is summoned
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 5: Will add 15% damage to boars when summoned");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 5: Boars will gain +15% damage");
                 }
                 break;
             case 6: // Bears gain +10% hp
                 // Will be applied when bear is summoned
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 6: Will add 10% health to bears when summoned");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 6: Bears will gain +10% health");
                 }
                 break;
             case 7: // Wolves gain +5% as
                 // Will be applied when wolf is summoned
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 7: Will add 5% attack speed to wolves when summoned");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 7: Wolves will gain +5% attack speed");
                 }
                 break;
             case 8: // Boars gain +10% as
                 // Will be applied when boar is summoned
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 8: Will add 10% attack speed to boars when summoned");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 8: Boars will gain +10% attack speed");
                 }
                 break;
             case 9: // Summons gain +5% dmg
                 // Will be applied to all active summons
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 9: Will add 5% damage to all summons");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 9: All summons will gain +5% damage");
                 }
                 break;
             case 10: // Bears gain +50% def
                 // Will be applied when bear is summoned
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 10: Will add 50% defense to bears when summoned");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 10: Bears will gain +50% defense");
                 }
                 break;
             case 11: // Wolves gain 10% chance to crit
@@ -1568,12 +1604,30 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         UUID playerId = player.getUniqueId();
 
         if (skillId == WOLF_SUMMON_ID && playerWolf.containsKey(playerId)) {
+            // Remove primary wolf
             UUID wolfId = playerWolf.get(playerId);
             Entity wolf = Bukkit.getEntity(wolfId);
             if (wolf != null) {
                 wolf.remove();
             }
             playerWolf.remove(playerId);
+            
+            // IMPORTANT FIX: Also remove additional wolves from Wolf Pack skill (ID 25)
+            if (additionalWolves.containsKey(playerId)) {
+                List<UUID> wolves = additionalWolves.get(playerId);
+                for (UUID additionalWolfId : new ArrayList<>(wolves)) {
+                    Entity additionalWolf = Bukkit.getEntity(additionalWolfId);
+                    if (additionalWolf != null) {
+                        additionalWolf.remove();
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Removed additional wolf for " + player.getName() + " during class reset");
+                        }
+                    }
+                }
+                // Clear the additional wolves list
+                additionalWolves.remove(playerId);
+            }
+            
             untrackSummonSkill(playerId, WOLF_SUMMON_ID);
 
         }
@@ -1804,7 +1858,12 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             List<UUID> wolves = additionalWolves.get(playerId);
             for (UUID wolfId : wolves) {
                 Entity entity = Bukkit.getEntity(wolfId);
-                if (entity != null) entity.remove();
+                if (entity != null) {
+                    entity.remove();
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Cleared additional wolf for player ID: " + playerId);
+                    }
+                }
             }
             additionalWolves.remove(playerId);
         }
@@ -1821,6 +1880,9 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             playerBear.remove(playerId);
         }
 
+        // Clear tracking for summon skills
+        activeSummonSkills.remove(playerId);
+
         // Clear cooldowns
         wolfRespawnCooldowns.remove(playerId);
         boarRespawnCooldowns.remove(playerId);
@@ -1830,6 +1892,24 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         bearGuardianActive.remove(playerId);
         boarFrenzyExpiration.remove(playerId);
 
+        // Clear summon stats caches for all entities belonging to this player
+        // This ensures no orphaned references remain
+        Set<UUID> toRemove = new HashSet<>();
+        for (UUID entityId : summonDamageMultiplier.keySet()) {
+            Entity entity = Bukkit.getEntity(entityId);
+            if (entity == null || isSummonedEntity(playerId, entity)) {
+                toRemove.add(entityId);
+            }
+        }
+        for (UUID entityId : toRemove) {
+            summonDamageMultiplier.remove(entityId);
+            summonHealthMultiplier.remove(entityId);
+            summonDefenseMultiplier.remove(entityId);
+            summonAttackSpeedMultiplier.remove(entityId);
+            summonMovementSpeedMultiplier.remove(entityId);
+            summonCritChance.remove(entityId);
+        }
+
         // Cancel notification tasks
         BukkitTask task = cooldownNotificationTasks.remove(playerId);
         if (task != null) {
@@ -1837,7 +1917,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         }
 
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Cleared all Beastmaster data for player ID: " + playerId);
+            plugin.getLogger().info("Cleared all Beastmaster data for player ID: " + playerId + 
+                    " including " + toRemove.size() + " cached summon stats");
         }
     }
 

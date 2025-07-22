@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -33,7 +34,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
     private static final long KILL_FRENZY_DURATION = 30000; // 30 seconds
     private static final long BATTLE_RAGE_DURATION = 5000; // 5 seconds
     private static final long COMBAT_MOMENTUM_CHECK_INTERVAL = 30000; // 30 seconds
-    private static final long DEATH_DEFIANCE_COOLDOWN = 300000; // 5 minutes
+    private static final long DEATH_DEFIANCE_COOLDOWN = 120000; // 2 minutes
 
     // Track player stats
     private final Map<UUID, Double> playerDamageModifier = new ConcurrentHashMap<>();
@@ -77,13 +78,28 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
     // Random for critical hit calculations
     private final Random random = new Random();
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     public BerserkerSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         int originalId = skillId - ID_OFFSET; // Remove offset to get original skill ID
 
         switch (originalId) {
@@ -92,6 +108,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     stats.multiplyDamageMultiplier(RAGE_DAMAGE_MULTIPLIER);
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("BERSERKER SKILL 1: Applied 200% damage multiplier (3x total) for no chestplate");
+                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 1: +200% damage (no chestplate)");
                     }
                 }
                 break;
@@ -99,30 +116,35 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 2: Will apply health-based damage bonus dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 2: +10% damage per 10% HP lost enabled");
                 }
                 break;
             case 3: // While ur in combat ( 10s after attack ) every 30s u gain +5% dmg
                 // This is handled via periodic task
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 3: Will apply combat momentum buff periodically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 3: +5% damage every 30s in combat enabled");
                 }
                 break;
             case 4: // For every killed mob u gain +1% ms and +1% dmg for 30s ( max 10 stacks )
                 // This is handled via kill tracking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 4: Will apply kill frenzy dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 4: +1% damage/speed per kill (max 10 stacks) enabled");
                 }
                 break;
             case 5: // For every hit u gain +1% dmg for 5s ( max 5 stacks )
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 5: Will apply battle rage dynamically");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 5: +1% damage per hit (max 5 stacks) enabled");
                 }
                 break;
             case 6: // +5% dmg
                 stats.addDamageMultiplier(0.05 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 6: Added " + (0.05 * purchaseCount) + " to damage multiplier");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 6: +5% damage");
                 }
                 break;
             case 7: // -10% hp, +10% dmg (1/2)
@@ -130,6 +152,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.addDamageMultiplier(0.10 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 7: Added -10% HP, +10% damage multiplier (level " + purchaseCount + "/2)");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 7: -10% HP, +10% damage (level " + purchaseCount + "/2)");
                 }
                 break;
             case 8: // U gain -5 armor and +10% crit
@@ -137,6 +160,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.addCriticalChance(10);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 8: Added -5 armor, +10% critical chance");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 8: -5 armor, +10% critical chance");
                 }
                 break;
             case 9: // Ur crit deals +15% more dmg
@@ -289,6 +313,9 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             // Apply damage and defense modifiers
             applyDeathDefianceBuffs(player);
+            
+            // Play visual effects
+            com.maks.myexperienceplugin.Class.skills.effects.BerserkerVisualEffects.playDeathDefianceEffect(player, plugin);
 
             // Show notification for this major cooldown ability
             ActionBarUtils.sendActionBar(player,
@@ -382,12 +409,14 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             }
         }
         // Random crit chance check
-        else if (random.nextDouble() * 100 < critChance) {
-            isCrit = true;
+        else {
+            boolean success = rollChance(critChance, player, "Critical Hit");
 
-            if (debuggingFlag == 1) {
-                plugin.getLogger().info("Random critical hit for " + player.getName() +
-                        " with " + critChance + "% chance");
+            if (success) {
+                isCrit = true;
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Critical hit landed!");
+                }
             }
         }
 
@@ -416,8 +445,10 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     ChatColor.RED + "Critical Hit! " + String.format("%.0f", critDamage) + " dmg");
 
             // Apply bleeding effect (ID 14)
-            if (isPurchased(playerId, ID_OFFSET + 14) && event.getEntity() instanceof LivingEntity &&
-                    random.nextDouble() * 100 < 20) { // 20% chance
+            if (isPurchased(playerId, ID_OFFSET + 14) && event.getEntity() instanceof LivingEntity) {
+                boolean success = rollChance(20.0, player, "Bleeding");
+
+                if (success) {
 
                 LivingEntity target = (LivingEntity) event.getEntity();
                 applyBleedingEffect(player, target, originalDamage);
@@ -427,10 +458,12 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                         ChatColor.RED + "Bleeding Applied!");
 
                 if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Applied bleeding (25% base damage per second for 5s)");
                     plugin.getLogger().info("Applied bleeding to " + target.getType() +
                             " from critical hit by " + player.getName());
                     player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Bleeding applied to target");
                 }
+            }
             }
 
             if (debuggingFlag == 1) {
@@ -746,8 +779,9 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Handle trophy head buffs (ID 26)
         if (isPurchased(playerId, ID_OFFSET + 26)) {
-            // 1% chance to get a trophy
-            if (random.nextDouble() * 100 < 1) {
+            boolean success = rollChance(1.0, player, "Trophy Head");
+
+            if (success) {
                 // Apply temporary damage buff
                 SkillEffectsHandler.PlayerSkillStats playerStats = plugin.getSkillEffectsHandler().getPlayerStats(player);
                 playerStats.addDamageMultiplier(0.10);
@@ -772,13 +806,14 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }, 12000); // 10 minutes = 12000 ticks
 
                 if (debuggingFlag == 1) {
+                    plugin.getLogger().info("→ Collected trophy head (+10% damage for 10 minutes)");
                     plugin.getLogger().info("Trophy head collected by " + player.getName() +
                             " from " + event.getEntity().getType());
                     player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Trophy head collected! +10% damage for 10min");
                 }
             }
+            }
         }
-    }
 
     /**
      * Apply Combat Momentum bonuses
@@ -866,7 +901,8 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 }
 
                 // Apply bleed damage
-                target.damage(bleedDamage);
+                // Use EntityDamageEvent.DamageCause.CUSTOM to bypass armor reduction
+                target.damage(bleedDamage, player);
 
                 // Visual effect for bleeding
                 target.getWorld().spawnParticle(

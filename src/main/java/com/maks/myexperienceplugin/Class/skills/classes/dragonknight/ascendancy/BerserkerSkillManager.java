@@ -77,7 +77,7 @@ public class BerserkerSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node23 = new SkillNode(ID_OFFSET + 23, "Desperate Rage", "When hp<50% u gain +25% dmg and +15% crit", 5,
+        SkillNode node23 = new SkillNode(ID_OFFSET + 23, "Desperate Rage", "When hp<50% u gain +25% dmg and +15% crit", 3,
                 Material.TOTEM_OF_UNDYING, 1, player -> {
             player.sendMessage(ChatColor.DARK_RED + "Desperation fuels your rage!");
             if (debuggingFlag == 1) {
@@ -269,6 +269,10 @@ public class BerserkerSkillManager extends BaseSkillManager {
         skillNodes.put(ID_OFFSET + 25, node25);
         skillNodes.put(ID_OFFSET + 26, node26);
         skillNodes.put(ID_OFFSET + 27, node27);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Initialized all 27 Berserker skills with ID offset " + ID_OFFSET);
+        }
     }
 
     @Override
@@ -303,8 +307,8 @@ public class BerserkerSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19); // Fixed: Changed from 14->20 to 14->19
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
 
         // Poziom 5->6

@@ -1,6 +1,7 @@
 com\maks\myexperienceplugin\alchemy\PhysisPercentageDamageEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffectFactory.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager$AlchemyCategory.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler$2.class
 com\maks\myexperienceplugin\alchemy\TonicExpEffect.class
 com\maks\myexperienceplugin\Class\skills\listeners\BerserkerEquipmentListener$1.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BerserkerSkillEffectsHandler$1.class
@@ -11,7 +12,8 @@ com\maks\myexperienceplugin\Class\skills\SkillEffectsHandler$PlayerSkillStats.cl
 com\maks\myexperienceplugin\Class\ClassNameNormalizer.class
 com\maks\myexperienceplugin\Class\skills\ForceUpdateSkillPointsCommand.class
 com\maks\myexperienceplugin\alchemy\AlchemyItemListener.class
-com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\ScaleGuardianSkillManager.class
+com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ChromomancerSkillManager.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ElementalistSkillEffectsHandler.class
 com\maks\myexperienceplugin\DatabaseManager.class
 com\maks\myexperienceplugin\Class\skills\effects\RangerSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\SkillMessages.class
@@ -30,6 +32,7 @@ com\maks\myexperienceplugin\Class\ClassResetItemListener.class
 com\maks\myexperienceplugin\Class\skills\AscendancySkillTreeCommand.class
 com\maks\myexperienceplugin\CustomItemHandler.class
 com\maks\myexperienceplugin\Class\ChoseAscendancyCommand.class
+com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ArcaneProtectorSkillManager.class
 com\maks\myexperienceplugin\exp\MoneyRewardHandler.class
 com\maks\myexperienceplugin\Class\skills\base\SkillTree.class
 com\maks\myexperienceplugin\alchemy\AlchemyItemMatcher.class
@@ -38,10 +41,12 @@ com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffect.class
 com\maks\myexperienceplugin\MyExperiencePlugin.class
 com\maks\myexperienceplugin\Class\skills\base\SkillNode.class
+com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ElementalistSkillManager.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\EarthwardenSkillEffectsHandler.class
-com\maks\myexperienceplugin\Class\skills\effects\BerserkerVisualEffects$1.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler$PoisonData.class
 com\maks\myexperienceplugin\Class\skills\effects\DragonKnightSkillEffectsHandler.class
 com\maks\myexperienceplugin\alchemy\AlchemyResetCommand.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ChromomancerSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\listeners\BerserkerEquipmentListener.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeManager.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager.class
@@ -52,10 +57,12 @@ com\maks\myexperienceplugin\alchemy\AlchemyEffectWithDuration.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageLuckEffect.class
 com\maks\myexperienceplugin\Class\skills\AscendancySkillEffectIntegrator.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\RangerSkillManager.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler$BleedData.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageExpEffect.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\FlameWardenSkillEffectsHandler.class
 com\maks\myexperienceplugin\exp\ChatLevelHandler.class
 com\maks\myexperienceplugin\Class\ChoseClassCommand.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ArcaneProtectorSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\SkillTreeCommand.class
 com\maks\myexperienceplugin\Class\skills\effects\SpellWeaverSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\gui\AscendancySkillTreeGUI.class
@@ -66,13 +73,16 @@ com\maks\myexperienceplugin\alchemy\OverTimeHealingEffect.class
 com\maks\myexperienceplugin\Class\skills\events\SkillPurchasedEvent.class
 com\maks\myexperienceplugin\Class\ClassManager.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\FlameWardenSkillEffectsHandler$1.class
+com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler$1.class
 com\maks\myexperienceplugin\party\Party.class
 com\maks\myexperienceplugin\exp\ExperienceCommandHandler.class
 com\maks\myexperienceplugin\alchemy\SingleTargetLuckEffect.class
+com\maks\myexperienceplugin\listener\PartyDamagePreventionListener.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BeastmasterSkillEffectsHandler.class
 com\maks\myexperienceplugin\alchemy\TotemManager.class
 com\maks\myexperienceplugin\alchemy\PhycisMagnetEffect.class
 com\maks\myexperienceplugin\Class\PeriodicClassReminder.class
+com\maks\myexperienceplugin\commands\UpdateRankingsCommand.class
 com\maks\myexperienceplugin\utils\ActionBarUtils.class
 com\maks\myexperienceplugin\Class\ClassGUIListener.class
 com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\FlameWardenSkillManager.class
@@ -90,7 +100,6 @@ com\maks\myexperienceplugin\listener\PhysisExpListener.class
 com\maks\myexperienceplugin\ResetRanksCommand.class
 com\maks\myexperienceplugin\Class\skills\base\BaseSkillManager.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\BeastmasterSkillManager.class
-com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\BerserkerSkillManager.class
 com\maks\myexperienceplugin\exp\ExpTableCommand.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\EarthwardenSkillManager.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler.class
@@ -100,6 +109,7 @@ com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\ScaleGu
 com\maks\myexperienceplugin\alchemy\InstantHealingEffect.class
 com\maks\myexperienceplugin\exp\TopCommand$PlayerData.class
 com\maks\myexperienceplugin\Class\skills\SkillIdOffsets.class
+com\maks\myexperienceplugin\utils\PartyClassIntegration.class
 com\maks\myexperienceplugin\exp\MythicMobXPHandler.class
 com\maks\myexperienceplugin\alchemy\PhysisPercentageHealthEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand$1.class

@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.DragonKnightSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.SpellWeaverSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
@@ -20,6 +21,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
@@ -59,6 +61,7 @@ public class SkillEffectsHandler implements Listener {
     private boolean isHandlingSkillEvent = false;
 
     private final SpellWeaverSkillEffectsHandler spellWeaverHandler;
+    private final ScaleGuardianSkillEffectsHandler scaleGuardianHandler;
 
     public SkillEffectsHandler(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager) {
         this.plugin = plugin;
@@ -68,11 +71,13 @@ public class SkillEffectsHandler implements Listener {
         this.rangerHandler = new RangerSkillEffectsHandler(plugin);
         this.dragonKnightHandler = new DragonKnightSkillEffectsHandler(plugin);
         this.spellWeaverHandler = new SpellWeaverSkillEffectsHandler(plugin);
+        this.scaleGuardianHandler = new ScaleGuardianSkillEffectsHandler(plugin);
 
         // Register handlers in the map
         classHandlers.put("Ranger", rangerHandler);
         classHandlers.put("DragonKnight", dragonKnightHandler);
         classHandlers.put("SpellWeaver", spellWeaverHandler);
+        classHandlers.put("ScaleGuardian", scaleGuardianHandler);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("SkillEffectsHandler initialized with handlers for: " +
@@ -113,6 +118,8 @@ public class SkillEffectsHandler implements Listener {
             dragonKnightHandler.clearPlayerData(playerId);
         } else if ("SpellWeaver".equals(playerClass)) {
             spellWeaverHandler.clearPlayerData(playerId);
+        } else if ("ScaleGuardian".equals(plugin.getClassManager().getPlayerAscendancy(playerId))) {
+            scaleGuardianHandler.clearPlayerData(playerId);
         }
 
         if (debuggingFlag == 1) {
@@ -204,8 +211,8 @@ public class SkillEffectsHandler implements Listener {
         PlayerSkillStats stats = playerStatsCache.get(uuid);
         if (stats == null) return;
 
-        // Apply max health bonus
-        if (stats.getMaxHealthBonus() > 0) {
+        // Apply max health bonus (both positive and negative)
+        if (stats.getMaxHealthBonus() != 0) {
             AttributeModifier healthMod = new AttributeModifier(
                     ATTR_MAX_HEALTH,
                     stats.getMaxHealthBonus(),
@@ -215,7 +222,8 @@ public class SkillEffectsHandler implements Listener {
             player.getAttribute(Attribute.GENERIC_MAX_HEALTH).addModifier(healthMod);
 
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("Applied +" + stats.getMaxHealthBonus() + " max health to " + player.getName());
+                String sign = stats.getMaxHealthBonus() > 0 ? "+" : "";
+                plugin.getLogger().info("Applied " + sign + stats.getMaxHealthBonus() + " max health to " + player.getName());
             }
         }
 
@@ -235,6 +243,13 @@ public class SkillEffectsHandler implements Listener {
             }
         }
 
+        // Shield block chance is now handled in ScaleGuardianSkillEffectsHandler.java
+        // It reduces damage by 50% when blocking instead of adding armor
+        if (debuggingFlag == 1 && stats.getShieldBlockChance() != 0) {
+            plugin.getLogger().info("Player " + player.getName() + " has " + stats.getShieldBlockChance() + 
+                    "% shield block chance (reduces damage by 50% when blocking)");
+        }
+
         // Apply other attributes as needed...
     }
 
@@ -248,11 +263,65 @@ public class SkillEffectsHandler implements Listener {
         UUID playerId = player.getUniqueId();
         PlayerSkillStats stats = getPlayerStats(player);
         String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
 
-        // Get the appropriate handler for this player's class
-        BaseSkillEffectsHandler handler = classHandlers.get(playerClass);
+        // Apply defense percentage reduction
+        if (stats.getDefenseBonus() != 0) {
+            double originalDamage = event.getDamage();
+            
+            // Apply diminishing returns to defense bonus
+            double rawDefenseBonus = stats.getDefenseBonus();
+            // Formula: The higher the defense, the less effective each additional point becomes
+            // Cap at 75% to ensure players always take at least 25% of the original damage
+            double effectiveDefenseBonus = Math.min(75.0, 100 * (1 - (1 / (1 + (rawDefenseBonus / 100) * 0.75))));
+            double reduction = effectiveDefenseBonus / 100.0; // Convert to decimal
+            
+            // Calculate reduced damage, ensuring it doesn't go below 0
+            double reducedDamage = Math.max(0, originalDamage * (1 - reduction));
+            event.setDamage(reducedDamage);
+            
+            if (debuggingFlag == 1) {
+                String sign = effectiveDefenseBonus > 0 ? "+" : "";
+                
+                // If defense was reduced by diminishing returns, show that in the log
+                String cappedInfo = "";
+                if (Math.abs(rawDefenseBonus - effectiveDefenseBonus) > 1.0) {
+                    cappedInfo = " (reduced from " + rawDefenseBonus + "%)";
+                }
+                
+                plugin.getLogger().info("Applied " + sign + effectiveDefenseBonus + "%" + cappedInfo + " defense to " + player.getName() + 
+                    " (damage reduced from " + originalDamage + " to " + reducedDamage + ")");
+                
+                // Only show message if significant damage reduction
+                if (Math.abs(originalDamage - reducedDamage) > 0.5) {
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Defense reduced damage: " + 
+                        String.format("%.1f", originalDamage) + " → " + String.format("%.1f", reducedDamage));
+                }
+            }
+        }
+
+        // First check for ascendancy-specific handler
+        BaseSkillEffectsHandler handler = null;
+        if (!ascendancy.isEmpty()) {
+            handler = classHandlers.get(ascendancy);
+            if (handler != null && debuggingFlag == 1) {
+                plugin.getLogger().info("Using ascendancy handler for " + player.getName() + ": " + ascendancy);
+            }
+        }
+        
+        // Fall back to base class handler if no ascendancy handler found
+        if (handler == null) {
+            handler = classHandlers.get(playerClass);
+            if (handler != null && debuggingFlag == 1) {
+                plugin.getLogger().info("Using base class handler for " + player.getName() + ": " + playerClass);
+            }
+        }
+        
         if (handler != null) {
             handler.handleEntityDamage(event, player, stats);
+        } else if (debuggingFlag == 1) {
+            plugin.getLogger().warning("No handler found for player " + player.getName() + 
+                " with class " + playerClass + " and ascendancy " + ascendancy);
         }
     }
 
@@ -266,36 +335,31 @@ public class SkillEffectsHandler implements Listener {
         UUID playerId = player.getUniqueId();
         PlayerSkillStats stats = getPlayerStats(player);
 
-        // Apply common damage effects
-
-        // Apply bonus damage
-        if (stats.getBonusDamage() > 0) {
-            event.setDamage(event.getDamage() + stats.getBonusDamage());
-
-            // Only show the message if cooldown has passed
-            long currentTime = System.currentTimeMillis();
-            if (!lastDamageMessageTime.containsKey(playerId) ||
-                    currentTime - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN) {
-                if (debuggingFlag == 1) {
-                    player.sendMessage(SkillMessages.format(SkillMessages.DEBUG_BONUS_DAMAGE, stats.getBonusDamage()));
-                }
-                lastDamageMessageTime.put(playerId, currentTime);
-            }
-        }
-
+        // Apply common damage effects using the formula: (flat damage from attributes + flat damage from skills) * total multiplier
+        
+        // Get base damage from the event
+        double baseDamage = event.getDamage();
+        
+        // Get flat bonus damage from skills
+        double bonusDamage = stats.getBonusDamage();
+        
+        // Get damage multiplier
+        double multiplier = stats.getDamageMultiplier();
+        
+        // Calculate new damage using the formula: (base damage + flat bonus) * multiplier
+        double newDamage = (baseDamage + bonusDamage);
+        
         // Check for critical hit
         boolean isCritical = false;
+        double critMultiplier = 1.0;
+        
         if (plugin.getCriticalStrikeSystem() != null && event.getEntity() instanceof org.bukkit.entity.LivingEntity) {
             isCritical = plugin.getCriticalStrikeSystem().rollForCritical(player);
 
             if (isCritical) {
                 // Get critical damage multiplier
-                double critMultiplier = plugin.getCriticalStrikeSystem().getCriticalDamageMultiplier(player);
-
-                // Apply critical damage
-                double originalDamage = event.getDamage();
-                event.setDamage(originalDamage * critMultiplier);
-
+                critMultiplier = plugin.getCriticalStrikeSystem().getCriticalDamageMultiplier(player);
+                
                 // Show critical hit effects
                 com.maks.myexperienceplugin.Class.skills.effects.BerserkerVisualEffects.playCriticalHitEffect(
                     player, (org.bukkit.entity.LivingEntity) event.getEntity());
@@ -303,35 +367,69 @@ public class SkillEffectsHandler implements Listener {
                 // Notify player
                 ActionBarUtils.sendActionBar(player, 
                     SkillMessages.format(SkillMessages.CRITICAL_HIT_WITH_MULTIPLIER, critMultiplier));
-
-                if (debuggingFlag == 1) {
-                    player.sendMessage(
-                        SkillMessages.format(SkillMessages.DEBUG_CRITICAL_HIT, 
-                        critMultiplier, originalDamage, event.getDamage()));
-                }
-
+                
                 // Update last message time
                 lastDamageMessageTime.put(playerId, System.currentTimeMillis());
             }
         }
-
-        // Apply damage multiplier (if not already a critical hit)
-        if (!isCritical && stats.getDamageMultiplier() != 1.0) {
-            double newDamage = event.getDamage() * stats.getDamageMultiplier();
-            event.setDamage(newDamage);
-            if (debuggingFlag == 1 &&
-                    (!lastDamageMessageTime.containsKey(playerId) ||
-                            System.currentTimeMillis() - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN)) {
-                player.sendMessage(SkillMessages.format(SkillMessages.DEBUG_DAMAGE_MULTIPLIER, stats.getDamageMultiplier()));
-                lastDamageMessageTime.put(playerId, System.currentTimeMillis());
+        
+        // Apply critical multiplier if it's a critical hit, otherwise use the regular multiplier
+        if (isCritical) {
+            newDamage *= critMultiplier;
+        } else {
+            newDamage *= multiplier;
+        }
+        
+        // Set the new damage
+        event.setDamage(newDamage);
+        
+        // Debug messages
+        long currentTime = System.currentTimeMillis();
+        if (debuggingFlag == 1 && 
+                (!lastDamageMessageTime.containsKey(playerId) ||
+                 currentTime - lastDamageMessageTime.get(playerId) > DAMAGE_MESSAGE_COOLDOWN)) {
+            
+            if (bonusDamage > 0) {
+                player.sendMessage(SkillMessages.format(SkillMessages.DEBUG_BONUS_DAMAGE, bonusDamage));
             }
+            
+            if (isCritical) {
+                player.sendMessage(
+                    SkillMessages.format(SkillMessages.DEBUG_CRITICAL_HIT, 
+                    critMultiplier, baseDamage, newDamage));
+            } else if (multiplier != 1.0) {
+                player.sendMessage(SkillMessages.format(SkillMessages.DEBUG_DAMAGE_MULTIPLIER, multiplier));
+            }
+            
+            lastDamageMessageTime.put(playerId, currentTime);
         }
 
         // Now delegate to class-specific handler
         String playerClass = plugin.getClassManager().getPlayerClass(playerId);
-        BaseSkillEffectsHandler handler = classHandlers.get(playerClass);
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
+
+        // First check for ascendancy-specific handler
+        BaseSkillEffectsHandler handler = null;
+        if (!ascendancy.isEmpty()) {
+            handler = classHandlers.get(ascendancy);
+            if (handler != null && debuggingFlag == 1) {
+                plugin.getLogger().info("Using ascendancy handler for " + player.getName() + ": " + ascendancy);
+            }
+        }
+        
+        // Fall back to base class handler if no ascendancy handler found
+        if (handler == null) {
+            handler = classHandlers.get(playerClass);
+            if (handler != null && debuggingFlag == 1) {
+                plugin.getLogger().info("Using base class handler for " + player.getName() + ": " + playerClass);
+            }
+        }
+        
         if (handler != null) {
             handler.handleEntityDamageByEntity(event, player, stats);
+        } else if (debuggingFlag == 1) {
+            plugin.getLogger().warning("No handler found for player " + player.getName() + 
+                " with class " + playerClass + " and ascendancy " + ascendancy);
         }
     }
 
@@ -344,11 +442,63 @@ public class SkillEffectsHandler implements Listener {
 
             // Delegate to class-specific handler
             String playerClass = plugin.getClassManager().getPlayerClass(playerId);
-            BaseSkillEffectsHandler handler = classHandlers.get(playerClass);
+            String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
+
+            // First check for ascendancy-specific handler
+            BaseSkillEffectsHandler handler = null;
+            if (!ascendancy.isEmpty()) {
+                handler = classHandlers.get(ascendancy);
+                if (handler != null && debuggingFlag == 1) {
+                    plugin.getLogger().info("Using ascendancy handler for " + player.getName() + ": " + ascendancy);
+                }
+            }
+            
+            // Fall back to base class handler if no ascendancy handler found
+            if (handler == null) {
+                handler = classHandlers.get(playerClass);
+                if (handler != null && debuggingFlag == 1) {
+                    plugin.getLogger().info("Using base class handler for " + player.getName() + ": " + playerClass);
+                }
+            }
+            
             if (handler != null) {
                 handler.handleEntityDeath(event, player, stats);
+            } else if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No handler found for player " + player.getName() + 
+                    " with class " + playerClass + " and ascendancy " + ascendancy);
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        UUID playerId = player.getUniqueId();
+        PlayerSkillStats stats = getPlayerStats(player);
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Player death event for " + player.getName() + 
+                " with ascendancy: " + ascendancy);
+        }
+
+        // Check for FlameWarden Phoenix Rebirth specifically
+        if ("FlameWarden".equals(ascendancy)) {
+            BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
+            if (handler instanceof com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler) {
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler flameHandler = 
+                    (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler) handler;
+                flameHandler.handlePlayerDeath(event, player, stats);
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Processed Phoenix Rebirth check for " + player.getName());
+                }
+            }
+        }
+
+        // Process other ascendancy death effects if needed
+        // ...
     }
 
     // UPDATED: Complete rewrite of calculatePlayerStats with delegation to class-specific handlers
@@ -396,7 +546,7 @@ public class SkillEffectsHandler implements Listener {
                 double previousDamage = stats.getBonusDamage();
 
                 // Apply effect for this skill
-                classHandler.applySkillEffects(stats, skillId, count);
+                classHandler.applySkillEffects(stats, skillId, count, player);
 
                 // Track damage increase for debugging
                 double damageIncrease = stats.getBonusDamage() - previousDamage;
@@ -426,7 +576,11 @@ public class SkillEffectsHandler implements Listener {
                         double previousDamage = stats.getBonusDamage();
 
                         // Apply effect for this skill
-                        ascendancyHandler.applySkillEffects(stats, skillId, count);
+                        if (debuggingFlag == 1) {
+                            plugin.getLogger().info("Processing ascendancy skill " + skillId + " with handler: " + 
+                                ascendancyHandler.getClass().getSimpleName() + " for " + player.getName());
+                        }
+                        ascendancyHandler.applySkillEffects(stats, skillId, count, player);
 
                         // Track damage increase for debugging
                         double damageIncrease = stats.getBonusDamage() - previousDamage;
@@ -841,11 +995,35 @@ public class SkillEffectsHandler implements Listener {
 
         UUID playerId = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
 
-        // Normalize class name
+        // Normalize class names
         String normalizedClassName = ClassNameNormalizer.normalize(playerClass);
+        String normalizedAscendancy = ClassNameNormalizer.normalize(ascendancy);
 
-        return classHandlers.get(normalizedClassName);
+        // First check for ascendancy-specific handler
+        BaseSkillEffectsHandler handler = null;
+        if (!ascendancy.isEmpty()) {
+            handler = classHandlers.get(normalizedAscendancy);
+            if (handler != null && debuggingFlag == 1) {
+                plugin.getLogger().info("getHandlerForPlayer: Using ascendancy handler for " + player.getName() + ": " + normalizedAscendancy);
+            }
+        }
+        
+        // Fall back to base class handler if no ascendancy handler found
+        if (handler == null) {
+            handler = classHandlers.get(normalizedClassName);
+            if (handler != null && debuggingFlag == 1) {
+                plugin.getLogger().info("getHandlerForPlayer: Using base class handler for " + player.getName() + ": " + normalizedClassName);
+            }
+        }
+        
+        if (handler == null && debuggingFlag == 1) {
+            plugin.getLogger().warning("getHandlerForPlayer: No handler found for player " + player.getName() + 
+                " with class " + normalizedClassName + " and ascendancy " + normalizedAscendancy);
+        }
+        
+        return handler;
     }
 
     /**
@@ -879,6 +1057,13 @@ public class SkillEffectsHandler implements Listener {
             // For handlers with periodic checks
             if (handler instanceof RangerSkillEffectsHandler) {
                 ((RangerSkillEffectsHandler) handler).checkWindStacksEffects(player, stats);
+            } else if (handler instanceof ScaleGuardianSkillEffectsHandler) {
+                ScaleGuardianSkillEffectsHandler sgHandler = (ScaleGuardianSkillEffectsHandler) handler;
+                // Check all periodic effects for Scale Guardian
+                sgHandler.checkProximityDefense(player);
+                sgHandler.checkSurroundedHealing(player);
+                sgHandler.checkAllyEffects(player);
+                sgHandler.checkHeavyArmorMastery(player);
             }
 
             // Add more class-specific periodic effects as needed

@@ -87,6 +87,21 @@ public class AscendancySkillEffectIntegrator implements Listener {
         ascendancyHandlers.put("ScaleGuardian", scaleGuardianHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Created ScaleGuardianSkillEffectsHandler and added to ascendancyHandlers map");
 
+        // Create Elementalist handler
+        ElementalistSkillEffectsHandler elementalistHandler = new ElementalistSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("Elementalist", elementalistHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ElementalistSkillEffectsHandler and added to ascendancyHandlers map");
+
+        // Create Chronomancer handler
+        ChromomancerSkillEffectsHandler chronomancerHandler = new ChromomancerSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("Chronomancer", chronomancerHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ChromomancerSkillEffectsHandler and added to ascendancyHandlers map");
+
+        // Create ArcaneProtector handler
+        ArcaneProtectorSkillEffectsHandler arcaneProtectorHandler = new ArcaneProtectorSkillEffectsHandler(plugin);
+        ascendancyHandlers.put("ArcaneProtector", arcaneProtectorHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ArcaneProtectorSkillEffectsHandler and added to ascendancyHandlers map");
+
         // Register with main SkillEffectsHandler
         skillEffectsHandler.registerClassHandler("Beastmaster", beastmasterHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Registered BeastmasterSkillEffectsHandler with main SkillEffectsHandler");
@@ -106,8 +121,17 @@ public class AscendancySkillEffectIntegrator implements Listener {
         skillEffectsHandler.registerClassHandler("ScaleGuardian", scaleGuardianHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ScaleGuardianSkillEffectsHandler with main SkillEffectsHandler");
 
+        skillEffectsHandler.registerClassHandler("Elementalist", elementalistHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ElementalistSkillEffectsHandler with main SkillEffectsHandler");
+
+        skillEffectsHandler.registerClassHandler("Chronomancer", chronomancerHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ChromomancerSkillEffectsHandler with main SkillEffectsHandler");
+
+        skillEffectsHandler.registerClassHandler("ArcaneProtector", arcaneProtectorHandler);
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ArcaneProtectorSkillEffectsHandler with main SkillEffectsHandler");
+
         if (debuggingFlag == 1) {
-            plugin.getLogger().info("Registered Beastmaster, Berserker, Shadowstalker, Earthwarden, FlameWarden, and ScaleGuardian skill effect handlers");
+            plugin.getLogger().info("Registered all 9 ascendancy skill effect handlers: Beastmaster, Berserker, Shadowstalker, Earthwarden, FlameWarden, ScaleGuardian, Elementalist, Chronomancer, ArcaneProtector");
         }
     }
 
@@ -184,7 +208,8 @@ public class AscendancySkillEffectIntegrator implements Listener {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
                     if ("ScaleGuardian".equals(ascendancy)) {
-                        handler.checkProximityDefense(player);
+                        // Removed checkProximityDefense call to prevent duplicate calls with SkillEffectsHandler
+                        // which already calls this method every second
                         handler.checkSurroundedHealing(player);
                         handler.checkAllyEffects(player);
                         handler.checkHeavyArmorMastery(player);
@@ -267,7 +292,7 @@ public class AscendancySkillEffectIntegrator implements Listener {
     }
 
     /**
-     * Process commands for summoning creatures
+     * Process commands for summoning creatures and testing ascendancy skills
      */
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
@@ -319,6 +344,142 @@ public class AscendancySkillEffectIntegrator implements Listener {
 
                 default:
                     player.sendMessage("§cInvalid summon type. Use wolf, boar, or bear.");
+                    break;
+            }
+
+            return true;
+        }
+
+        // Handle test commands for Shadowstalker
+        if ("Shadowstalker".equals(ascendancy) && label.equalsIgnoreCase("shadowtest")) {
+            if (args.length < 1) {
+                player.sendMessage("§6=== Shadowstalker Test Commands ===");
+                player.sendMessage("§e/shadowtest sneak §7- Test sneaking effects");
+                player.sendMessage("§e/shadowtest poison §7- Test poison application");
+                player.sendMessage("§e/shadowtest crit §7- Test critical hit effects");
+                player.sendMessage("§e/shadowtest speed §7- Test movement speed buffs");
+                player.sendMessage("§e/shadowtest info §7- Show current effect status");
+                return true;
+            }
+
+            ShadowstalkerSkillEffectsHandler handler = (ShadowstalkerSkillEffectsHandler) ascendancyHandlers.get("Shadowstalker");
+            if (handler == null) {
+                player.sendMessage("§cError: Shadowstalker handler not found.");
+                return true;
+            }
+
+            String testType = args[0].toLowerCase();
+            switch (testType) {
+                case "sneak":
+                    player.sendMessage("§6[SHADOWSTALKER TEST] §eSneaking test:");
+                    player.sendMessage("§7- Current sneaking: §e" + player.isSneaking());
+                    player.sendMessage("§7- In darkness: §e" + (player.getLocation().getBlock().getLightLevel() <= 7));
+                    player.sendMessage("§7- Night time: §e" + (player.getWorld().getTime() >= 13000 && player.getWorld().getTime() <= 23000));
+                    player.sendMessage("§7Try sneaking or moving to shadows to test movement speed bonuses!");
+                    break;
+
+                case "poison":
+                    player.sendMessage("§6[SHADOWSTALKER TEST] §ePoison test:");
+                    player.sendMessage("§7Attack enemies to test poison application with Skill 9!");
+                    player.sendMessage("§7Poison chance: §e" + (isPurchased(player, 500009) ? "15%" : "0% (need Skill 9)"));
+                    break;
+
+                case "crit":
+                    player.sendMessage("§6[SHADOWSTALKER TEST] §eCritical hit test:");
+                    player.sendMessage("§7Base crit chance: §e" + plugin.getSkillEffectsHandler().getPlayerStats(player).getCriticalChance() + "%");
+                    player.sendMessage("§7Skill 2 bonus: §e" + (isPurchased(player, 500002) ? "+2%" : "0% (need Skill 2)"));
+                    player.sendMessage("§7Attack enemies to test critical hits and their effects!");
+                    break;
+
+                case "speed":
+                    player.sendMessage("§6[SHADOWSTALKER TEST] §eMovement speed test:");
+                    player.sendMessage("§7Current walk speed: §e" + player.getWalkSpeed());
+                    player.sendMessage("§7Try killing enemies to trigger Assassin's Haste (Skill 10)!");
+                    player.sendMessage("§7Or sneak with Skill 16 for sneaking speed bonus!");
+                    break;
+
+                case "info":
+                    player.sendMessage("§6[SHADOWSTALKER STATUS] §eCurrent effects:");
+                    player.sendMessage("§7Health: §e" + String.format("%.1f", player.getHealth()) + "/" + String.format("%.1f", player.getMaxHealth()));
+                    player.sendMessage("§7Light level: §e" + player.getLocation().getBlock().getLightLevel());
+                    player.sendMessage("§7Sneaking: §e" + player.isSneaking());
+                    player.sendMessage("§7Walk speed: §e" + player.getWalkSpeed());
+                    break;
+
+                default:
+                    player.sendMessage("§cInvalid test type. Use: sneak, poison, crit, speed, info");
+                    break;
+            }
+
+            return true;
+        }
+
+        // Handle test commands for Earthwarden
+        if ("Earthwarden".equals(ascendancy) && label.equalsIgnoreCase("earthtest")) {
+            if (args.length < 1) {
+                player.sendMessage("§a=== Earthwarden Test Commands ===");
+                player.sendMessage("§e/earthtest defense §7- Test defense bonuses");
+                player.sendMessage("§e/earthtest heal §7- Test healing effects");
+                player.sendMessage("§e/earthtest allies §7- Test ally-based effects");
+                player.sendMessage("§e/earthtest environment §7- Test environmental effects");
+                player.sendMessage("§e/earthtest info §7- Show current effect status");
+                return true;
+            }
+
+            EarthwardenSkillEffectsHandler handler = (EarthwardenSkillEffectsHandler) ascendancyHandlers.get("Earthwarden");
+            if (handler == null) {
+                player.sendMessage("§cError: Earthwarden handler not found.");
+                return true;
+            }
+
+            String testType = args[0].toLowerCase();
+            switch (testType) {
+                case "defense":
+                    player.sendMessage("§a[EARTHWARDEN TEST] §eDefense test:");
+                    double healthPercent = (player.getHealth() / player.getMaxHealth()) * 100;
+                    player.sendMessage("§7Current health: §e" + String.format("%.1f", healthPercent) + "%");
+                    player.sendMessage("§7Standing still for 3s gives +10% defense (Skill 5)");
+                    player.sendMessage("§7Below 50% HP gives +5% defense for 3s (Skill 7)");
+                    player.sendMessage("§7Below 30% HP gives +20% defense + 10% damage (Skill 15)");
+                    break;
+
+                case "heal":
+                    player.sendMessage("§a[EARTHWARDEN TEST] §eHealing test:");
+                    player.sendMessage("§7Kill enemies to heal 1 HP (Skill 2)");
+                    player.sendMessage("§7Attack enemies for 10% chance to heal 5% damage dealt (Skill 14)");
+                    player.sendMessage("§7Attack enemies for 25% chance to heal 2% max HP (Skill 22)");
+                    break;
+
+                case "allies":
+                    int nearbyPlayers = 0;
+                    for (Player other : player.getWorld().getPlayers()) {
+                        if (!other.equals(player) && other.getLocation().distance(player.getLocation()) <= 10) {
+                            nearbyPlayers++;
+                        }
+                    }
+                    player.sendMessage("§a[EARTHWARDEN TEST] §eAlly effects test:");
+                    player.sendMessage("§7Nearby allies (10 blocks): §e" + nearbyPlayers);
+                    player.sendMessage("§7Skill 11: +1% defense per ally (max 5%)");
+                    player.sendMessage("§7Skill 26: +2% defense +1% damage per ally (max 5 allies)");
+                    break;
+
+                case "environment":
+                    String blockBelow = player.getLocation().getBlock().getRelative(org.bukkit.block.BlockFace.DOWN).getType().toString();
+                    player.sendMessage("§a[EARTHWARDEN TEST] §eEnvironment test:");
+                    player.sendMessage("§7Block below: §e" + blockBelow);
+                    player.sendMessage("§7Grassy areas give +3% defense (Skill 1)");
+                    player.sendMessage("§7Fall/fire/lava damage reduced by 5% (Skill 3)");
+                    break;
+
+                case "info":
+                    player.sendMessage("§a[EARTHWARDEN STATUS] §eCurrent effects:");
+                    player.sendMessage("§7Health: §e" + String.format("%.1f", player.getHealth()) + "/" + String.format("%.1f", player.getMaxHealth()));
+                    player.sendMessage("§7Defense bonus: §e" + plugin.getSkillEffectsHandler().getPlayerStats(player).getDefenseBonus() + "%");
+                    player.sendMessage("§7Movement speed: §e" + player.getWalkSpeed());
+                    break;
+
+                default:
+                    player.sendMessage("§cInvalid test type. Use: defense, heal, allies, environment, info");
                     break;
             }
 

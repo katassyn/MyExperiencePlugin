@@ -3,6 +3,7 @@ package com.maks.myexperienceplugin.Class.skills.effects;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -24,6 +25,21 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SpellWeaverSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Random random = new Random();
     private final int debuggingFlag = 1; // Set to 0 in production
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
 
     // Track spell damage modifiers
     private final Map<UUID, Double> spellDamageBonus = new ConcurrentHashMap<>();
@@ -63,31 +79,35 @@ public class SpellWeaverSkillEffectsHandler extends BaseSkillEffectsHandler {
     }
 
     @Override
-    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount) {
+    public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
         switch (skillId) {
             case 3: // +1% spell dmg
                 stats.setSpellDamageMultiplier(1.0 + (0.01 * purchaseCount));
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SPELLWEAVER SKILL 3: Set spell damage multiplier to " +
                             (1.0 + (0.01 * purchaseCount)));
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SPELLWEAVER SKILL 3: +" + (1 * purchaseCount) + "% spell damage");
                 }
                 break;
             case 7: // Fire Resistance
                 stats.setHasFireResistance(true); // Dedicated fire resistance flag
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SPELLWEAVER SKILL 7: Set fire resistance effect flag");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SPELLWEAVER SKILL 7: Fire Resistance enabled");
                 }
                 break;
             case 8: // +1% chance to double spell damage
                 stats.setSpellCriticalChance(purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SPELLWEAVER SKILL 8: Set spell critical chance to " + purchaseCount + "%");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SPELLWEAVER SKILL 8: +" + purchaseCount + "% spell critical chance");
                 }
                 break;
             case 10: // +2 spell dmg
                 stats.setSpellDamageBonus(2);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SPELLWEAVER SKILL 10: Set spell damage bonus to 2");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SPELLWEAVER SKILL 10: +2 spell damage");
                 }
                 break;
             case 11: // +1% spell dmg (1/2)
@@ -95,12 +115,14 @@ public class SpellWeaverSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SPELLWEAVER SKILL 11: Added " + (0.01 * purchaseCount) +
                             " to spell damage multiplier");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SPELLWEAVER SKILL 11: +" + (1 * purchaseCount) + "% spell damage multiplier");
                 }
                 break;
             case 13: // +5 spell dmg
                 stats.addSpellDamageBonus(5);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SPELLWEAVER SKILL 13: Added 5 to spell damage bonus");
+                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SPELLWEAVER SKILL 13: +5 spell damage bonus");
                 }
                 break;
         }
@@ -113,7 +135,7 @@ public class SpellWeaverSkillEffectsHandler extends BaseSkillEffectsHandler {
         if (plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(2) &&
                 !manaShieldCooldowns.containsKey(playerId)) {
 
-            if (random.nextDouble() * 100 < 10) { // 10% chance
+            if (rollChance(10, player, "Mana Shield")) {
                 // Calculate damage reduction
                 double originalDamage = event.getDamage();
                 double reducedDamage = originalDamage * 0.75; // 25% reduction

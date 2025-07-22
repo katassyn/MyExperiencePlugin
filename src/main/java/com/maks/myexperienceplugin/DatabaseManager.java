@@ -16,6 +16,8 @@ import java.util.UUID;
 public class DatabaseManager {
     private final HikariDataSource dataSource;
     private final MyExperiencePlugin plugin;
+    private long lastRankingUpdate = 0;
+    private static final long RANKING_UPDATE_COOLDOWN = 300000; // 5 minutes in milliseconds
 
     public DatabaseManager(MyExperiencePlugin plugin, String host, String port, String database, String username, String password) {
         this.plugin = plugin;
@@ -106,8 +108,8 @@ public class DatabaseManager {
                     stmt.executeUpdate();
                 }
 
-                // Update player rankings after saving data
-                updatePlayerRankings();
+                // Update player rankings after saving data (with cooldown)
+                updatePlayerRankingsIfNeeded();
             } catch (SQLException e) {
                 plugin.getLogger().severe("Failed to save player data: " + e.getMessage());
                 e.printStackTrace();
@@ -116,11 +118,36 @@ public class DatabaseManager {
     }
 
     /**
+     * Updates player rankings only if enough time has passed since last update.
+     * This prevents excessive database operations.
+     */
+    public void updatePlayerRankingsIfNeeded() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastRankingUpdate >= RANKING_UPDATE_COOLDOWN) {
+            updatePlayerRankings();
+            lastRankingUpdate = currentTime;
+        }
+    }
+    
+    /**
+     * Forces an immediate ranking update regardless of cooldown.
+     * Should be used sparingly, e.g., for admin commands.
+     */
+    public void forceUpdatePlayerRankings() {
+        updatePlayerRankings();
+        lastRankingUpdate = System.currentTimeMillis();
+    }
+    
+    /**
      * Updates the rank_position for all players based on their level.
      * Admin players are placed at the end of the ranking.
      */
-    public void updatePlayerRankings() {
-        try (Connection connection = getConnection()) {
+    private void updatePlayerRankings() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false); // Start transaction
+            
             // First, get all players sorted by level (non-admins first, then admins)
             String selectSql = "SELECT uuid FROM players ORDER BY is_admin ASC, level DESC, xp DESC";
             List<String> playerUuids = new ArrayList<>();
@@ -133,18 +160,45 @@ public class DatabaseManager {
                 }
             }
 
-            // Then update each player's rank_position
+            // Then update each player's rank_position using batch updates for better performance
             String updateSql = "UPDATE players SET rank_position = ? WHERE uuid = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
                 for (int i = 0; i < playerUuids.size(); i++) {
                     stmt.setInt(1, i + 1); // Rank positions start at 1
                     stmt.setString(2, playerUuids.get(i));
-                    stmt.executeUpdate();
+                    stmt.addBatch();
+                    
+                    // Execute batch every 100 records for better performance
+                    if (i % 100 == 0) {
+                        stmt.executeBatch();
+                    }
+                }
+                // Execute remaining updates
+                stmt.executeBatch();
+            }
+            
+            connection.commit(); // Commit transaction
+        } catch (SQLException e) {
+            // Rollback on error
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    plugin.getLogger().severe("Failed to rollback transaction: " + ex.getMessage());
                 }
             }
-        } catch (SQLException e) {
             plugin.getLogger().severe("Failed to update player rankings: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            // Ensure connection is closed and autocommit is restored
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    plugin.getLogger().severe("Failed to close connection: " + e.getMessage());
+                }
+            }
         }
     }
 
@@ -203,8 +257,8 @@ public class DatabaseManager {
                     stmt.executeUpdate();
                 }
 
-                // Update rankings after changing admin status
-                updatePlayerRankings();
+                // Force update rankings after changing admin status (important change)
+                forceUpdatePlayerRankings();
             } catch (SQLException e) {
                 plugin.getLogger().severe("Failed to update player admin status: " + e.getMessage());
                 e.printStackTrace();

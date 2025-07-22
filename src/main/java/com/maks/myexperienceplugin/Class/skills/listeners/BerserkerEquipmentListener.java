@@ -49,7 +49,6 @@ public class BerserkerEquipmentListener implements Listener {
             if (event.getSlot() == 38 && isChestplate(item.getType())) {
                 if (isPurchased(player, BERSERKER_OFFSET + 1)) {
                     event.setCancelled(true);
-                    BerserkerVisualEffects.playEquipmentWarning(player, "chestplate");
                     player.sendMessage(ChatColor.RED + "Unarmored Rage prevents wearing chestplates!");
                     return;
                 }
@@ -59,7 +58,6 @@ public class BerserkerEquipmentListener implements Listener {
             if (event.getSlot() == 36 && isBoots(item.getType())) {
                 if (isPurchased(player, BERSERKER_OFFSET + 25)) {
                     event.setCancelled(true);
-                    BerserkerVisualEffects.playEquipmentWarning(player, "boots");
                     player.sendMessage(ChatColor.RED + "Lightfoot Rage prevents wearing boots!");
                     return;
                 }
@@ -73,7 +71,6 @@ public class BerserkerEquipmentListener implements Listener {
             // Check chestplate
             if (isChestplate(item.getType()) && isPurchased(player, BERSERKER_OFFSET + 1)) {
                 event.setCancelled(true);
-                BerserkerVisualEffects.playEquipmentWarning(player, "chestplate");
                 player.sendMessage(ChatColor.RED + "Unarmored Rage prevents wearing chestplates!");
                 return;
             }
@@ -81,7 +78,6 @@ public class BerserkerEquipmentListener implements Listener {
             // Check boots
             if (isBoots(item.getType()) && isPurchased(player, BERSERKER_OFFSET + 25)) {
                 event.setCancelled(true);
-                BerserkerVisualEffects.playEquipmentWarning(player, "boots");
                 player.sendMessage(ChatColor.RED + "Lightfoot Rage prevents wearing boots!");
                 return;
             }
@@ -106,7 +102,6 @@ public class BerserkerEquipmentListener implements Listener {
             // Check chestplate
             if (isChestplate(item.getType()) && isPurchased(player, BERSERKER_OFFSET + 1)) {
                 event.setCancelled(true);
-                BerserkerVisualEffects.playEquipmentWarning(player, "chestplate");
                 player.sendMessage(ChatColor.RED + "Unarmored Rage prevents wearing chestplates!");
                 return;
             }
@@ -114,7 +109,6 @@ public class BerserkerEquipmentListener implements Listener {
             // Check boots
             if (isBoots(item.getType()) && isPurchased(player, BERSERKER_OFFSET + 25)) {
                 event.setCancelled(true);
-                BerserkerVisualEffects.playEquipmentWarning(player, "boots");
                 player.sendMessage(ChatColor.RED + "Lightfoot Rage prevents wearing boots!");
                 return;
             }

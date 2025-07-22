@@ -21,21 +21,21 @@ public class BeastmasterSkillManager extends BaseSkillManager {
     @Override
     protected void initializeSkills() {
         // Create nodes based on Beastmaster.md - FULLY IMPLEMENTED
-        SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Wolf Summon", "Unlock wolf summon, balanced companion (50% dmg/50hp).\nNote: You can only have 2 types of summons at once.", 1,
+        SkillNode node1 = new SkillNode(ID_OFFSET + 1, "Wolf Summon", "Unlock wolf summon, balanced companion (50 dmg/50 hp), res time 60s.\nNote: You can only have 2 types of summons at once.", 1,
                 Material.BONE, 1, player -> {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Wolf Summon skill");
             }
         });
 
-        SkillNode node2 = new SkillNode(ID_OFFSET + 2, "Boar Summon", "Unlock boar summon, high damage companion (80% dmg/20hp).\nNote: You can only have 2 types of summons at once.", 1,
+        SkillNode node2 = new SkillNode(ID_OFFSET + 2, "Boar Summon", "Unlock boar summon, high damage companion (80 dmg/20 hp), res time 60s.\nNote: You can only have 2 types of summons at once.", 1,
                 Material.PORKCHOP, 1, player -> {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Boar Summon skill");
             }
         });
 
-        SkillNode node3 = new SkillNode(ID_OFFSET + 3, "Bear Summon", "Unlock bear summon, tanky companion (20 dmg/80hp).\nNote: You can only have 2 types of summons at once.", 1,
+        SkillNode node3 = new SkillNode(ID_OFFSET + 3, "Bear Summon", "Unlock bear summon, tanky companion (20 dmg/80 hp), res time 60s.\nNote: You can only have 2 types of summons at once.", 1,
                 Material.HONEY_BOTTLE, 1, player -> {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated Bear Summon skill");
@@ -98,7 +98,7 @@ public class BeastmasterSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node11 = new SkillNode(ID_OFFSET + 11, "Wolf Critical", "Wolves gain 10% chance to critical hit", 3,
+        SkillNode node11 = new SkillNode(ID_OFFSET + 11, "Wolf Critical", "Wolves gain 10% chance to critical hit (CRIT = 200% DMG)", 3,
                 Material.DIAMOND_SWORD, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "Your wolves now have a chance for critical hits!");
             if (debuggingFlag == 1) {
@@ -114,7 +114,7 @@ public class BeastmasterSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node13 = new SkillNode(ID_OFFSET + 13, "Boar Critical", "Boars gain 15% chance to critical hit", 3,
+        SkillNode node13 = new SkillNode(ID_OFFSET + 13, "Boar Critical", "Boars gain 15% chance to critical hit (CRIT = 200% DMG)", 3,
                 Material.NETHERITE_AXE, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "Your boars now have a chance for critical hits!");
             if (debuggingFlag == 1) {
@@ -300,8 +300,8 @@ public class BeastmasterSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19); // Fixed: Changed from 14->20 to 14->19
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
 
         // Poziom 5->6

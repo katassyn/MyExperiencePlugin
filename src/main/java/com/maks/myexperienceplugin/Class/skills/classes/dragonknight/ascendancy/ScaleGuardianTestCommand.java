@@ -14,6 +14,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class ScaleGuardianTestCommand implements CommandExecutor {
     private final MyExperiencePlugin plugin;
@@ -59,8 +60,33 @@ public class ScaleGuardianTestCommand implements CommandExecutor {
                     }
 
                     int skillId = ID_OFFSET + skillNum;
-                    plugin.getSkillTreeManager().purchaseSkill(player, skillId);
-                    player.sendMessage(ChatColor.GREEN + "Granted Scale Guardian skill #" + skillNum);
+                    
+                    // Get current purchase count before purchasing
+                    int beforeCount = plugin.getSkillTreeManager().getSkillPurchaseCount(player.getUniqueId(), skillId);
+                    
+                    // Purchase the ascendancy skill using the correct method
+                    boolean success = plugin.getSkillTreeManager().purchaseAscendancySkill(player, skillId);
+                    
+                    // Get purchase count after purchasing
+                    int afterCount = plugin.getSkillTreeManager().getSkillPurchaseCount(player.getUniqueId(), skillId);
+                    
+                    // Get current shield block chance if it's skill #1
+                    String extraInfo = "";
+                    if (skillNum == 1) {
+                        double shieldBlockChance = plugin.getSkillEffectsHandler().getPlayerStats(player).getShieldBlockChance();
+                        extraInfo = " (Shield Block Chance: " + shieldBlockChance + "%)";
+                    }
+                    
+                    // Log detailed information
+                    plugin.getLogger().info("[SGTEST DEBUG] Player: " + player.getName() + 
+                        ", Skill: " + skillNum + 
+                        ", Before Count: " + beforeCount + 
+                        ", After Count: " + afterCount + 
+                        ", Success: " + success + 
+                        extraInfo);
+                    
+                    player.sendMessage(ChatColor.GREEN + "Granted Scale Guardian skill #" + skillNum + 
+                        " (Purchase count: " + afterCount + ")" + extraInfo);
                 } catch (NumberFormatException e) {
                     player.sendMessage(ChatColor.RED + "Invalid skill number!");
                 }
@@ -69,7 +95,7 @@ public class ScaleGuardianTestCommand implements CommandExecutor {
             case "giveall":
                 // Grant all Scale Guardian skills
                 for (int i = 1; i <= 27; i++) {
-                    plugin.getSkillTreeManager().purchaseSkill(player, ID_OFFSET + i);
+                    plugin.getSkillTreeManager().purchaseAscendancySkill(player, ID_OFFSET + i);
                 }
                 player.sendMessage(ChatColor.GREEN + "Granted all 27 Scale Guardian skills!");
                 break;
@@ -135,9 +161,26 @@ public class ScaleGuardianTestCommand implements CommandExecutor {
 
     private void showPlayerStats(Player player) {
         SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+        UUID playerId = player.getUniqueId();
 
         player.sendMessage(ChatColor.GOLD + "=== Your Scale Guardian Stats ===");
-        player.sendMessage(ChatColor.AQUA + "Shield Block Chance: " + stats.getShieldBlockChance() + "%");
+        
+        // Get Shield Block skill purchase count
+        int shieldBlockPurchaseCount = plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, ID_OFFSET + 1);
+        boolean hasShieldBlock = plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(ID_OFFSET + 1);
+        
+        // Show Shield Block info with more details
+        player.sendMessage(ChatColor.AQUA + "Shield Block Chance: " + stats.getShieldBlockChance() + "%" + 
+            (hasShieldBlock ? ChatColor.YELLOW + " (Skill purchased " + shieldBlockPurchaseCount + " times, should give +" + 
+            (5 * shieldBlockPurchaseCount) + "%)" : ""));
+        
+        // Log detailed Shield Block info
+        plugin.getLogger().info("[STATS DEBUG] Player: " + player.getName() + 
+            ", Shield Block Purchased: " + hasShieldBlock + 
+            ", Purchase Count: " + shieldBlockPurchaseCount + 
+            ", Expected Bonus: " + (5 * shieldBlockPurchaseCount) + "%" +
+            ", Actual Shield Block Chance: " + stats.getShieldBlockChance() + "%");
+        
         player.sendMessage(ChatColor.AQUA + "Defense Bonus: " + stats.getDefenseBonus() + "%");
         player.sendMessage(ChatColor.AQUA + "Damage Multiplier: " + stats.getDamageMultiplier() + "x");
         player.sendMessage(ChatColor.AQUA + "Max Health Bonus: " + stats.getMaxHealthBonus());
@@ -146,10 +189,19 @@ public class ScaleGuardianTestCommand implements CommandExecutor {
         // Show active skills
         player.sendMessage(ChatColor.GOLD + "=== Active Skills ===");
         int activeSkills = 0;
-        Set<Integer> purchasedSkills = plugin.getSkillTreeManager().getPurchasedSkills(player.getUniqueId());
+        Set<Integer> purchasedSkills = plugin.getSkillTreeManager().getPurchasedSkills(playerId);
+        
+        // Show detailed info for each skill
+        player.sendMessage(ChatColor.GOLD + "=== Skill Details ===");
         for (int i = 1; i <= 27; i++) {
-            if (purchasedSkills.contains(Integer.valueOf(ID_OFFSET + i))) {
+            int skillId = ID_OFFSET + i;
+            if (purchasedSkills.contains(skillId)) {
                 activeSkills++;
+                int purchaseCount = plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, skillId);
+                if (purchaseCount > 1 || i == 1) { // Always show Shield Block (skill 1) and multi-purchased skills
+                    player.sendMessage(ChatColor.GREEN + "Skill #" + i + ": " + 
+                        "Purchased " + purchaseCount + " times");
+                }
             }
         }
         player.sendMessage(ChatColor.GREEN + "Active Skills: " + activeSkills + "/27");

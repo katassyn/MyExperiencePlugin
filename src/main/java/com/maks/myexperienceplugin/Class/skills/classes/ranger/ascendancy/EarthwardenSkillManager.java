@@ -21,7 +21,7 @@ public class EarthwardenSkillManager extends BaseSkillManager {
     @Override
     protected void initializeSkills() {
         // Create nodes based on Specific_plugin_description.md
-        SkillNode node1 = new SkillNode(ID_OFFSET + 1, "+3% Defense in Grassy Areas", "Gain +3% defense bonus when in grassy areas.", 1,
+        SkillNode node1 = new SkillNode(ID_OFFSET + 1, "+3% Defense in Grassy Areas", "Gain +3% defense bonus when in grassy areas (DEFENSE = -X% DMG TAKEN).", 1,
                 Material.GRASS_BLOCK, 2, player -> {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " activated +3% Defense in Grassy Areas skill");
@@ -51,7 +51,7 @@ public class EarthwardenSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node5 = new SkillNode(ID_OFFSET + 5, "Steadfast Defense", "After standing still for 3 seconds, gain +10% defense.", 2,
+        SkillNode node5 = new SkillNode(ID_OFFSET + 5, "Steadfast Defense", "After standing still for 3 seconds, gain +10% defense (DEFENSE = -X% DMG TAKEN).", 2,
                 Material.SHIELD, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "You feel more protected when standing still!");
             if (debuggingFlag == 1) {
@@ -67,7 +67,7 @@ public class EarthwardenSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node7 = new SkillNode(ID_OFFSET + 7, "Survival Instinct", "When hp<50%, gain +5% defense for 3 seconds.", 2,
+        SkillNode node7 = new SkillNode(ID_OFFSET + 7, "Survival Instinct", "When hp<50%, gain +5% defense for 3 seconds (DEFENSE = -X% DMG TAKEN).", 2,
                 Material.IRON_CHESTPLATE, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "Your survival instincts sharpen when wounded!");
             if (debuggingFlag == 1) {
@@ -91,7 +91,7 @@ public class EarthwardenSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node10 = new SkillNode(ID_OFFSET + 10, "Reactive Defense", "When taking damage, 15% chance to gain +15% defense for 5 seconds.", 2,
+        SkillNode node10 = new SkillNode(ID_OFFSET + 10, "Reactive Defense", "When taking damage, 15% chance to gain +15% defense for 5 seconds (DEFENSE = -X% DMG TAKEN).", 2,
                 Material.CHAINMAIL_CHESTPLATE, 2, player -> {
             player.sendMessage(ChatColor.GREEN + "Your body reacts defensively to attacks!");
             if (debuggingFlag == 1) {
@@ -131,7 +131,7 @@ public class EarthwardenSkillManager extends BaseSkillManager {
             }
         });
 
-        SkillNode node15 = new SkillNode(ID_OFFSET + 15, "Last Stand", "When below 30% hp, gain +20% defense and +10% damage.", 3,
+        SkillNode node15 = new SkillNode(ID_OFFSET + 15, "Last Stand", "When below 30% hp, gain +20% defense and +10% damage (DEFENSE = -X% DMG TAKEN).", 3,
                 Material.TOTEM_OF_UNDYING, 1, player -> {
             player.sendMessage(ChatColor.GREEN + "Your last stand is formidable!");
             if (debuggingFlag == 1) {
@@ -301,8 +301,8 @@ public class EarthwardenSkillManager extends BaseSkillManager {
         tree.connectNodes(ID_OFFSET + 11, ID_OFFSET + 17);
         tree.connectNodes(ID_OFFSET + 12, ID_OFFSET + 18);
         tree.connectNodes(ID_OFFSET + 13, ID_OFFSET + 19);
-        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 20); // NIE 14->19!
-        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20); // Też prowadzi do 20!
+        tree.connectNodes(ID_OFFSET + 14, ID_OFFSET + 19); // Fixed: Changed from 14->20 to 14->19
+        tree.connectNodes(ID_OFFSET + 15, ID_OFFSET + 20);
         tree.connectNodes(ID_OFFSET + 16, ID_OFFSET + 21);
 
         // Poziom 5->6

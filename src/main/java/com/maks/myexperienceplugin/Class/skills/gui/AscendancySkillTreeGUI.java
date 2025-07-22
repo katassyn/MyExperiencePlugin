@@ -760,12 +760,13 @@ public class AscendancySkillTreeGUI {
         lore.add(ChatColor.GRAY + node.getDescription());
         lore.add("");
 
-        // Dla umiejętności podklasy, zawsze koszt to 1 punkt
-        int actualCost = 1;
+        // Use the actual cost from the skill node
+        int actualCost = node.getCost();
 
         if (isPurchased) {
             if (purchaseCount < node.getMaxPurchases()) {
-                lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + " point");
+                lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + 
+                        (actualCost == 1 ? " point" : " points"));
                 lore.add(ChatColor.GREEN + "Click to upgrade! (" + purchaseCount + "/" +
                         node.getMaxPurchases() + ")");
             } else {
@@ -773,11 +774,13 @@ public class AscendancySkillTreeGUI {
                         node.getMaxPurchases() + ")");
             }
         } else if (canPurchase) {
-            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + " point");
+            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + 
+                    (actualCost == 1 ? " point" : " points"));
             lore.add(ChatColor.GREEN + "Click to purchase!");
         } else {
             lore.add(ChatColor.RED + "Locked - Purchase connected skills first");
-            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + " point");
+            lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + actualCost + 
+                    (actualCost == 1 ? " point" : " points"));
         }
 
         meta.setLore(lore);

@@ -24,10 +24,14 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUI;
 import net.luckperms.api.LuckPerms;
-import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
@@ -161,6 +165,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDisconnectListener(partyManager), this);
         getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
+        
+        // Register party damage prevention listener
+        getServer().getPluginManager().registerEvents(new PartyDamagePreventionListener(this), this);
 
         // Register alchemy listeners
         getServer().getPluginManager().registerEvents(new TotemEffectListener(), this);
@@ -204,10 +211,14 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("exp_give_p").setExecutor(experienceCommandHandler);
 
         // Register commands - Class system
+        getCommand("class").setExecutor(new ClassCommand(this));
         getCommand("chose_class").setExecutor(new ChoseClassCommand(this));
         getCommand("chose_ascendancy").setExecutor(new ChoseAscendancyCommand(this));
         getCommand("alchemy_reset").setExecutor(new AlchemyResetCommand());
         getCommand("alchemy_cd").setExecutor(new AlchemyCooldownCommand());
+        
+        // Register ranking update command
+        getCommand("updaterankings").setExecutor(new com.maks.myexperienceplugin.commands.UpdateRankingsCommand(this));
 
         // Register commands - Skill system
         getCommand("skilltree").setExecutor(new SkillTreeCommand(this, skillTreeGUI));
@@ -215,8 +226,6 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("skilltree2").setExecutor(new AscendancySkillTreeCommand(this, ascendancySkillTreeGUI));
         getCommand("playerattributes").setExecutor(new PlayerAttributesCommand(this, skillEffectsHandler));
 
-        // Register Scale Guardian test command
-        getCommand("sgtest").setExecutor(new com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.ScaleGuardianTestCommand(this));
 
         // Register commands - Reset attributes
         ResetAttributesCommand resetAttributesCommand = new ResetAttributesCommand(this, skillEffectsHandler);
@@ -342,6 +351,107 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
             return true;
         });
+        
+        // Komenda do sprawdzania statusu adminów
+        getCommand("admincheck").setExecutor((sender, cmd, label, args) -> {
+            if (!sender.hasPermission("myplugin.admincheck")) {
+                sender.sendMessage("§cNo permission!");
+                return true;
+            }
+            
+            sender.sendMessage("§eChecking admin status in database...");
+            
+            Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+                try (Connection connection = getDatabaseManager().getConnection()) {
+                    List<String> results = new ArrayList<>();
+                    results.add("§6=== Admin Status Check ===");
+                    
+                    // First query: Get all admin players
+                    String adminSql = "SELECT name, level, is_admin FROM players WHERE is_admin = TRUE";
+                    try (PreparedStatement adminStmt = connection.prepareStatement(adminSql)) {
+                        ResultSet adminRs = adminStmt.executeQuery();
+                        while (adminRs.next()) {
+                            String name = adminRs.getString("name");
+                            int level = adminRs.getInt("level");
+                            boolean isAdmin = adminRs.getBoolean("is_admin");
+                            String status = isAdmin ? "§aADMIN" : "§7NORMAL";
+                            results.add(String.format("§f%s §7(Level %d) - %s", name, level, status));
+                        }
+                    }
+                    
+                    // Second query: Get top 5 players by level
+                    String topPlayersSql = "SELECT name, level, is_admin FROM players WHERE is_admin = FALSE ORDER BY level DESC LIMIT 5";
+                    try (PreparedStatement topStmt = connection.prepareStatement(topPlayersSql)) {
+                        ResultSet topRs = topStmt.executeQuery();
+                        while (topRs.next()) {
+                            String name = topRs.getString("name");
+                            int level = topRs.getInt("level");
+                            boolean isAdmin = topRs.getBoolean("is_admin");
+                            String status = isAdmin ? "§aADMIN" : "§7NORMAL";
+                            results.add(String.format("§f%s §7(Level %d) - %s", name, level, status));
+                        }
+                    }
+                    
+                    Bukkit.getScheduler().runTask(this, () -> {
+                        for (String result : results) {
+                            sender.sendMessage(result);
+                        }
+                    });
+                } catch (SQLException e) {
+                    getLogger().severe("Error checking admin status: " + e.getMessage());
+                    Bukkit.getScheduler().runTask(this, () -> 
+                        sender.sendMessage("§cError checking database!")
+                    );
+                }
+            });
+            
+            return true;
+        });
+
+        // Komenda do naprawienia statusów adminów
+        getCommand("fixadmins").setExecutor((sender, cmd, label, args) -> {
+            if (!sender.hasPermission("myplugin.fixadmins")) {
+                sender.sendMessage("§cNo permission!");
+                return true;
+            }
+            
+            sender.sendMessage("§eFixing admin statuses...");
+            
+            Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+                int fixed = 0;
+                
+                try (Connection connection = getDatabaseManager().getConnection()) {
+                    // Update all online players first
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        String sql = "UPDATE players SET is_admin = ? WHERE uuid = ?";
+                        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                            stmt.setBoolean(1, player.isOp());
+                            stmt.setString(2, player.getUniqueId().toString());
+                            int updated = stmt.executeUpdate();
+                            if (updated > 0) fixed++;
+                        }
+                    }
+                    
+                    // Force update rankings
+                    getDatabaseManager().forceUpdatePlayerRankings();
+                    
+                } catch (SQLException e) {
+                    getLogger().severe("Error fixing admin status: " + e.getMessage());
+                    Bukkit.getScheduler().runTask(this, () -> 
+                        sender.sendMessage("§cError updating database!")
+                    );
+                    return;
+                }
+                
+                int finalFixed = fixed;
+                Bukkit.getScheduler().runTask(this, () -> {
+                    sender.sendMessage("§aFixed admin status for " + finalFixed + " players!");
+                    sender.sendMessage("§aRankings have been updated!");
+                });
+            });
+            
+            return true;
+        });
     }
     @Override
     public void onDisable() {
@@ -418,7 +528,14 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 UUID playerId = player.getUniqueId();
                 int level = playerLevels.getOrDefault(playerId, 1);
                 double currentXP = playerCurrentXP.getOrDefault(playerId, 0.0);
-                double requiredXP = playerRequiredXP.getOrDefault(playerId, xpPerLevel.get(level));
+                
+                // Safely get required XP with null check
+                Double xpForLevel = xpPerLevel.get(level);
+                if (xpForLevel == null) {
+                    getLogger().warning("No XP requirement found for level " + level + " for player " + player.getName());
+                    xpForLevel = Math.pow(level * 100 + 100, 1.013);
+                }
+                double requiredXP = playerRequiredXP.getOrDefault(playerId, xpForLevel);
 
                 double progress = (level >= maxLevel) ? 100.0 : (currentXP / requiredXP) * 100;
                 if (level >= maxLevel) {
@@ -477,7 +594,14 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             currentLevel++;
             playerLevels.put(playerId, currentLevel);
             currentXP -= requiredXP;
-            requiredXP = xpPerLevel.getOrDefault(currentLevel, Math.pow(currentLevel * 100 + 100, 1.013));
+            // Ensure we have a valid XP requirement for the new level
+            Double nextRequiredXP = xpPerLevel.get(currentLevel);
+            if (nextRequiredXP == null) {
+                getLogger().warning("No XP requirement found for level " + currentLevel + ", using calculated value");
+                requiredXP = Math.pow(currentLevel * 100 + 100, 1.013);
+            } else {
+                requiredXP = nextRequiredXP;
+            }
 
             broadcastLevelUpMessage(player, currentLevel);
             moneyRewardHandler.onLevelUp(player, currentLevel);
@@ -498,18 +622,22 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     public void updatePlayerXPBar(Player player) {
         UUID playerId = player.getUniqueId();
         double currentXP = playerCurrentXP.getOrDefault(playerId, 0.0);
-        double requiredXP = playerRequiredXP.getOrDefault(
-                playerId,
-                xpPerLevel.get(playerLevels.getOrDefault(playerId, 1))
-        );
         int level = playerLevels.getOrDefault(playerId, 1);
+        
+        // Safely get required XP with null check
+        Double xpForLevel = xpPerLevel.get(level);
+        if (xpForLevel == null) {
+            getLogger().warning("No XP requirement found for level " + level + " when updating XP bar");
+            xpForLevel = Math.pow(level * 100 + 100, 1.013);
+        }
+        double requiredXP = playerRequiredXP.getOrDefault(playerId, xpForLevel);
 
         player.setLevel(level);
         if (level >= maxLevel) {
             player.setExp(0.0f);
         } else {
             float progress = (float) (currentXP / requiredXP);
-            player.setExp(progress);
+            player.setExp(Math.min(1.0f, Math.max(0.0f, progress))); // Ensure progress is between 0 and 1
         }
     }
 
@@ -590,6 +718,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Clear physis exp
         PhysisExpManager.getInstance().clearPlayerBonus(uuid);
+        
+        // Clear EXP boost to prevent memory leak
+        playerExpBoosts.remove(uuid);
 
         // Clean up skill purchase manager resources
         if (skillPurchaseManager != null) {
@@ -790,6 +921,31 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     }
 
     /**
+     * Pobiera aktualny exp boost gracza
+     */
+    public double getPlayerExpBoost(Player player) {
+        ExpBoost boost = playerExpBoosts.get(player.getUniqueId());
+        if (boost == null || boost.isExpired()) {
+            return 0.0; // Brak boost
+        }
+        return boost.getMultiplier();
+    }
+
+    /**
+     * Usuwa wygasły boost gracza
+     */
+    public void removeExpiredBoost(UUID playerId) {
+        ExpBoost boost = playerExpBoosts.get(playerId);
+        if (boost != null && boost.isExpired()) {
+            playerExpBoosts.remove(playerId);
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+                player.sendMessage("§eYour EXP boost has expired!");
+            }
+        }
+    }
+
+    /**
      * Dodaje exp boost dla gracza
      */
     public void addExpBoost(Player player, double multiplierPercent, int hours) {
@@ -816,31 +972,6 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Poinformuj gracza o statusie boost
         showExpBoostStatus(player);
-    }
-
-    /**
-     * Pobiera aktualny exp boost gracza
-     */
-    public double getPlayerExpBoost(Player player) {
-        ExpBoost boost = playerExpBoosts.get(player.getUniqueId());
-        if (boost == null || boost.isExpired()) {
-            return 0.0; // Brak boost
-        }
-        return boost.getMultiplier();
-    }
-
-    /**
-     * Usuwa wygasły boost gracza
-     */
-    public void removeExpiredBoost(UUID playerId) {
-        ExpBoost boost = playerExpBoosts.get(playerId);
-        if (boost != null && boost.isExpired()) {
-            playerExpBoosts.remove(playerId);
-            Player player = Bukkit.getPlayer(playerId);
-            if (player != null) {
-                player.sendMessage("§eYour EXP boost has expired!");
-            }
-        }
     }
 
     /**
