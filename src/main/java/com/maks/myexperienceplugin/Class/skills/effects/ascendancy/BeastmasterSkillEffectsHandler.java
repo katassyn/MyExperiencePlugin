@@ -87,7 +87,11 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
     // Anti-duplication tracking
     private final Map<UUID, Boolean> summonInProgress = new ConcurrentHashMap<>();
+    // Rate limit for automatic summon checks
     private final Map<UUID, Long> lastSummonCheck = new ConcurrentHashMap<>();
+
+    // Separate rate limit for manual summon attempts (wolf/boar/bear)
+    private final Map<UUID, Long> lastSummonAttempt = new ConcurrentHashMap<>();
 
     // Random for critical hit calculations
     private final Random random = new Random();
@@ -471,8 +475,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
         // Rate limiting check
         long currentTime = System.currentTimeMillis();
-        if (lastSummonCheck.containsKey(playerId)) {
-            long lastCheck = lastSummonCheck.get(playerId);
+        if (lastSummonAttempt.containsKey(playerId)) {
+            long lastCheck = lastSummonAttempt.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited wolf summon for " + player.getName());
@@ -480,12 +484,11 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 return;
             }
         }
-        lastSummonCheck.put(playerId, currentTime);
+        lastSummonAttempt.put(playerId, currentTime);
 
         // Check if player has the skill
         if (!isPurchased(playerId, WOLF_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon wolves yet!");
-
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks wolf summon skill");
             }
@@ -626,8 +629,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
         // Rate limiting check
         long currentTime = System.currentTimeMillis();
-        if (lastSummonCheck.containsKey(playerId)) {
-            long lastCheck = lastSummonCheck.get(playerId);
+        if (lastSummonAttempt.containsKey(playerId)) {
+            long lastCheck = lastSummonAttempt.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited boar summon for " + player.getName());
@@ -635,7 +638,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 return;
             }
         }
-        lastSummonCheck.put(playerId, currentTime);
+        lastSummonAttempt.put(playerId, currentTime);
 
         // Check if player has the skill
         if (!isPurchased(playerId, BOAR_SUMMON_ID)) {
@@ -782,8 +785,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
         // Rate limiting check
         long currentTime = System.currentTimeMillis();
-        if (lastSummonCheck.containsKey(playerId)) {
-            long lastCheck = lastSummonCheck.get(playerId);
+        if (lastSummonAttempt.containsKey(playerId)) {
+            long lastCheck = lastSummonAttempt.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited bear summon for " + player.getName());
@@ -791,7 +794,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 return;
             }
         }
-        lastSummonCheck.put(playerId, currentTime);
+        lastSummonAttempt.put(playerId, currentTime);
 
         // Check if player has the skill
         if (!isPurchased(playerId, BEAR_SUMMON_ID)) {
@@ -1397,6 +1400,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         // Clear anti-duplication tracking
         summonInProgress.remove(playerId);
         lastSummonCheck.remove(playerId);
+        lastSummonAttempt.remove(playerId);
     }
     
     /**
