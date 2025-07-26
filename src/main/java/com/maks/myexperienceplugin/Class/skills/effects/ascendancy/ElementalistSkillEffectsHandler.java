@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -61,42 +62,42 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 stats.addSpellDamageBonus(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ELEMENTALIST SKILL 1: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 1: +" + (5 * purchaseCount) + " spell damage (Fire Mastery)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 1: +" + (5 * purchaseCount) + " spell damage (Fire Mastery)");
                 }
                 break;
             case 2: // Ice Mastery
                 stats.addSpellDamageBonus(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ELEMENTALIST SKILL 2: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 2: +" + (5 * purchaseCount) + " spell damage (Ice Mastery)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 2: +" + (5 * purchaseCount) + " spell damage (Ice Mastery)");
                 }
                 break;
             case 3: // Lightning Mastery
                 stats.addSpellDamageBonus(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ELEMENTALIST SKILL 3: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 3: +" + (5 * purchaseCount) + " spell damage (Lightning Mastery)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 3: +" + (5 * purchaseCount) + " spell damage (Lightning Mastery)");
                 }
                 break;
             case 4: // Flame Burst
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ELEMENTALIST SKILL 4: Will apply Flame Burst dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 4: Flame Burst enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 4: Flame Burst enabled");
                 }
                 break;
             case 5: // Frost Nova
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ELEMENTALIST SKILL 5: Will apply Frost Nova dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 5: Frost Nova enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 5: Frost Nova enabled");
                 }
                 break;
             case 6: // Chain Lightning
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ELEMENTALIST SKILL 6: Will apply Chain Lightning dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 6: Chain Lightning enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 6: Chain Lightning enabled");
                 }
                 break;
             case 7: // Heat Wave
@@ -864,7 +865,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
                 // Notify player
                 ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Elemental Mastery activated!");
-                player.sendMessage(ChatColor.GOLD + "You have combined the power of all three elements!");
+                ChatNotificationUtils.send(player, ChatColor.GOLD + "You have combined the power of all three elements!");
             }
         }
     }

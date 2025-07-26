@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
@@ -48,7 +49,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     private static final long SUMMON_CHECK_DELAY = 60L; // 3 seconds delay for summon checks
     private static final long RATE_LIMIT_DELAY = 100L; // 0.1 second rate limiting for summon checks
     private static final long AUTO_RESUMMON_DELAY = 3000L; // 3 seconds delay for auto-resummon
-    private static final int debuggingFlag = 0; // Set to 1 for debug mode
+    // Enable debug logging to help diagnose summon issues
+    private static final int debuggingFlag = 1; // Set to 0 to disable
 
     // Track active summons by player
     private final Map<UUID, UUID> playerWolf = new ConcurrentHashMap<>();
@@ -85,7 +87,11 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
     // Anti-duplication tracking
     private final Map<UUID, Boolean> summonInProgress = new ConcurrentHashMap<>();
+    // Rate limit for automatic summon checks
     private final Map<UUID, Long> lastSummonCheck = new ConcurrentHashMap<>();
+
+    // Separate rate limit for manual summon attempts (wolf/boar/bear)
+    private final Map<UUID, Long> lastSummonAttempt = new ConcurrentHashMap<>();
 
     // Random for critical hit calculations
     private final Random random = new Random();
@@ -179,7 +185,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled when player uses the summon command
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 1: Wolf summon unlocked for " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 1: Wolf summon unlocked (50 dmg/50 hp)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 1: Wolf summon unlocked (50 dmg/50 hp)");
                 }
                 // DODAJ TĘ LINIĘ:
                 Bukkit.getScheduler().runTaskLater(plugin, () -> checkAndSummonCreatures(player), 20L);
@@ -188,7 +194,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled when player uses the summon command
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 2: Boar summon unlocked for " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 2: Boar summon unlocked (80 dmg/20 hp)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 2: Boar summon unlocked (80 dmg/20 hp)");
                 }
                 // DODAJ TĘ LINIĘ:
                 Bukkit.getScheduler().runTaskLater(plugin, () -> checkAndSummonCreatures(player), 20L);
@@ -197,7 +203,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled when player uses the summon command
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 3: Bear summon unlocked for " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 3: Bear summon unlocked (20 dmg/80 hp)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 3: Bear summon unlocked (20 dmg/80 hp)");
                 }
                 // DODAJ TĘ LINIĘ:
                 Bukkit.getScheduler().runTaskLater(plugin, () -> checkAndSummonCreatures(player), 20L);
@@ -205,49 +211,49 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             case 4: // Wolves gain +5% ms
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 4: Will add 5% movement speed to wolves when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 4: Wolves will gain +5% movement speed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 4: Wolves will gain +5% movement speed");
                 }
                 break;
             case 5: // Boars gain +15% dmg
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 5: Will add 15% damage to boars when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 5: Boars will gain +15% damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 5: Boars will gain +15% damage");
                 }
                 break;
             case 6: // Bears gain +10% hp
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 6: Will add 10% health to bears when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 6: Bears will gain +10% health");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 6: Bears will gain +10% health");
                 }
                 break;
             case 7: // Wolves gain +5% as
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 7: Will add 5% attack speed to wolves when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 7: Wolves will gain +5% attack speed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 7: Wolves will gain +5% attack speed");
                 }
                 break;
             case 8: // Boars gain +10% as
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 8: Will add 10% attack speed to boars when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 8: Boars will gain +10% attack speed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 8: Boars will gain +10% attack speed");
                 }
                 break;
             case 9: // Summons gain +5% dmg
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 9: Will add 5% damage to all summons");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 9: All summons will gain +5% damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 9: All summons will gain +5% damage");
                 }
                 break;
             case 10: // Bears gain +50% def
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 10: Will add 50% defense to bears when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 10: Bears will gain +50% defense");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 10: Bears will gain +50% defense");
                 }
                 break;
             case 11: // Wolves gain 10% chance to crit
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 11: Will add 10% critical chance to wolves when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 11: Wolves will gain 10% crit chance");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 11: Wolves will gain 10% crit chance");
                 }
                 break;
             case 12: // Wolves gain +100hp
@@ -255,103 +261,103 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This will be handled separately in setWolfStats
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 12: Wolf HP bonus stored for application");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 12: Wolves gain +100 HP (flat bonus)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 12: Wolves gain +100 HP (flat bonus)");
                 }
                 break;
             case 13: // Boars gain 15% chance to crit
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 13: Will add 15% critical chance to boars when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 13: Boars gain 15% crit chance");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 13: Boars gain 15% crit chance");
                 }
                 break;
             case 14: // Summons gain +10% dmg
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 14: Will add 10% damage to all summons");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 14: All summons gain +10% damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 14: All summons gain +10% damage");
                 }
                 break;
             case 15: // When Bears hp<50% u and ur summons gain +10% def
                 // This is handled dynamically during combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 15: Will handle bear guardian effect dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 15: Bear guardian effect enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 15: Bear guardian effect enabled");
                 }
                 break;
             case 16: // Bears gain +200hp
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 16: Will add 200 HP to bears when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 16: Bears gain +200 HP");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 16: Bears gain +200 HP");
                 }
                 break;
             case 17: // Wolves heal's u for 5% of dmg dealt
                 // This is handled dynamically during combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 17: Will handle wolf healing dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 17: Wolf healing enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 17: Wolf healing enabled");
                 }
                 break;
             case 18: // Summons gain +10% ms
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 18: Will add 10% movement speed to all summons");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 18: All summons gain +10% movement speed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 18: All summons gain +10% movement speed");
                 }
                 break;
             case 19: // Boars after killing enemy gains +7% as for 3s
                 // This is handled dynamically during combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 19: Will handle boar frenzy dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 19: Boar frenzy enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 19: Boar frenzy enabled");
                 }
                 break;
             case 20: // Bears heal for 10% hp each 10s
                 // This is handled via periodic task
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 20: Will handle bear regeneration via periodic task");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 20: Bear regeneration enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 20: Bear regeneration enabled");
                 }
                 break;
             case 21: // Summons gain +30% hp
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 21: Will add 30% health to all summons");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 21: All summons gain +30% health");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 21: All summons gain +30% health");
                 }
                 break;
             case 22: // Wolves gain +10% hp
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 22: Will add 10% health to wolves when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 22: Wolves gain +10% health");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 22: Wolves gain +10% health");
                 }
                 break;
             case 23: // Boars gain 20% ms
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 23: Will add 20% movement speed to boars when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 23: Boars gain +20% movement speed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 23: Boars gain +20% movement speed");
                 }
                 break;
             case 24: // Summons gain +25% def
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 24: Will add 25% defense to all summons");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 24: All summons gain +25% defense");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 24: All summons gain +25% defense");
                 }
                 break;
             case 25: // U summon 1 more wolf
                 // Handled by the summon wolf method
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 25: Will summon an additional wolf");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 25: Additional wolf enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 25: Additional wolf enabled");
                 }
                 break;
             case 26: // Boars gain +15% dmg and +15% as
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 26: Will add 15% damage and 15% attack speed to boars when summoned");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 26: Boars gain +15% damage and +15% attack speed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 26: Boars gain +15% damage and +15% attack speed");
                 }
                 break;
             case 27: // Heals ur summons for 5% of yours dmg dealt
                 // This is handled dynamically during combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BEASTMASTER SKILL 27: Will handle summon healing dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 27: Summon healing enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BEASTMASTER SKILL 27: Summon healing enabled");
                 }
                 break;
             default:
@@ -425,7 +431,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         
         if (removedCount > 0 && debuggingFlag == 1) {
             plugin.getLogger().info("Cleaned up " + removedCount + " untracked summons for " + player.getName());
-            player.sendMessage(ChatColor.YELLOW + "Cleaned up " + removedCount + " duplicate summons.");
+            ChatNotificationUtils.send(player, ChatColor.YELLOW + "Cleaned up " + removedCount + " duplicate summons.");
         }
     }
 
@@ -452,49 +458,68 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void summonWolves(Player player) {
         UUID playerId = player.getUniqueId();
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] summonWolves called for " + player.getName());
+        }
+
         // Check if summon is already in progress to prevent duplicates
         if (summonInProgress.getOrDefault(playerId, false)) {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Summon already in progress for " + player.getName());
+            }
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Summon already in progress");
             }
             return;
         }
 
         // Rate limiting check
         long currentTime = System.currentTimeMillis();
-        if (lastSummonCheck.containsKey(playerId)) {
-            long lastCheck = lastSummonCheck.get(playerId);
+        if (lastSummonAttempt.containsKey(playerId)) {
+            long lastCheck = lastSummonAttempt.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                    plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited wolf summon for " + player.getName());
                 }
                 return;
             }
         }
-        lastSummonCheck.put(playerId, currentTime);
+        lastSummonAttempt.put(playerId, currentTime);
 
         // Check if player has the skill
         if (!isPurchased(playerId, WOLF_SUMMON_ID)) {
-            player.sendMessage(ChatColor.RED + "You haven't learned to summon wolves yet!");
+            ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon wolves yet!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks wolf summon skill");
+            }
             return;
         }
 
         // Check summon type limit
         if (!canAddSummonType(playerId, WOLF_SUMMON_ID)) {
-            player.sendMessage(ChatColor.RED + "You can only have 2 types of summons at once!");
+            ChatNotificationUtils.send(player, ChatColor.RED + "You can only have 2 types of summons at once!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add wolf - summon type limit reached");
+            }
             return;
         }
 
         // Check if wolf is already summoned
         if (hasActiveSummon(playerId, playerWolf)) {
-            player.sendMessage(ChatColor.YELLOW + "You already have a wolf summoned!");
+            ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have a wolf summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Wolf already active");
+            }
             return;
         }
 
         // Check cooldown
         if (isOnCooldown(playerId, wolfRespawnCooldowns, WOLF_SUMMON_COOLDOWN)) {
             long timeLeft = (wolfRespawnCooldowns.get(playerId) + WOLF_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
-            player.sendMessage(ChatColor.RED + "Wolf summon on cooldown (" + timeLeft + "s)");
+            ChatNotificationUtils.send(player, ChatColor.RED + "Wolf summon on cooldown (" + timeLeft + "s)");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Wolf summon on cooldown: " + timeLeft + "s left");
+            }
             return;
         }
 
@@ -522,7 +547,10 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         int wolfCount = maxWolves - currentWolfCount;
 
         if (wolfCount <= 0) {
-            player.sendMessage(ChatColor.YELLOW + "You already have all your wolves summoned!");
+            ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have all your wolves summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Max wolves already spawned");
+            }
             return;
         }
 
@@ -568,7 +596,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         } catch (Exception e) {
             plugin.getLogger().severe("Error spawning wolf: " + e.getMessage());
             e.printStackTrace();
-            player.sendMessage(ChatColor.RED + "Error summoning wolf: " + e.getMessage());
+            ChatNotificationUtils.send(player, ChatColor.RED + "Error summoning wolf: " + e.getMessage());
         } finally {
             // Clear summon in progress flag
             summonInProgress.put(playerId, false);
@@ -576,7 +604,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info(player.getName() + " summoned " + wolfCount + " wolves");
-            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Summoned " + wolfCount + " wolves");
+            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Summoned " + wolfCount + " wolves");
         }
     }
 
@@ -587,49 +615,65 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void summonBoars(Player player) {
         UUID playerId = player.getUniqueId();
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] summonBoars called for " + player.getName());
+        }
+
         // Check if summon is already in progress to prevent duplicates
         if (summonInProgress.getOrDefault(playerId, false)) {
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("Summon already in progress for " + player.getName());
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Summon already in progress");
             }
             return;
         }
 
         // Rate limiting check
         long currentTime = System.currentTimeMillis();
-        if (lastSummonCheck.containsKey(playerId)) {
-            long lastCheck = lastSummonCheck.get(playerId);
+        if (lastSummonAttempt.containsKey(playerId)) {
+            long lastCheck = lastSummonAttempt.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                    plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited boar summon for " + player.getName());
                 }
                 return;
             }
         }
-        lastSummonCheck.put(playerId, currentTime);
+        lastSummonAttempt.put(playerId, currentTime);
 
         // Check if player has the skill
         if (!isPurchased(playerId, BOAR_SUMMON_ID)) {
-            player.sendMessage(ChatColor.RED + "You haven't learned to summon boars yet!");
+            ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon boars yet!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks boar summon skill");
+            }
             return;
         }
 
         // Check summon type limit
         if (!canAddSummonType(playerId, BOAR_SUMMON_ID)) {
-            player.sendMessage(ChatColor.RED + "You can only have 2 types of summons at once!");
+            ChatNotificationUtils.send(player, ChatColor.RED + "You can only have 2 types of summons at once!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add boar - summon type limit reached");
+            }
             return;
         }
 
         // Check if boar is already summoned
         if (hasActiveSummon(playerId, playerBoar)) {
-            player.sendMessage(ChatColor.YELLOW + "You already have a boar summoned!");
+            ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have a boar summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Boar already active");
+            }
             return;
         }
 
         // Check cooldown
         if (isOnCooldown(playerId, boarRespawnCooldowns, BOAR_SUMMON_COOLDOWN)) {
             long timeLeft = (boarRespawnCooldowns.get(playerId) + BOAR_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
-            player.sendMessage(ChatColor.RED + "Boar summon on cooldown (" + timeLeft + "s)");
+            ChatNotificationUtils.send(player, ChatColor.RED + "Boar summon on cooldown (" + timeLeft + "s)");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Boar summon on cooldown: " + timeLeft + "s left");
+            }
             return;
         }
 
@@ -711,7 +755,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         } catch (Exception e) {
             plugin.getLogger().severe("Error spawning boar: " + e.getMessage());
             e.printStackTrace();
-            player.sendMessage(ChatColor.RED + "Error summoning boar: " + e.getMessage());
+            ChatNotificationUtils.send(player, ChatColor.RED + "Error summoning boar: " + e.getMessage());
         } finally {
             // Clear summon in progress flag
             summonInProgress.put(playerId, false);
@@ -725,49 +769,65 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void summonBears(Player player) {
         UUID playerId = player.getUniqueId();
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] summonBears called for " + player.getName());
+        }
+
         // Check if summon is already in progress to prevent duplicates
         if (summonInProgress.getOrDefault(playerId, false)) {
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("Summon already in progress for " + player.getName());
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Summon already in progress");
             }
             return;
         }
 
         // Rate limiting check
         long currentTime = System.currentTimeMillis();
-        if (lastSummonCheck.containsKey(playerId)) {
-            long lastCheck = lastSummonCheck.get(playerId);
+        if (lastSummonAttempt.containsKey(playerId)) {
+            long lastCheck = lastSummonAttempt.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                    plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited bear summon for " + player.getName());
                 }
                 return;
             }
         }
-        lastSummonCheck.put(playerId, currentTime);
+        lastSummonAttempt.put(playerId, currentTime);
 
         // Check if player has the skill
         if (!isPurchased(playerId, BEAR_SUMMON_ID)) {
-            player.sendMessage(ChatColor.RED + "You haven't learned to summon bears yet!");
+            ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon bears yet!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks bear summon skill");
+            }
             return;
         }
 
         // Check summon type limit
         if (!canAddSummonType(playerId, BEAR_SUMMON_ID)) {
-            player.sendMessage(ChatColor.RED + "You can only have 2 types of summons at once!");
+            ChatNotificationUtils.send(player, ChatColor.RED + "You can only have 2 types of summons at once!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add bear - summon type limit reached");
+            }
             return;
         }
 
         // Check if bear is already summoned
         if (hasActiveSummon(playerId, playerBear)) {
-            player.sendMessage(ChatColor.YELLOW + "You already have a bear summoned!");
+            ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have a bear summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Bear already active");
+            }
             return;
         }
 
         // Check cooldown
         if (isOnCooldown(playerId, bearRespawnCooldowns, BEAR_SUMMON_COOLDOWN)) {
             long timeLeft = (bearRespawnCooldowns.get(playerId) + BEAR_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
-            player.sendMessage(ChatColor.RED + "Bear summon on cooldown (" + timeLeft + "s)");
+            ChatNotificationUtils.send(player, ChatColor.RED + "Bear summon on cooldown (" + timeLeft + "s)");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Bear summon on cooldown: " + timeLeft + "s left");
+            }
             return;
         }
 
@@ -849,7 +909,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         } catch (Exception e) {
             plugin.getLogger().severe("Error spawning bear: " + e.getMessage());
             e.printStackTrace();
-            player.sendMessage(ChatColor.RED + "Error summoning bear: " + e.getMessage());
+            ChatNotificationUtils.send(player, ChatColor.RED + "Error summoning bear: " + e.getMessage());
         } finally {
             // Clear summon in progress flag
             summonInProgress.put(playerId, false);
@@ -905,7 +965,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 removeSummonType(player, WOLF_SUMMON_ID);
             }
             
-            player.sendMessage(ChatColor.RED + "Some of your summons have been removed because you exceeded the limit.");
+            ChatNotificationUtils.send(player, ChatColor.RED + "Some of your summons have been removed because you exceeded the limit.");
         }
         
         // Update all summon name tags to ensure they're correct
@@ -1044,6 +1104,15 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         if (hasActiveSummon(playerId, playerBoar)) currentTypes++;
         if (hasActiveSummon(playerId, playerBear)) currentTypes++;
         
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Purchased skills: "
+                    + plugin.getSkillTreeManager().getPurchasedSkills(playerId));
+            plugin.getLogger().info("[BEASTMASTER DEBUG] shouldHaveWolf=" + shouldHaveWolf
+                    + " shouldHaveBoar=" + shouldHaveBoar
+                    + " shouldHaveBear=" + shouldHaveBear
+                    + " currentTypes=" + currentTypes);
+        }
+
         // Summon missing creatures (respecting the 2-type limit)
         if (shouldHaveWolf && currentTypes < 2) {
             summonWolves(player);
@@ -1088,9 +1157,9 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             
             // Notify player when guardian activates/deactivates
             if (isActive && !wasActive) {
-                player.sendMessage(ChatColor.GOLD + "Bear Guardian activated! +10% defense for you and summons!");
+                ChatNotificationUtils.send(player, ChatColor.GOLD + "Bear Guardian activated! +10% defense for you and summons!");
             } else if (!isActive && wasActive) {
-                player.sendMessage(ChatColor.YELLOW + "Bear Guardian deactivated.");
+                ChatNotificationUtils.send(player, ChatColor.YELLOW + "Bear Guardian deactivated.");
             }
         }
     }
@@ -1328,6 +1397,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         // Clear anti-duplication tracking
         summonInProgress.remove(playerId);
         lastSummonCheck.remove(playerId);
+        lastSummonAttempt.remove(playerId);
     }
     
     /**
@@ -1767,6 +1837,10 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
      */
     @Override
     public void handleEntityDamageByEntity(EntityDamageByEntityEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
+        if (event.isCancelled()) {
+            return;
+        }
+
         // Get the damager and the entity being damaged
         Entity damager = event.getDamager();
         Entity entity = event.getEntity();
@@ -1803,7 +1877,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 }
                 
                 if (debuggingFlag == 1) {
-                    player.sendMessage(ChatColor.RED + "Your " + critSource + " landed a critical hit!");
+                    ChatNotificationUtils.send(player, ChatColor.RED + "Your " + critSource + " landed a critical hit!");
                 }
             }
             
@@ -1819,7 +1893,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 player.setHealth(newHealth);
                 
                 if (debuggingFlag == 1 && healAmount > 0) {
-                    player.sendMessage(ChatColor.GREEN + "Healed for " + String.format("%.1f", healAmount) + " HP from wolf damage!");
+                    ChatNotificationUtils.send(player, ChatColor.GREEN + "Healed for " + String.format("%.1f", healAmount) + " HP from wolf damage!");
                 }
             }
 
@@ -1874,7 +1948,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             event.setDamage(newDamage);
             
             if (debuggingFlag == 1) {
-                player.sendMessage(ChatColor.GREEN + "Your bear guardian reduced damage by 20%!");
+                ChatNotificationUtils.send(player, ChatColor.GREEN + "Your bear guardian reduced damage by 20%!");
             }
         }
     }
@@ -1899,7 +1973,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                         .put(killer.getUniqueId(), System.currentTimeMillis() + 3000); // 3 seconds
                     
                     if (debuggingFlag == 1) {
-                        p.sendMessage(ChatColor.RED + "Your boar enters a frenzy! +7% attack speed for 3s!");
+                        ChatNotificationUtils.send(p, ChatColor.RED + "Your boar enters a frenzy! +7% attack speed for 3s!");
                     }
                 }
             }
@@ -1910,7 +1984,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             // Handle wolf death
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + "'s wolf died");
-                player.sendMessage(ChatColor.RED + "Your wolf has died!");
+                ChatNotificationUtils.send(player, ChatColor.RED + "Your wolf has died!");
             }
             
             // Remove the wolf from tracking
@@ -1930,7 +2004,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                             if (!hasActiveSummon(playerId, playerWolf)) {
                                 summonWolves(p);
                                 if (debuggingFlag == 1) {
-                                    p.sendMessage(ChatColor.GREEN + "Your wolf has been automatically resummoned!");
+                                    ChatNotificationUtils.send(p, ChatColor.GREEN + "Your wolf has been automatically resummoned!");
                                 }
                             }
                         } else {
@@ -1957,7 +2031,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             // Handle boar death
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + "'s boar died");
-                player.sendMessage(ChatColor.RED + "Your boar has died!");
+                ChatNotificationUtils.send(player, ChatColor.RED + "Your boar has died!");
             }
             
             // Remove the boar from tracking
@@ -1977,7 +2051,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                             if (!hasActiveSummon(playerId, playerBoar)) {
                                 summonBoars(p);
                                 if (debuggingFlag == 1) {
-                                    p.sendMessage(ChatColor.GREEN + "Your boar has been automatically resummoned!");
+                                    ChatNotificationUtils.send(p, ChatColor.GREEN + "Your boar has been automatically resummoned!");
                                 }
                             }
                         } else {
@@ -1995,7 +2069,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             // Handle bear death
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + "'s bear died");
-                player.sendMessage(ChatColor.RED + "Your bear has died!");
+                ChatNotificationUtils.send(player, ChatColor.RED + "Your bear has died!");
             }
             
             // Remove the bear from tracking
@@ -2018,7 +2092,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
                             if (!hasActiveSummon(playerId, playerBear)) {
                                 summonBears(p);
                                 if (debuggingFlag == 1) {
-                                    p.sendMessage(ChatColor.GREEN + "Your bear has been automatically resummoned!");
+                                    ChatNotificationUtils.send(p, ChatColor.GREEN + "Your bear has been automatically resummoned!");
                                 }
                             }
                         } else {
@@ -2060,7 +2134,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         
         // Get player's ascendancy
         String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
-        if (!"Beastmaster".equals(ascendancy)) {
+        if (!"Beastmaster".equalsIgnoreCase(ascendancy)) {
             return;
         }
         
@@ -2091,7 +2165,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         
         // Check if player is a Beastmaster
         String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
-        if (!"Beastmaster".equals(ascendancy)) {
+        if (!"Beastmaster".equalsIgnoreCase(ascendancy)) {
             return;
         }
         
