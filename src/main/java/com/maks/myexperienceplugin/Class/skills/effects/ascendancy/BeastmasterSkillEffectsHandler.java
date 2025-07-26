@@ -655,6 +655,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add boar - summon type limit reached");
             }
+
             return;
         }
 
@@ -664,6 +665,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Boar already active");
             }
+
             return;
         }
 
@@ -809,6 +811,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add bear - summon type limit reached");
             }
+
             return;
         }
 
