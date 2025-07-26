@@ -49,7 +49,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     private static final long SUMMON_CHECK_DELAY = 60L; // 3 seconds delay for summon checks
     private static final long RATE_LIMIT_DELAY = 100L; // 0.1 second rate limiting for summon checks
     private static final long AUTO_RESUMMON_DELAY = 3000L; // 3 seconds delay for auto-resummon
-    private static final int debuggingFlag = 0; // Set to 1 for debug mode
+    // Enable debug logging to help diagnose summon issues
+    private static final int debuggingFlag = 1; // Set to 0 to disable
 
     // Track active summons by player
     private final Map<UUID, UUID> playerWolf = new ConcurrentHashMap<>();
@@ -1045,6 +1046,15 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         if (hasActiveSummon(playerId, playerBoar)) currentTypes++;
         if (hasActiveSummon(playerId, playerBear)) currentTypes++;
         
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Purchased skills: "
+                    + plugin.getSkillTreeManager().getPurchasedSkills(playerId));
+            plugin.getLogger().info("[BEASTMASTER DEBUG] shouldHaveWolf=" + shouldHaveWolf
+                    + " shouldHaveBoar=" + shouldHaveBoar
+                    + " shouldHaveBear=" + shouldHaveBear
+                    + " currentTypes=" + currentTypes);
+        }
+
         // Summon missing creatures (respecting the 2-type limit)
         if (shouldHaveWolf && currentTypes < 2) {
             summonWolves(player);
