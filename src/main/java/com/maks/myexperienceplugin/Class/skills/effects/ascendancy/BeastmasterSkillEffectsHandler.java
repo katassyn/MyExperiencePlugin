@@ -655,7 +655,6 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add boar - summon type limit reached");
             }
-
             return;
         }
 
@@ -1482,7 +1481,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         
         // Set attributes
         double baseHealth = 50.0;  // Changed from 20.0 to match requirements (balanced companion)
-        double baseDamage = 4.0;
+        // Base damage for a balanced companion
+        double baseDamage = 50.0;
         
         UUID playerId = player.getUniqueId();
         
@@ -1536,7 +1536,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         }
         
         double baseHealth = 20.0;
-        double baseDamage = 6.0;
+        // Boar is a high damage companion
+        double baseDamage = 80.0;
         
         UUID playerId = player.getUniqueId();
         
@@ -1591,7 +1592,8 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         }
         
         double baseHealth = 80.0;
-        double baseDamage = 3.0;
+        // Bear is the tanky companion
+        double baseDamage = 20.0;
         
         UUID playerId = player.getUniqueId();
         
