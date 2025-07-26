@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -94,42 +95,42 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                 stats.addDefenseBonus(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ARCANE PROTECTOR SKILL 1: Added " + (5 * purchaseCount) + "% defense bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 1: +" + (5 * purchaseCount) + "% defense (Arcane Shield)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 1: +" + (5 * purchaseCount) + "% defense (Arcane Shield)");
                 }
                 break;
             case 2: // Arcane Warding
                 // Magic resistance handled dynamically
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ARCANE PROTECTOR SKILL 2: Will apply Arcane Warding dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 2: Arcane Warding enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 2: Arcane Warding enabled");
                 }
                 break;
             case 3: // Protective Aura
                 // Aura effects handled dynamically
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ARCANE PROTECTOR SKILL 3: Will apply Protective Aura dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 3: Protective Aura enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 3: Protective Aura enabled");
                 }
                 break;
             case 4: // Mana Barrier
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ARCANE PROTECTOR SKILL 4: Will apply Mana Barrier dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 4: Mana Barrier enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 4: Mana Barrier enabled");
                 }
                 break;
             case 7: // Arcane Reflection
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ARCANE PROTECTOR SKILL 7: Will apply Arcane Reflection dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 7: Arcane Reflection enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 7: Arcane Reflection enabled");
                 }
                 break;
             case 8: // Arcane Armor
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("ARCANE PROTECTOR SKILL 8: Will apply Arcane Armor dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 8: Arcane Armor enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 8: Arcane Armor enabled");
                 }
                 break;
             case 11: // Spell Absorption

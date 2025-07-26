@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -202,7 +203,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 1: Will add 3% defense in grassy areas");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 1: +3% defense in grassy areas enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 1: +3% defense in grassy areas enabled");
                 }
                 break;
 
@@ -210,7 +211,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDeathEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 2: Will heal 1 hp after killing an enemy");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 2: Heal 1 HP after killing enemy enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 2: Heal 1 HP after killing enemy enabled");
                 }
                 break;
 
@@ -218,7 +219,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 3: Will add 5% resistance to environmental damage");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 3: +5% resistance to environmental damage enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 3: +5% resistance to environmental damage enabled");
                 }
                 break;
 
@@ -229,7 +230,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 stats.addMaxHealth(hpBonus);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 4: Added " + hpBonus + " HP (skill level " + purchaseCount + "/3)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 4: +" + hpBonus + " HP (level " + purchaseCount + "/3)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 4: +" + hpBonus + " HP (level " + purchaseCount + "/3)");
                 }
                 break;
 
@@ -237,7 +238,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled dynamically in the periodic effects
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 5: Will add 10% defense after standing still for 3 seconds");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 5: +10% defense after standing still for 3s enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 5: +10% defense after standing still for 3s enabled");
                 }
                 break;
 
@@ -245,7 +246,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled dynamically during gameplay
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 6: Will add 5% luck when below 50% hp");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 6: +5% luck when HP < 50% enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 6: +5% luck when HP < 50% enabled");
                 }
                 break;
 
@@ -253,7 +254,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDamageEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 7: Will add 5% defense for 3 seconds when hp<50%");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 7: +5% defense for 3s when HP < 50% enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 7: +5% defense for 3s when HP < 50% enabled");
                 }
                 break;
 
@@ -261,7 +262,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 // This is handled in the EntityDamageByEntityEvent
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN SKILL 8: Will root enemies every 10 seconds");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 8: Root enemies every 10s enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] EARTHWARDEN SKILL 8: Root enemies every 10s enabled");
                 }
                 break;
 
@@ -527,7 +528,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
                 secondChanceCooldowns.put(playerId, System.currentTimeMillis());
                 immunityEndTimes.put(playerId, System.currentTimeMillis() + 2000); // 2 seconds
 
-                player.sendMessage(ChatColor.GOLD + "Your Second Chance has saved you from death!");
+                ChatNotificationUtils.send(player, ChatColor.GOLD + "Your Second Chance has saved you from death!");
                 ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Second Chance activated!");
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("EARTHWARDEN: Applied Second Chance for " + player.getName());
@@ -574,7 +575,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     /**
      * Handle entity damage events
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.isCancelled()) {
             return;
@@ -676,7 +677,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     /**
      * Handle entity damage by entity events
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) {
             return;
