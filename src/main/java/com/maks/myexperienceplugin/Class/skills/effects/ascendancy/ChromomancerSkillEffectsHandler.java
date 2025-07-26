@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -76,63 +77,63 @@ public class ChromomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 stats.addSpellDamageBonus(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 1: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 1: +" + (5 * purchaseCount) + " spell damage (Time Mastery)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 1: +" + (5 * purchaseCount) + " spell damage (Time Mastery)");
                 }
                 break;
             case 2: // Haste Mastery
                 stats.addMovementSpeedBonus(3 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 2: Added " + (3 * purchaseCount) + "% movement speed bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 2: +" + (3 * purchaseCount) + "% movement speed (Haste Mastery)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 2: +" + (3 * purchaseCount) + "% movement speed (Haste Mastery)");
                 }
                 break;
             case 3: // Temporal Control
                 // Effect applied in damage handler - increases duration of time effects
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 3: Will apply Temporal Control dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 3: Temporal Control enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 3: Temporal Control enabled");
                 }
                 break;
             case 4: // Time Slow
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 4: Will apply Time Slow dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 4: Time Slow enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 4: Time Slow enabled");
                 }
                 break;
             case 5: // Swift Casting
                 // Effect applied in damage handler - reduces spell casting time
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 5: Will apply Swift Casting dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 5: Swift Casting enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 5: Swift Casting enabled");
                 }
                 break;
             case 6: // Precognition
                 stats.addEvadeChance(15);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 6: Added 15% evade chance");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 6: +15% evade chance (Precognition)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 6: +15% evade chance (Precognition)");
                 }
                 break;
             case 7: // Temporal Shift
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 7: Will apply Temporal Shift dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 7: Temporal Shift enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 7: Temporal Shift enabled");
                 }
                 break;
             case 8: // Accelerate
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 8: Will apply Accelerate dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 8: Accelerate enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 8: Accelerate enabled");
                 }
                 break;
             case 9: // Time Flux
                 // Effect applied in damage handler
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("CHRONOMANCER SKILL 9: Will apply Time Flux dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 9: Time Flux enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] CHRONOMANCER SKILL 9: Time Flux enabled");
                 }
                 break;
             case 10: // Time Loop

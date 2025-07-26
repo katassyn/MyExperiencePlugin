@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -108,7 +109,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     stats.multiplyDamageMultiplier(RAGE_DAMAGE_MULTIPLIER);
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("BERSERKER SKILL 1: Applied 200% damage multiplier (3x total) for no chestplate");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 1: +200% damage (no chestplate)");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 1: +200% damage (no chestplate)");
                     }
                 }
                 break;
@@ -116,35 +117,35 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 2: Will apply health-based damage bonus dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 2: +10% damage per 10% HP lost enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 2: +10% damage per 10% HP lost enabled");
                 }
                 break;
             case 3: // While ur in combat ( 10s after attack ) every 30s u gain +5% dmg
                 // This is handled via periodic task
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 3: Will apply combat momentum buff periodically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 3: +5% damage every 30s in combat enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 3: +5% damage every 30s in combat enabled");
                 }
                 break;
             case 4: // For every killed mob u gain +1% ms and +1% dmg for 30s ( max 10 stacks )
                 // This is handled via kill tracking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 4: Will apply kill frenzy dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 4: +1% damage/speed per kill (max 10 stacks) enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 4: +1% damage/speed per kill (max 10 stacks) enabled");
                 }
                 break;
             case 5: // For every hit u gain +1% dmg for 5s ( max 5 stacks )
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 5: Will apply battle rage dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 5: +1% damage per hit (max 5 stacks) enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 5: +1% damage per hit (max 5 stacks) enabled");
                 }
                 break;
             case 6: // +5% dmg
                 stats.addDamageMultiplier(0.05 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 6: Added " + (0.05 * purchaseCount) + " to damage multiplier");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 6: +5% damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 6: +5% damage");
                 }
                 break;
             case 7: // -10% hp, +10% dmg (1/2)
@@ -152,7 +153,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.addDamageMultiplier(0.10 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 7: Added -10% HP, +10% damage multiplier (level " + purchaseCount + "/2)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 7: -10% HP, +10% damage (level " + purchaseCount + "/2)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 7: -10% HP, +10% damage (level " + purchaseCount + "/2)");
                 }
                 break;
             case 8: // U gain -5 armor and +10% crit
@@ -160,7 +161,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.addCriticalChance(10);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("BERSERKER SKILL 8: Added -5 armor, +10% critical chance");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 8: -5 armor, +10% critical chance");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] BERSERKER SKILL 8: -5 armor, +10% critical chance");
                 }
                 break;
             case 9: // Ur crit deals +15% more dmg
@@ -330,7 +331,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Death Defiance buffs expired for " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Death Defiance expired");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Death Defiance expired");
                 }
             }, 200); // 10 seconds = 200 ticks
 
@@ -342,7 +343,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Death Defiance cooldown ended for " + player.getName());
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Death Defiance cooldown ended");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Death Defiance cooldown ended");
                     }
                 }
             }, DEATH_DEFIANCE_COOLDOWN / 50); // Convert ms to ticks
@@ -350,7 +351,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Death Defiance activated for " + player.getName() +
                         " at " + healthPercent + "% health");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Death Defiance activated!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Death Defiance activated!");
             }
 
             return;
@@ -461,7 +462,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     plugin.getLogger().info("→ Applied bleeding (25% base damage per second for 5s)");
                     plugin.getLogger().info("Applied bleeding to " + target.getType() +
                             " from critical hit by " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Bleeding applied to target");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Bleeding applied to target");
                 }
             }
             }
@@ -469,7 +470,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Critical hit by " + player.getName() +
                         ": " + originalDamage + " → " + critDamage + " damage");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Critical hit! " +
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Critical hit! " +
                         String.format("%.1f", originalDamage) + " → " + String.format("%.1f", critDamage) + " dmg");
             }
         }
@@ -510,7 +511,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Battle Rage stacks expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Battle Rage stacks expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Battle Rage stacks expired");
                         }
                     }
                 }
@@ -526,12 +527,12 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Battle Rage max stacks reached for " + player.getName() +
                             " (+5% damage)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Battle Rage: 5/5 stacks (+5% dmg)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Battle Rage: 5/5 stacks (+5% dmg)");
                 }
             } else if (debuggingFlag == 1) {
                 plugin.getLogger().info("Battle Rage stack added for " + player.getName() +
                         ": " + currentStacks + "/5 stacks");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Battle Rage: " +
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Battle Rage: " +
                         currentStacks + "/5 stacks (+" + currentStacks + "% dmg)");
             }
         }
@@ -579,7 +580,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 plugin.getLogger().info("Target damage stack applied for " + player.getName() +
                         ": " + currentStacks + "/5 stacks, damage " + originalDamage +
                         " → " + bonusDamage);
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Target stacks: " +
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Target stacks: " +
                         currentStacks + "/5 (+" + (currentStacks * 5) + "% dmg)");
             }
         }
@@ -602,7 +603,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Finishing Blow executed by " + player.getName() +
                             " on " + target.getType() + " at " + healthPercent + "% health");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Finishing Blow executed");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Finishing Blow executed");
                 }
             }
         }
@@ -674,7 +675,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Kill Frenzy stacks expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Kill Frenzy stacks expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Kill Frenzy stacks expired");
                         }
                     }
                 }
@@ -685,7 +686,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Kill Frenzy stack added for " + player.getName() +
                         ": " + currentStacks + "/10 stacks");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Kill Frenzy: " +
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Kill Frenzy: " +
                         currentStacks + "/10 stacks (+" + currentStacks + "% dmg/speed)");
             }
         }
@@ -733,7 +734,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Attack Speed Frenzy stacks expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Attack Speed Frenzy stacks expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Attack Speed Frenzy stacks expired");
                         }
                     }
                 }
@@ -744,7 +745,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Attack Speed Frenzy stack added for " + player.getName() +
                         ": " + currentStacks + "/10 stacks");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Attack Speed Frenzy: " +
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Attack Speed Frenzy: " +
                         currentStacks + "/10 stacks (+" + currentStacks + "% speed)");
             }
         }
@@ -771,7 +772,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Bloodthirst stack " + stackCount + " activated for " +
                             player.getName() + " after " + killCount + " kills");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Bloodthirst " + stackCount +
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Bloodthirst " + stackCount +
                             " activated (+" + (30 * stackCount) + "% dmg)");
                 }
             }
@@ -800,7 +801,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                         if (debuggingFlag == 1) {
                             plugin.getLogger().info("Trophy head buff expired for " + player.getName());
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Trophy head buff expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Trophy head buff expired");
                         }
                     }
                 }, 12000); // 10 minutes = 12000 ticks
@@ -809,7 +810,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     plugin.getLogger().info("→ Collected trophy head (+10% damage for 10 minutes)");
                     plugin.getLogger().info("Trophy head collected by " + player.getName() +
                             " from " + event.getEntity().getType());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Trophy head collected! +10% damage for 10min");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Trophy head collected! +10% damage for 10min");
                 }
             }
             }
@@ -851,7 +852,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Combat Momentum stack " + stacks + " applied to " +
                                 player.getName() + " (+5% damage)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Combat Momentum " + stacks +
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Combat Momentum " + stacks +
                                 " activated (+" + (5 * stacks) + "% total dmg)");
                     }
                 }
@@ -871,7 +872,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Combat Momentum stacks lost for " + player.getName() +
                             " (no longer in combat)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Combat Momentum expired");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Combat Momentum expired");
                 }
             }
         }
@@ -920,7 +921,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                     if (debuggingFlag == 1 && player.isOnline()) {
                         plugin.getLogger().info("Bleeding effect expired on " + target.getType());
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Bleeding effect expired");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Bleeding effect expired");
                     }
                 }
             }

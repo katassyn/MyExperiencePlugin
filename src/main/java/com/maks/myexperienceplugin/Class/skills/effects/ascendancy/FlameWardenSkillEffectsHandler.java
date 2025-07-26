@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -119,115 +120,115 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 1: Will apply ignite chance dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 1: 15% chance to ignite enemies enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 1: 15% chance to ignite enemies enabled");
                 }
                 break;
             case 2: // +10% damage against burning enemies (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 2: Will apply burning damage bonus dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 2: +10% damage vs burning enemies enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 2: +10% damage vs burning enemies enabled");
                 }
                 break;
             case 3: // Gain fire resistance potion effect infinity
                 // Apply fire resistance potion effect (infinite duration, hidden)
                 player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
-                player.sendMessage(ChatColor.GOLD + "You feel protected from fire! (Fire Resistance effect applied)");
+                ChatNotificationUtils.send(player, ChatColor.GOLD + "You feel protected from fire! (Fire Resistance effect applied)");
                 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 3: Applied hidden fire resistance effect to " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 3: Hidden Fire Resistance effect enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 3: Hidden Fire Resistance effect enabled");
                 }
                 break;
             case 4: // When hp<50%, your attacks have +10% chance to ignite enemies
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 4: Will apply desperate ignition dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 4: +10% ignite chance when HP < 50% enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 4: +10% ignite chance when HP < 50% enabled");
                 }
                 break;
             case 5: // Burning enemies deal -15% damage to you (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 5: Will apply flame shield dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 5: -15% damage from burning enemies enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 5: -15% damage from burning enemies enabled");
                 }
                 break;
             case 6: // Taking damage has 20% chance to trigger a fire nova dealing 30 damage to nearby enemies and ignite them
                 // This is handled dynamically when taking damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 6: Will apply fire nova dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 6: 20% chance fire nova on damage taken (30 dmg) enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 6: 20% chance fire nova on damage taken (30 dmg) enabled");
                 }
                 break;
             case 7: // +5% damage for each burning enemy within 10 blocks (max +15%)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 7: Will apply burning aura dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 7: +5% damage per burning enemy (max +15%) enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 7: +5% damage per burning enemy (max +15%) enabled");
                 }
                 break;
             case 8: // Ignited enemies spread burn to nearby enemies within 3 blocks (30% chance)
                 // This is handled dynamically when enemies are ignited
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 8: Will apply spreading flames dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 8: 30% chance to spread flames to nearby enemies enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 8: 30% chance to spread flames to nearby enemies enabled");
                 }
                 break;
             case 9: // Critical hits deal additional 5 fire damage over 3 seconds (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 9: Will apply critical burn dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 9: Critical hits deal +5 fire damage over 3s enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 9: Critical hits deal +5 fire damage over 3s enabled");
                 }
                 break;
             case 10: // When surrounded by 3+ enemies, gain +15% defense
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 10: Will apply surrounded defense dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 10: +15% defense when surrounded by 3+ enemies enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 10: +15% defense when surrounded by 3+ enemies enabled");
                 }
                 break;
             case 11: // Attacks deal splash damage (20% of damage) to enemies within 2 blocks of target (1/2)
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 11: Will apply splash damage dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 11: 20% splash damage to enemies within 2 blocks enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 11: 20% splash damage to enemies within 2 blocks enabled");
                 }
                 break;
             case 12: // After killing a burning enemy, gain +5% damage and movement speed for 5 seconds (stacks up to 3 times)
                 // This is handled dynamically when killing enemies
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 12: Will apply burning momentum dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 12: +5% damage/speed per burning enemy kill (max 3 stacks) enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 12: +5% damage/speed per burning enemy kill (max 3 stacks) enabled");
                 }
                 break;
             case 13: // Standing in fire heals you instead of dealing damage
                 // This is handled dynamically when taking fire damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 13: Will apply fire healing dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 13: Fire heals instead of damages enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 13: Fire heals instead of damages enabled");
                 }
                 break;
             case 14: // Every third attack on the same enemy deals +40% damage as fire damage
                 // This is handled dynamically in combat
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 14: Will apply third strike dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 14: Every 3rd attack on same enemy +40% fire damage enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 14: Every 3rd attack on same enemy +40% fire damage enabled");
                 }
                 break;
             case 15: // When hp<30%, ignite all enemies within 5 blocks (30 second cooldown)
                 // This is handled dynamically when health is low
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 15: Will apply desperate nova dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 15: Ignite all enemies within 5 blocks when HP < 30% enabled (30s cd)");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 15: Ignite all enemies within 5 blocks when HP < 30% enabled (30s cd)");
                 }
                 break;
             case 16: // +15% chance for burning duration to extend by 2 seconds whenever the enemy takes damage
                 // This is handled dynamically when enemies take damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 16: Will apply extended burn dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 16: 15% chance to extend burn duration by 2s enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] FLAMEWARDEN SKILL 16: 15% chance to extend burn duration by 2s enabled");
                 }
                 break;
             case 17: // While you have 3+ burning enemies nearby, gain +20% damage and +10% defense
@@ -452,7 +453,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             double damageBonus = Math.min(BURNING_AURA_MAX, burningEnemiesCount * BURNING_AURA_BONUS);
 
             // Send chat message with burning enemies count
-            player.sendMessage(ChatColor.GOLD + "[Burning Aura] " + burningEnemiesCount + " burning enemies nearby");
+            ChatNotificationUtils.send(player, ChatColor.GOLD + "[Burning Aura] " + burningEnemiesCount + " burning enemies nearby");
 
             if (damageBonus > 0) {
                 double originalDamage = event.getDamage();
@@ -471,7 +472,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             int burningEnemiesCount = countBurningEnemiesNearby(player, 10);
             
             // Send chat message with burning enemies count
-            player.sendMessage(ChatColor.GOLD + "[Burning Presence] " + burningEnemiesCount + " burning enemies nearby" + 
+            ChatNotificationUtils.send(player, ChatColor.GOLD + "[Burning Presence] " + burningEnemiesCount + " burning enemies nearby" +
                     (burningEnemiesCount >= 3 ? " - ACTIVE!" : " - Need 3+ for activation"));
 
             if (burningEnemiesCount >= 3) {
@@ -741,7 +742,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Burning Momentum stacks expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Burning Momentum stacks expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Burning Momentum stacks expired");
                         }
                     }
                 }
@@ -752,7 +753,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Burning Momentum stack added for " + player.getName() + 
                         ": " + currentStacks + "/" + BURNING_MOMENTUM_MAX_STACKS + " stacks");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Burning Momentum: " + 
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Burning Momentum: " + 
                         currentStacks + "/" + BURNING_MOMENTUM_MAX_STACKS + " stacks (+" + 
                         (currentStacks * BURNING_MOMENTUM_BONUS * 100) + "% dmg/speed)");
             }
@@ -953,7 +954,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                     if (debuggingFlag == 1 && player.isOnline()) {
                         plugin.getLogger().info("Burning effect expired on " + target.getType());
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Burning effect expired");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Burning effect expired");
                     }
                 }
             }
@@ -1174,7 +1175,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // Show notification to player when they respawn
                 if (player.isOnline()) {
                     ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "☀ Phoenix Rebirth Activated! ☀");
-                    player.sendMessage(ChatColor.GOLD + "You exploded in a fiery rebirth! (5 minute cooldown)");
+                    ChatNotificationUtils.send(player, ChatColor.GOLD + "You exploded in a fiery rebirth! (5 minute cooldown)");
                 }
 
                 if (debuggingFlag == 1) {

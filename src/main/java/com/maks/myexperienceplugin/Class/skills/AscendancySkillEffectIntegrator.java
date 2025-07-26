@@ -155,7 +155,7 @@ public class AscendancySkillEffectIntegrator implements Listener {
 
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
-                        if ("Beastmaster".equals(ascendancy)) {
+                        if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
                             handler.checkAndSummonCreatures(player);
                         }
                     }
@@ -304,7 +304,7 @@ public class AscendancySkillEffectIntegrator implements Listener {
         String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
 
         // Handle summon commands for Beastmaster
-        if ("Beastmaster".equals(ascendancy) && label.equalsIgnoreCase("summon")) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy) && label.equalsIgnoreCase("summon")) {
             if (args.length < 1) {
                 player.sendMessage("§cUsage: /summon <wolf|boar|bear>");
                 return true;
