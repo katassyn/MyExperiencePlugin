@@ -485,6 +485,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         // Check if player has the skill
         if (!isPurchased(playerId, WOLF_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon wolves yet!");
+
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks wolf summon skill");
             }
@@ -651,6 +652,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add boar - summon type limit reached");
             }
+
             return;
         }
 
@@ -660,6 +662,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Boar already active");
             }
+
             return;
         }
 
@@ -805,6 +808,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add bear - summon type limit reached");
             }
+
             return;
         }
 
