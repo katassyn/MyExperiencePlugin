@@ -38,7 +38,7 @@ public class SkillPurchaseManager {
     private static final long PURCHASE_COOLDOWN = 200; // 2 seconds
 
     // Debugging
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     public SkillPurchaseManager(MyExperiencePlugin plugin,
                                 SkillTreeManager skillTreeManager,

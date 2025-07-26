@@ -20,7 +20,7 @@ public class AscendancySkillTreeGUI {
     private final SkillTreeManager skillTreeManager;
 
     // Debugging flag
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     // Constants for GUI layout
     private static final int INVENTORY_SIZE = 54; // 6 rows

@@ -22,7 +22,7 @@ public class PlayerSkillEffectsListener implements Listener {
     private final MyExperiencePlugin plugin;
     private final SkillTreeManager skillTreeManager;
     private final SkillEffectsHandler skillEffectsHandler;
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     public PlayerSkillEffectsListener(MyExperiencePlugin plugin,
                                       SkillTreeManager skillTreeManager,

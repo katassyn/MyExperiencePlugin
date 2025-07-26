@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.attribute.Attribute;
 
 public class AlchemyResetCommand implements CommandExecutor {
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

@@ -12,7 +12,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
  */
 public abstract class BaseSkillEffectsHandler {
     protected final MyExperiencePlugin plugin;
-    protected final int debuggingFlag = 1;
+    protected final int debuggingFlag = 0;
 
     public BaseSkillEffectsHandler(MyExperiencePlugin plugin) {
         this.plugin = plugin;

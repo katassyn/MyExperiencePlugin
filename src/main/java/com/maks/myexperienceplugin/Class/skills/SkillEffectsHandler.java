@@ -6,6 +6,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.DragonKnightSkillEffects
 import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.SpellWeaverSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
@@ -36,7 +37,7 @@ public class SkillEffectsHandler implements Listener {
     private final SkillTreeManager skillTreeManager;
     private final Random random = new Random();
     // Debugging flag - set to 0 after testing
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     // Cached player stats
     private final Map<UUID, PlayerSkillStats> playerStatsCache = new ConcurrentHashMap<>();
@@ -62,6 +63,7 @@ public class SkillEffectsHandler implements Listener {
 
     private final SpellWeaverSkillEffectsHandler spellWeaverHandler;
     private final ScaleGuardianSkillEffectsHandler scaleGuardianHandler;
+    private final BeastmasterSkillEffectsHandler beastmasterHandler;
 
     public SkillEffectsHandler(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager) {
         this.plugin = plugin;
@@ -72,12 +74,14 @@ public class SkillEffectsHandler implements Listener {
         this.dragonKnightHandler = new DragonKnightSkillEffectsHandler(plugin);
         this.spellWeaverHandler = new SpellWeaverSkillEffectsHandler(plugin);
         this.scaleGuardianHandler = new ScaleGuardianSkillEffectsHandler(plugin);
+        this.beastmasterHandler = new BeastmasterSkillEffectsHandler(plugin);
 
         // Register handlers in the map
         classHandlers.put("Ranger", rangerHandler);
         classHandlers.put("DragonKnight", dragonKnightHandler);
         classHandlers.put("SpellWeaver", spellWeaverHandler);
         classHandlers.put("ScaleGuardian", scaleGuardianHandler);
+        classHandlers.put("Beastmaster", beastmasterHandler);
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("SkillEffectsHandler initialized with handlers for: " +
@@ -89,7 +93,9 @@ public class SkillEffectsHandler implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
+        UUID playerId = player.getUniqueId();
+        String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
 
         // Completely recalculate all stats on join
         recalculateAllStats(player);
@@ -98,9 +104,20 @@ public class SkillEffectsHandler implements Listener {
         if ("SpellWeaver".equals(playerClass)) {
             spellWeaverHandler.initializePlayerSpellCooldowns(player);
         }
+        
+        // Check and summon creatures for Beastmaster on join
+        if ("Beastmaster".equals(ascendancy)) {
+            // Schedule summon check after a short delay to ensure player is fully loaded
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (player.isOnline()) {
+                    beastmasterHandler.checkAndSummonCreatures(player);
+                }
+            }, 40L); // 2 second delay
+        }
 
         if (debuggingFlag == 1) {
-            // Debug log output
+            plugin.getLogger().info("Player " + player.getName() + " joined with class: " + 
+                playerClass + " and ascendancy: " + ascendancy);
         }
     }
 
@@ -109,6 +126,7 @@ public class SkillEffectsHandler implements Listener {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
         String playerClass = plugin.getClassManager().getPlayerClass(playerId);
+        String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
 
         // Clear player data from cache
         playerStatsCache.remove(playerId);
@@ -118,8 +136,22 @@ public class SkillEffectsHandler implements Listener {
             dragonKnightHandler.clearPlayerData(playerId);
         } else if ("SpellWeaver".equals(playerClass)) {
             spellWeaverHandler.clearPlayerData(playerId);
-        } else if ("ScaleGuardian".equals(plugin.getClassManager().getPlayerAscendancy(playerId))) {
+        } else if ("ScaleGuardian".equals(ascendancy)) {
             scaleGuardianHandler.clearPlayerData(playerId);
+        }
+        
+        // Add Beastmaster cleanup
+        if ("Beastmaster".equals(ascendancy)) {
+            BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
+            if (handler instanceof com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) {
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler beastHandler = 
+                    (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) handler;
+                beastHandler.clearPlayerData(playerId);
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Cleared Beastmaster summons for " + player.getName() + " on logout");
+                }
+            }
         }
 
         if (debuggingFlag == 1) {
@@ -296,6 +328,24 @@ public class SkillEffectsHandler implements Listener {
                 if (Math.abs(originalDamage - reducedDamage) > 0.5) {
                     player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Defense reduced damage: " + 
                         String.format("%.1f", originalDamage) + " → " + String.format("%.1f", reducedDamage));
+                }
+            }
+        }
+        
+        // Check for Beastmaster Bear Guardian
+        if ("Beastmaster".equals(ascendancy)) {
+            BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
+            if (handler != null && handler instanceof BeastmasterSkillEffectsHandler) {
+                BeastmasterSkillEffectsHandler beastHandler = (BeastmasterSkillEffectsHandler) handler;
+                if (beastHandler.isBearGuardianActive(playerId)) {
+                    double originalDamage = event.getDamage();
+                    double reduction = 0.10; // 10% reduction
+                    double reducedDamage = originalDamage * (1 - reduction);
+                    event.setDamage(reducedDamage);
+                    
+                    if (debuggingFlag == 1) {
+                        player.sendMessage(ChatColor.GOLD + "Bear Guardian reduced damage by 10%!");
+                    }
                 }
             }
         }
@@ -956,6 +1006,11 @@ public class SkillEffectsHandler implements Listener {
             }
         }, 20L, 20L);
 
+        // Apply Beastmaster periodic effects every 10 seconds (bear regeneration)
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            beastmasterHandler.applyPeriodicEffects();
+        }, 20L, 200L); // Every 10 seconds
+
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Initialized periodic skill effect tasks");
         }
@@ -1064,6 +1119,10 @@ public class SkillEffectsHandler implements Listener {
                 sgHandler.checkSurroundedHealing(player);
                 sgHandler.checkAllyEffects(player);
                 sgHandler.checkHeavyArmorMastery(player);
+            } else if (handler instanceof BeastmasterSkillEffectsHandler) {
+                BeastmasterSkillEffectsHandler bmHandler = (BeastmasterSkillEffectsHandler) handler;
+                // Check and maintain summons
+                bmHandler.checkAndSummonCreatures(player);
             }
 
             // Add more class-specific periodic effects as needed

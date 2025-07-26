@@ -23,7 +23,7 @@ public class SkillTreeGUIListener implements Listener {
     private final Map<String, Map<Integer, Integer>> nodeSlotMap;
 
     // Debugging flag
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     public SkillTreeGUIListener(MyExperiencePlugin plugin,
                                 SkillTreeManager skillTreeManager,

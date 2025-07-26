@@ -20,7 +20,7 @@ public class AscendancySkillTreeCommand implements CommandExecutor, TabCompleter
     private final AscendancySkillTreeGUI ascendancySkillTreeGUI;
 
     // Debugging flag
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     public AscendancySkillTreeCommand(MyExperiencePlugin plugin, AscendancySkillTreeGUI ascendancySkillTreeGUI) {
         this.plugin = plugin;

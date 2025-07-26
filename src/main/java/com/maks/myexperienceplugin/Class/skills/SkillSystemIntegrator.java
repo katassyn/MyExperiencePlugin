@@ -14,7 +14,7 @@ public class SkillSystemIntegrator {
     private final SkillTreeManager skillTreeManager;
     private final SkillEffectsHandler skillEffectsHandler;
     private final SkillTreeGUI skillTreeGUI;
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     public SkillSystemIntegrator(MyExperiencePlugin plugin) {
         this.plugin = plugin;

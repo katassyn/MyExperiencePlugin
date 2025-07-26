@@ -12,6 +12,10 @@ import com.maks.myexperienceplugin.party.PartyCommand;
 import com.maks.myexperienceplugin.party.PartyManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -603,6 +607,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                 requiredXP = nextRequiredXP;
             }
 
+            // Play level up effects
+            playLevelUpEffects(player, currentLevel);
+            
             broadcastLevelUpMessage(player, currentLevel);
             moneyRewardHandler.onLevelUp(player, currentLevel);
 
@@ -664,6 +671,92 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         player.setPlayerListName(String.format("§b[ %d ] §r%s", level, player.getName()));
         player.setCustomName(String.format("§b[ %d ] §r%s", level, player.getName()));
         player.setCustomNameVisible(true);
+    }
+    
+    /**
+     * Displays sound and visual effects when a player levels up
+     * @param player Player who leveled up
+     * @param level New level of the player
+     */
+    public void playLevelUpEffects(Player player, int level) {
+        if (player == null || !player.isOnline()) return;
+        
+        Location location = player.getLocation().add(0, 1, 0);
+        
+        // Yellow particles
+        player.getWorld().spawnParticle(
+                Particle.REDSTONE,
+                location,
+                30, // amount
+                0.7, 0.7, 0.7, // spread
+                1, // speed
+                new Particle.DustOptions(Color.YELLOW, 1.5f)
+        );
+        
+        // Green particles
+        player.getWorld().spawnParticle(
+                Particle.REDSTONE,
+                location,
+                30, // amount
+                0.7, 0.7, 0.7, // spread
+                1, // speed
+                new Particle.DustOptions(Color.GREEN, 1.5f)
+        );
+        
+        // Explosion effect
+        player.getWorld().spawnParticle(
+                Particle.EXPLOSION_NORMAL,
+                location,
+                3, // amount
+                0.5, 0.5, 0.5, // spread
+                0.1 // speed
+        );
+        
+        // Star effect
+        player.getWorld().spawnParticle(
+                Particle.FIREWORKS_SPARK,
+                location,
+                50, // amount
+                1.0, 1.0, 1.0, // spread
+                0.2 // speed
+        );
+        
+        // Sound effects
+        // Level up sound
+        player.getWorld().playSound(
+                location,
+                Sound.ENTITY_PLAYER_LEVELUP,
+                0.8f, // volume (reduced from 1.0f to make it not too loud)
+                1.0f  // pitch
+        );
+        
+        // Firework sound
+        player.getWorld().playSound(
+                location,
+                Sound.ENTITY_FIREWORK_ROCKET_BLAST,
+                0.7f, // volume (reduced from 1.0f to make it not too loud)
+                1.0f  // pitch
+        );
+        
+        // Special effects for milestone levels (every 10 levels or 90+)
+        if (level % 10 == 0 || level >= 90) {
+            // Additional explosion effect
+            player.getWorld().spawnParticle(
+                    Particle.EXPLOSION_LARGE,
+                    location,
+                    2, // amount
+                    0.5, 0.5, 0.5, // spread
+                    0.1 // speed
+            );
+            
+            // Additional sound
+            player.getWorld().playSound(
+                    location,
+                    Sound.ENTITY_GENERIC_EXPLODE,
+                    0.7f, // volume (reduced from 1.0f to make it not too loud)
+                    1.0f  // pitch
+            );
+        }
     }
 
     public static String formatNumber(double number) {
@@ -828,7 +921,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             skillTreeManager.updateSkillPoints(player);
 
             // Use a local debugging flag if not defined at class level
-            final int DEBUG_FLAG = 1;
+            final int DEBUG_FLAG = 0;
             if (DEBUG_FLAG == 1) {
                 getLogger().info("Recalculated skill points for " + player.getName() +
                         " upon login (level " + getPlayerLevel(player) + ")");

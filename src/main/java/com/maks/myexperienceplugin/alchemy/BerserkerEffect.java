@@ -14,7 +14,7 @@ public class BerserkerEffect extends AlchemyEffect {
     private final double healthPenaltyPercentage; // np. 0.60 = 60%
     private AttributeModifier damageModifier;
     private AttributeModifier healthModifier;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public BerserkerEffect(Player player, double bonusDamage, double healthPenaltyPercentage, long durationMillis, long cooldownMillis, String effectName) {
         super(player, durationMillis, cooldownMillis, effectName);

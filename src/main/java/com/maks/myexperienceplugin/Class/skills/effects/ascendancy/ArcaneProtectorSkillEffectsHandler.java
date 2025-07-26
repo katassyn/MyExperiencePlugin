@@ -27,7 +27,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     private static final int ID_OFFSET = 900000;
 
     // Debug flag
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
     
     /**
      * Roll a chance with debug output

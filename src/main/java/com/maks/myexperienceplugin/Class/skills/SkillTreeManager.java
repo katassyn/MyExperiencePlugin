@@ -33,7 +33,7 @@ public class SkillTreeManager {
     private final MyExperiencePlugin plugin;
 
     // Debugging flag
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     // Managers for base classes
     private final Map<String, BaseSkillManager> classManagers;
@@ -299,7 +299,7 @@ public class SkillTreeManager {
         int level = plugin.getPlayerLevel(player);
 
         // Define debugging flag if not already defined at class level
-        final int DEBUGGING_FLAG = 1;
+        final int DEBUGGING_FLAG = 0;
 
         // Calculate basic class points (1-20)
         // For levels 1-20, you get 1 point per level (max 20 points)
@@ -713,10 +713,20 @@ public class SkillTreeManager {
         BaseSkillManager manager = ascendancyManagers.get(playerClass).get(ascendancy);
         SkillNode node = tree.getNode(skillId);
 
+        // Determine actual cost
+        int actualCost;
+        if (manager.isMultiPurchaseDiscountSkill(skillId)) {
+            actualCost = 1; // Special skills cost 1 point per purchase
+        } else {
+            actualCost = node.getCost();
+        }
+
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Purchasing ascendancy skill " + skillId +
                     " for player " + player.getName() +
-                    " (class: " + playerClass + "/" + ascendancy + ")");
+                    " (class: " + playerClass + "/" + ascendancy + ")" +
+                    ", Displayed cost: " + node.getCost() +
+                    ", Actual cost: " + actualCost);
         }
 
         // Update cache

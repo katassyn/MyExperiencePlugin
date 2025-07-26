@@ -21,7 +21,7 @@ import java.util.Map;
 public class AscendancySkillEffectIntegrator implements Listener {
     private final MyExperiencePlugin plugin;
     private final SkillEffectsHandler skillEffectsHandler;
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     // Store handlers by ascendancy name
     private final Map<String, BaseSkillEffectsHandler> ascendancyHandlers = new HashMap<>();

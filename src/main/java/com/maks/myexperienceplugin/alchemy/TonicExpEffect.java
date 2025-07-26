@@ -7,7 +7,7 @@ import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 public class TonicExpEffect extends AlchemyEffect {
     private final double bonusExpPercentage; // e.g., 0.003 = 0.3% of required XP
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public TonicExpEffect(Player player, double bonusExpPercentage, long durationMillis, long cooldownMillis, String effectName) {
         super(player, durationMillis, cooldownMillis, effectName);

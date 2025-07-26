@@ -27,7 +27,7 @@ public class CustomItemHandler implements Listener {
     private final MyExperiencePlugin plugin;
     private final Economy economy;
     private final LuckPerms luckPerms;
-    private final int debuggingFlag = 1; // Set to 1 for debugging, 0 for production
+    private final int debuggingFlag = 0; // Set to 1 for debugging, 0 for production
 
     public CustomItemHandler(MyExperiencePlugin plugin, Economy economy, LuckPerms luckPerms) {
         this.plugin = plugin;

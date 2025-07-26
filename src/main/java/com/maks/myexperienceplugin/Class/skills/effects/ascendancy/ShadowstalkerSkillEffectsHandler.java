@@ -29,7 +29,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
     private static final int ID_OFFSET = 500000;
     
     // Debug flag - set to 1 to enable debug messages
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     // === TRACKING MAPS ===
     // Track pierwszego ataku na cel

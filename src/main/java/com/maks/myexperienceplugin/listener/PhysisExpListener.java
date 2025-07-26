@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 
 public class PhysisExpListener implements Listener {
     private final MyExperiencePlugin plugin;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public PhysisExpListener(MyExperiencePlugin plugin) {
         this.plugin = plugin;

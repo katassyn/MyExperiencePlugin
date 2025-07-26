@@ -9,7 +9,7 @@ public class InstantHealingEffect extends AlchemyEffect {
     private final double healPercentage; // For percentage healing
     private final double healAmount;     // For flat amount healing
     private final boolean isPercentage;  // To track which mode to use
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     // Constructor for flat healing
     public InstantHealingEffect(Player player, double healAmount, long cooldownMillis, String effectName) {

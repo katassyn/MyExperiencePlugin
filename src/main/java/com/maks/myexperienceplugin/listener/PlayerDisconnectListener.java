@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerDisconnectListener implements Listener {
     private final PartyManager partyManager;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public PlayerDisconnectListener(PartyManager partyManager) {
         this.partyManager = partyManager;

@@ -9,7 +9,7 @@ import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 public class PhycisMagnetEffect extends AlchemyEffect {
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
     private final double radius;
     private BukkitTask magnetTask;
 

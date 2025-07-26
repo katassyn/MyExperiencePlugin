@@ -20,7 +20,7 @@ import org.bukkit.projectiles.ProjectileSource;
  */
 public class PartyDamagePreventionListener implements Listener {
     private final MyExperiencePlugin plugin;
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
     
     public PartyDamagePreventionListener(MyExperiencePlugin plugin) {
         this.plugin = plugin;

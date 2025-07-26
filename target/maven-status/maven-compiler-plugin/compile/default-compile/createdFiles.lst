@@ -1,21 +1,25 @@
 com\maks\myexperienceplugin\alchemy\PhysisPercentageDamageEffect.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffectFactory.class
 com\maks\myexperienceplugin\alchemy\AlchemyManager$AlchemyCategory.class
+com\maks\myexperienceplugin\Class\skills\ResetAttributesCommand.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler$2.class
 com\maks\myexperienceplugin\alchemy\TonicExpEffect.class
 com\maks\myexperienceplugin\Class\skills\listeners\BerserkerEquipmentListener$1.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\BerserkerSkillEffectsHandler$1.class
 com\maks\myexperienceplugin\Class\skills\PlayerSkillEffectsListener.class
 com\maks\myexperienceplugin\Class\skills\SkillTreeGUI.class
+com\maks\myexperienceplugin\party\PartyAPI.class
 com\maks\myexperienceplugin\party\PartyInvite.class
 com\maks\myexperienceplugin\Class\skills\SkillEffectsHandler$PlayerSkillStats.class
 com\maks\myexperienceplugin\Class\ClassNameNormalizer.class
 com\maks\myexperienceplugin\Class\skills\ForceUpdateSkillPointsCommand.class
 com\maks\myexperienceplugin\alchemy\AlchemyItemListener.class
 com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ChromomancerSkillManager.class
+com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\ScaleGuardianSkillManager.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ElementalistSkillEffectsHandler.class
 com\maks\myexperienceplugin\DatabaseManager.class
 com\maks\myexperienceplugin\Class\skills\effects\RangerSkillEffectsHandler.class
+com\maks\myexperienceplugin\utils\DebugUtils.class
 com\maks\myexperienceplugin\Class\skills\SkillMessages.class
 com\maks\myexperienceplugin\alchemy\TonicLuckEffect.class
 com\maks\myexperienceplugin\exp\ReloadBonusCommand.class
@@ -29,6 +33,7 @@ com\maks\myexperienceplugin\listener\ImmunityListener.class
 com\maks\myexperienceplugin\Class\skills\SkillEffectsHandler.class
 com\maks\myexperienceplugin\party\PartyManager.class
 com\maks\myexperienceplugin\Class\ClassResetItemListener.class
+com\maks\myexperienceplugin\Class\SkillTree2Command.class
 com\maks\myexperienceplugin\Class\skills\AscendancySkillTreeCommand.class
 com\maks\myexperienceplugin\CustomItemHandler.class
 com\maks\myexperienceplugin\Class\ChoseAscendancyCommand.class
@@ -36,6 +41,7 @@ com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ArcanePr
 com\maks\myexperienceplugin\exp\MoneyRewardHandler.class
 com\maks\myexperienceplugin\Class\skills\base\SkillTree.class
 com\maks\myexperienceplugin\alchemy\AlchemyItemMatcher.class
+com\maks\myexperienceplugin\Class\skills\PlayerAttributesCommand.class
 com\maks\myexperienceplugin\listener\PlayerJoinAlchemyListener.class
 com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand.class
 com\maks\myexperienceplugin\alchemy\AlchemyEffect.class
@@ -100,6 +106,7 @@ com\maks\myexperienceplugin\listener\PhysisExpListener.class
 com\maks\myexperienceplugin\ResetRanksCommand.class
 com\maks\myexperienceplugin\Class\skills\base\BaseSkillManager.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\BeastmasterSkillManager.class
+com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\BerserkerSkillManager.class
 com\maks\myexperienceplugin\exp\ExpTableCommand.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\EarthwardenSkillManager.class
 com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler.class
@@ -117,6 +124,7 @@ com\maks\myexperienceplugin\alchemy\ImmunityManager.class
 com\maks\myexperienceplugin\listener\LifestealListener.class
 com\maks\myexperienceplugin\alchemy\TotemEffect.class
 com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\ShadowstalkerSkillManager.class
+com\maks\myexperienceplugin\Class\skills\SkillStatsCommand.class
 com\maks\myexperienceplugin\alchemy\TonicMovementSpeedEffect.class
 com\maks\myexperienceplugin\Class\skills\effects\BaseSkillEffectsHandler.class
 com\maks\myexperienceplugin\Class\skills\SkillPurchaseManager.class

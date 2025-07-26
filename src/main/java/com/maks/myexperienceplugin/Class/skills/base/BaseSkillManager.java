@@ -20,12 +20,8 @@ public abstract class BaseSkillManager {
         this.plugin = plugin;
         this.className = className;
 
-        // Disable debugging for the three basic classes
-        if (className.equals("DragonKnight") || className.equals("Ranger") || className.equals("SpellWeaver")) {
-            this.debuggingFlag = 0; // Debugging disabled for basic classes
-        } else {
-            this.debuggingFlag = 1; // Debugging enabled for other classes
-        }
+        // Disable debugging for all classes
+        this.debuggingFlag = 0; // Debugging disabled for all classes
 
         // Initialize skills
         initializeSkills();

@@ -14,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class PlayerJoinAlchemyListener implements Listener {
     private final AlchemyManager alchemyManager;
     private final JavaPlugin plugin;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public PlayerJoinAlchemyListener(JavaPlugin plugin) {
         this.plugin = plugin;

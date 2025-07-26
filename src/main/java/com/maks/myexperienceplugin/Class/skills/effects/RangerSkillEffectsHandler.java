@@ -22,7 +22,7 @@ public class RangerSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Map<UUID, Integer> hitCounters = new HashMap<>();
     private final Map<UUID, UUID> lastTargetMap = new HashMap<>();
     private final Random random = new Random();
-    private final int debuggingFlag = 1; // Set to 0 in production
+    private final int debuggingFlag = 0; // Set to 0 in production
     
     /**
      * Roll a chance with debug output

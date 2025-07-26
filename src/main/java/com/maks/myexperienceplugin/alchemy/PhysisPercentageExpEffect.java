@@ -7,7 +7,7 @@ import com.maks.myexperienceplugin.utils.ActionBarUtils;
 
 public class PhysisPercentageExpEffect extends AlchemyEffect {
     private final double expPercentage;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     public PhysisPercentageExpEffect(Player player, double expPercentage, long durationMillis, long cooldownMillis, String effectName) {
         super(player, durationMillis, cooldownMillis, effectName);

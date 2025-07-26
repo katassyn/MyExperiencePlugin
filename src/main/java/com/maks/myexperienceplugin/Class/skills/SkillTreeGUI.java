@@ -18,7 +18,7 @@ import java.util.*;
 public class SkillTreeGUI {
     private final MyExperiencePlugin plugin;
     private final SkillTreeManager skillTreeManager;
-    private final int debuggingFlag = 1; // Add debugging flag directly in the class
+    private final int debuggingFlag = 0; // Add debugging flag directly in the class
 
     // Constants for GUI layout
     private static final int INVENTORY_SIZE = 54; // 6 rows

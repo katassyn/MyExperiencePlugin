@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 public class DragonKnightSkillEffectsHandler extends BaseSkillEffectsHandler {
     private final Random random = new Random();
-    private final int debuggingFlag = 1; // Set to 0 in production
+    private final int debuggingFlag = 0; // Set to 0 in production
     
     /**
      * Roll a chance with debug output

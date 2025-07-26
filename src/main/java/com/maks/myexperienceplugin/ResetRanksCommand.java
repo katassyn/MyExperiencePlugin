@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class ResetRanksCommand implements CommandExecutor, TabCompleter {
     private final MyExperiencePlugin plugin;
     private final LuckPerms luckPerms;
-    private final int debuggingFlag = 1; // Set to 1 for debugging, 0 for production
+    private final int debuggingFlag = 0; // Set to 1 for debugging, 0 for production
 
     public ResetRanksCommand(MyExperiencePlugin plugin, LuckPerms luckPerms) {
         this.plugin = plugin;

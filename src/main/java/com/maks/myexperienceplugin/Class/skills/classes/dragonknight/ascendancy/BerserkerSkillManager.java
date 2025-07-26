@@ -456,6 +456,11 @@ public class BerserkerSkillManager extends BaseSkillManager {
      * Log detailed information about a node's connections
      */
     private void logNodeConnections(SkillTree tree, int nodeId) {
+        // Skip logging if debugging is disabled
+        if (debuggingFlag != 1) {
+            return;
+        }
+        
         SkillNode node = tree.getNode(nodeId);
         if (node == null) {
             plugin.getLogger().info("[BERSERKER DEBUG] Node " + nodeId + " not found in tree!");

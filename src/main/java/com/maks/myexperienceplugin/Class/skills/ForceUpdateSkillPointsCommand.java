@@ -20,7 +20,7 @@ public class ForceUpdateSkillPointsCommand implements CommandExecutor, TabComple
     private final SkillTreeGUI skillTreeGUI; // Store direct reference
 
     // Define the debugging flag directly in the class
-    private static final int DEBUGGING_FLAG = 1;
+    private static final int DEBUGGING_FLAG = 0;
 
     public ForceUpdateSkillPointsCommand(MyExperiencePlugin plugin, SkillTreeManager skillTreeManager, SkillTreeGUI skillTreeGUI) {
         this.plugin = plugin;

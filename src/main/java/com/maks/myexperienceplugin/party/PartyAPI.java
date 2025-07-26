@@ -16,7 +16,7 @@ import java.util.UUID;
 public class PartyAPI {
     private static MyExperiencePlugin plugin;
     private static PartyManager partyManager;
-    private static final int debuggingFlag = 1;
+    private static final int debuggingFlag = 0;
 
     /**
      * Inicjalizuje PartyAPI

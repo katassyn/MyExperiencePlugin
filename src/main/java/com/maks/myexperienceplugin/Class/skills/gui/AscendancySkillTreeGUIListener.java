@@ -25,7 +25,7 @@ public class AscendancySkillTreeGUIListener implements Listener {
     private final SkillPurchaseManager purchaseManager;
 
     // Debugging flag
-    private final int debuggingFlag = 1;
+    private final int debuggingFlag = 0;
 
     // Mappings to track branches for each ascendancy
     private final Map<String, List<String>> ascendancyBranches;

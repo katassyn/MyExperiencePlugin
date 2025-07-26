@@ -10,7 +10,7 @@ public class SkillTree {
     private final String className;
     private final Map<Integer, SkillNode> nodes;
     private final Set<Integer> rootNodeIds;
-    private final int debuggingFlag = 1; // Debugging flag directly in the class
+    private final int debuggingFlag = 0; // Debugging flag directly in the class
 
     public SkillTree(String treeType, String className) {
         this.treeType = treeType;
