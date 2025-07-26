@@ -6,6 +6,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -157,7 +158,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             
             if (success) {
                 event.setCancelled(true);
-                player.sendMessage(ChatColor.GRAY + "Evaded!");
+                ChatNotificationUtils.send(player, ChatColor.GRAY + "Evaded!");
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("→ Evaded while sneaking!");
                 }
@@ -182,7 +183,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             
             if (success) {
                 event.setCancelled(true);
-                player.sendMessage(ChatColor.DARK_GRAY + "Shadow evade!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "Shadow evade!");
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("→ Shadow evaded in darkness!");
                 }
@@ -206,7 +207,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             
             if (success) {
                 event.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "Desperate evade!");
+                ChatNotificationUtils.send(player, ChatColor.RED + "Desperate evade!");
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("→ Desperate evaded at low health!");
                 }
@@ -284,7 +285,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         if (isPurchased(playerId, ID_OFFSET + 23) && attackCount % 3 == 0) {
             isCritical = true;
-            player.sendMessage(ChatColor.GOLD + "Precision Strike!");
+            ChatNotificationUtils.send(player, ChatColor.GOLD + "Precision Strike!");
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("SHADOWSTALKER: " + player.getName() + " triggered Precision Strike (skill 23) on " + target.getName());
             }
@@ -357,7 +358,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
         if (isPurchased(playerId, ID_OFFSET + 19)) {
             if (previousAttackTime == null || (System.currentTimeMillis() - previousAttackTime) > 3000) {
                 finalDamage *= 1.35;
-                player.sendMessage(ChatColor.DARK_GREEN + "Ambush!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GREEN + "Ambush!");
                 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER: " + player.getName() + " triggered Ambush (+35% damage) on " + target.getName());
@@ -414,7 +415,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 double devastatingChance = 10 * purchaseCount;
                 if (rollChance(devastatingChance, player, "Devastating Critical")) {
                     finalDamage *= 1.5;
-                    player.sendMessage(ChatColor.DARK_RED + "DEVASTATING CRITICAL!");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_RED + "DEVASTATING CRITICAL!");
                     
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("SHADOWSTALKER: " + player.getName() + " triggered Devastating Critical (" + String.format("%.1f", devastatingChance) + "% chance) on " + target.getName());
@@ -444,7 +445,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
                 double amplifyChance = 25 * purchaseCount;
                 if (rollChance(amplifyChance, player, "Poison Amplification")) {
                     amplifyPoison(targetId, playerId);
-                    player.sendMessage(ChatColor.DARK_GREEN + "Poison Amplified!");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GREEN + "Poison Amplified!");
                     
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("SHADOWSTALKER: " + player.getName() + " amplified poison on " + target.getName() + " (" + String.format("%.1f", amplifyChance) + "% chance)");
@@ -497,7 +498,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
         // Skill 25: After attacking from sneaking, gain +40% attack speed for 3 seconds
         if (isPurchased(playerId, ID_OFFSET + 25) && player.isSneaking()) {
             ambushSpeedExpiry.put(playerId, System.currentTimeMillis() + 3000);
-            player.sendMessage(ChatColor.YELLOW + "Ambush Speed activated!");
+            ChatNotificationUtils.send(player, ChatColor.YELLOW + "Ambush Speed activated!");
         }
 
         // Ustaw finalne obrażenia
@@ -516,7 +517,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
         // Skill 10: After killing an enemy, gain +10% movement speed for 5 seconds
         if (isPurchased(playerId, ID_OFFSET + 10)) {
             assassinHasteExpiry.put(playerId, System.currentTimeMillis() + 5000);
-            player.sendMessage(ChatColor.GREEN + "Assassin's Haste activated!");
+            ChatNotificationUtils.send(player, ChatColor.GREEN + "Assassin's Haste activated!");
             
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("SHADOWSTALKER: " + player.getName() + " activated Assassin's Haste (+10% movement speed for 5s)");
