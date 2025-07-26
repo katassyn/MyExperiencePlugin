@@ -671,7 +671,7 @@ public class SkillTreeManager {
         Set<Integer> purchasedSkills = getPurchasedSkills(uuid);
 
         // Special check for Beastmaster summon skills
-        if ("Beastmaster".equals(ascendancy)) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
             // Check if this is one of the summon skills (Wolf, Boar, Bear)
             if (skillId == 100001 || skillId == 100002 || skillId == 100003) {
                 // If player already has this skill, allow the purchase (for upgrades)

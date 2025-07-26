@@ -540,7 +540,7 @@ public class AscendancySkillTreeGUI {
         List<String> lore = new ArrayList<>();
 
         // Choose appropriate material and lore based on ascendancy and branch
-        if ("Beastmaster".equals(ascendancy)) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
             if ("Wolf Path".equals(branchName)) {
                 material = Material.BONE;
                 lore.add(ChatColor.GRAY + "Focus on wolves and their abilities");

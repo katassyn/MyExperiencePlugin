@@ -106,7 +106,7 @@ public class SkillEffectsHandler implements Listener {
         }
         
         // Check and summon creatures for Beastmaster on join
-        if ("Beastmaster".equals(ascendancy)) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
             // Schedule summon check after a short delay to ensure player is fully loaded
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (player.isOnline()) {
@@ -141,7 +141,7 @@ public class SkillEffectsHandler implements Listener {
         }
         
         // Add Beastmaster cleanup
-        if ("Beastmaster".equals(ascendancy)) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
             BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
             if (handler instanceof com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) {
                 com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler beastHandler = 
@@ -333,7 +333,7 @@ public class SkillEffectsHandler implements Listener {
         }
         
         // Check for Beastmaster Bear Guardian
-        if ("Beastmaster".equals(ascendancy)) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
             BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
             if (handler != null && handler instanceof BeastmasterSkillEffectsHandler) {
                 BeastmasterSkillEffectsHandler beastHandler = (BeastmasterSkillEffectsHandler) handler;
@@ -375,8 +375,12 @@ public class SkillEffectsHandler implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
         if (!(event.getDamager() instanceof Player)) {
             return;
         }

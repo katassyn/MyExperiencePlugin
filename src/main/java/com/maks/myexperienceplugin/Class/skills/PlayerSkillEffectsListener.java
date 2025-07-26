@@ -42,7 +42,7 @@ public class PlayerSkillEffectsListener implements Listener {
 
             // Add this block: Check for Beastmaster and trigger summons
             String ascendancy = plugin.getClassManager().getPlayerAscendancy(player.getUniqueId());
-            if ("Beastmaster".equals(ascendancy)) {
+            if ("Beastmaster".equalsIgnoreCase(ascendancy)) {
                 plugin.getLogger().info("[BEASTMASTER DEBUG] Checking for auto-summons for " + player.getName());
                 BeastmasterSkillEffectsHandler handler = 
                     (BeastmasterSkillEffectsHandler) plugin.getAscendancySkillEffectIntegrator().getHandler("Beastmaster");
