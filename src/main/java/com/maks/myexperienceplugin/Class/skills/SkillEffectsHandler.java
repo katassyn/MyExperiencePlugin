@@ -285,8 +285,11 @@ public class SkillEffectsHandler implements Listener {
         // Apply other attributes as needed...
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
         if (!(event.getEntity() instanceof Player)) {
             return;
         }

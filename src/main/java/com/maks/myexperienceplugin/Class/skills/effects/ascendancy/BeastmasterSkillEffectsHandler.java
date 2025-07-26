@@ -454,10 +454,17 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void summonWolves(Player player) {
         UUID playerId = player.getUniqueId();
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] summonWolves called for " + player.getName());
+        }
+
         // Check if summon is already in progress to prevent duplicates
         if (summonInProgress.getOrDefault(playerId, false)) {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Summon already in progress for " + player.getName());
+            }
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Summon already in progress");
             }
             return;
         }
@@ -468,7 +475,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             long lastCheck = lastSummonCheck.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                    plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited wolf summon for " + player.getName());
                 }
                 return;
             }
@@ -478,18 +485,28 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         // Check if player has the skill
         if (!isPurchased(playerId, WOLF_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon wolves yet!");
+
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks wolf summon skill");
+            }
             return;
         }
 
         // Check summon type limit
         if (!canAddSummonType(playerId, WOLF_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You can only have 2 types of summons at once!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add wolf - summon type limit reached");
+            }
             return;
         }
 
         // Check if wolf is already summoned
         if (hasActiveSummon(playerId, playerWolf)) {
             ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have a wolf summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Wolf already active");
+            }
             return;
         }
 
@@ -497,6 +514,9 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         if (isOnCooldown(playerId, wolfRespawnCooldowns, WOLF_SUMMON_COOLDOWN)) {
             long timeLeft = (wolfRespawnCooldowns.get(playerId) + WOLF_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
             ChatNotificationUtils.send(player, ChatColor.RED + "Wolf summon on cooldown (" + timeLeft + "s)");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Wolf summon on cooldown: " + timeLeft + "s left");
+            }
             return;
         }
 
@@ -525,6 +545,9 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
 
         if (wolfCount <= 0) {
             ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have all your wolves summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Max wolves already spawned");
+            }
             return;
         }
 
@@ -589,10 +612,14 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void summonBoars(Player player) {
         UUID playerId = player.getUniqueId();
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] summonBoars called for " + player.getName());
+        }
+
         // Check if summon is already in progress to prevent duplicates
         if (summonInProgress.getOrDefault(playerId, false)) {
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("Summon already in progress for " + player.getName());
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Summon already in progress");
             }
             return;
         }
@@ -603,7 +630,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             long lastCheck = lastSummonCheck.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                    plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited boar summon for " + player.getName());
                 }
                 return;
             }
@@ -613,18 +640,29 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         // Check if player has the skill
         if (!isPurchased(playerId, BOAR_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon boars yet!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks boar summon skill");
+            }
             return;
         }
 
         // Check summon type limit
         if (!canAddSummonType(playerId, BOAR_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You can only have 2 types of summons at once!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add boar - summon type limit reached");
+            }
+
             return;
         }
 
         // Check if boar is already summoned
         if (hasActiveSummon(playerId, playerBoar)) {
             ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have a boar summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Boar already active");
+            }
+
             return;
         }
 
@@ -632,6 +670,9 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         if (isOnCooldown(playerId, boarRespawnCooldowns, BOAR_SUMMON_COOLDOWN)) {
             long timeLeft = (boarRespawnCooldowns.get(playerId) + BOAR_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
             ChatNotificationUtils.send(player, ChatColor.RED + "Boar summon on cooldown (" + timeLeft + "s)");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Boar summon on cooldown: " + timeLeft + "s left");
+            }
             return;
         }
 
@@ -727,10 +768,14 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     public void summonBears(Player player) {
         UUID playerId = player.getUniqueId();
 
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BEASTMASTER DEBUG] summonBears called for " + player.getName());
+        }
+
         // Check if summon is already in progress to prevent duplicates
         if (summonInProgress.getOrDefault(playerId, false)) {
             if (debuggingFlag == 1) {
-                plugin.getLogger().info("Summon already in progress for " + player.getName());
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Summon already in progress");
             }
             return;
         }
@@ -741,7 +786,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
             long lastCheck = lastSummonCheck.get(playerId);
             if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                    plugin.getLogger().info("[BEASTMASTER DEBUG] Rate limited bear summon for " + player.getName());
                 }
                 return;
             }
@@ -751,18 +796,28 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         // Check if player has the skill
         if (!isPurchased(playerId, BEAR_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You haven't learned to summon bears yet!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Player lacks bear summon skill");
+            }
             return;
         }
 
         // Check summon type limit
         if (!canAddSummonType(playerId, BEAR_SUMMON_ID)) {
             ChatNotificationUtils.send(player, ChatColor.RED + "You can only have 2 types of summons at once!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Cannot add bear - summon type limit reached");
+            }
+
             return;
         }
 
         // Check if bear is already summoned
         if (hasActiveSummon(playerId, playerBear)) {
             ChatNotificationUtils.send(player, ChatColor.YELLOW + "You already have a bear summoned!");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Bear already active");
+            }
             return;
         }
 
@@ -770,6 +825,9 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
         if (isOnCooldown(playerId, bearRespawnCooldowns, BEAR_SUMMON_COOLDOWN)) {
             long timeLeft = (bearRespawnCooldowns.get(playerId) + BEAR_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
             ChatNotificationUtils.send(player, ChatColor.RED + "Bear summon on cooldown (" + timeLeft + "s)");
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("[BEASTMASTER DEBUG] Bear summon on cooldown: " + timeLeft + "s left");
+            }
             return;
         }
 

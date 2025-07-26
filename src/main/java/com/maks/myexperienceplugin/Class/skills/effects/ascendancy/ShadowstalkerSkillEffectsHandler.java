@@ -101,37 +101,37 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             case 1: // +5% movement speed in shadows and at night
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER SKILL 1: Will apply shadow movement speed dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 1: +5% movement speed in shadows/night enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 1: +5% movement speed in shadows/night enabled");
                 }
                 break;
             case 2: // +2% critical hit chance
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER SKILL 2: Will apply critical hit chance dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 2: +2% critical hit chance enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 2: +2% critical hit chance enabled");
                 }
                 break;
             case 3: // +15% damage on first attack against target
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER SKILL 3: Will apply first strike damage dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 3: +15% damage on first attack enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 3: +15% damage on first attack enabled");
                 }
                 break;
             case 4: // +4% evade chance while sneaking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER SKILL 4: Will apply sneak evade chance dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 4: +4% evade chance while sneaking enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 4: +4% evade chance while sneaking enabled");
                 }
                 break;
             case 5: // Critical hits apply 3% of your damage as bleeding for 5 seconds
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER SKILL 5: Will apply critical bleeding dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 5: Critical hits apply bleeding enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL 5: Critical hits apply bleeding enabled");
                 }
                 break;
             default:
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SHADOWSTALKER: Applying skill effects for skill " + originalId + " with purchase count " + purchaseCount);
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL " + originalId + ": Dynamic effect enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SHADOWSTALKER SKILL " + originalId + ": Dynamic effect enabled");
                 }
                 break;
         }

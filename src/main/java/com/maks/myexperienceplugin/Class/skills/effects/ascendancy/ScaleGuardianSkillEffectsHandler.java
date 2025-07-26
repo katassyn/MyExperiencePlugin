@@ -6,6 +6,7 @@ import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.party.PartyAPI;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -126,7 +127,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 stats.addShieldBlockChance(5 * purchaseCount);
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 1: Applied +" + (5 * purchaseCount) + "% shield block chance");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 1: +" + (5 * purchaseCount) + "% shield block chance");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 1: +" + (5 * purchaseCount) + "% shield block chance");
                 }
                 break;
 
@@ -134,7 +135,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when blocking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 2: Will apply damage reflection when blocking");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 2: +10% damage reflection when blocking enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 2: +10% damage reflection when blocking enabled");
                 }
                 break;
 
@@ -142,7 +143,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically based on nearby entities
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 3: Will apply proximity defense dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 3: +3% defense per nearby enemy (max +15%) enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 3: +3% defense per nearby enemy (max +15%) enabled");
                 }
                 break;
 
@@ -150,7 +151,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when blocking
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 4: Will apply healing on successful blocks");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 4: Block heals 5% max HP enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 4: Block heals 5% max HP enabled");
                 }
                 break;
 
@@ -158,7 +159,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when receiving knockback
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 5: Will apply knockback resistance");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 5: +20% knockback resistance enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 5: +20% knockback resistance enabled");
                 }
                 break;
 
@@ -166,7 +167,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically based on health
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 6: Will apply defense bonus when health is low");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 6: +15% defense when HP < 50% enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 6: +15% defense when HP < 50% enabled");
                 }
                 break;
 
@@ -174,7 +175,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when taking damage
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 7: Will apply taunt effect dynamically");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 7: 25% chance to taunt attacker enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 7: 25% chance to taunt attacker enabled");
                 }
                 break;
 
@@ -182,7 +183,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // This is handled dynamically when stationary
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("SCALE GUARDIAN SKILL 8: Will apply stationary defense bonus");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 8: +10% defense when not moving for 2s enabled");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] SCALE GUARDIAN SKILL 8: +10% defense when not moving for 2s enabled");
                 }
                 break;
 
@@ -375,7 +376,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Last Stand expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Stand expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Last Stand expired");
                         }
                     }
                 }
@@ -388,7 +389,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Last Stand activated for " + player.getName() + " at " + healthPercent + "% health");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Stand activated!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Last Stand activated!");
             }
         }
 
@@ -421,7 +422,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Reactive Defense expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Reactive Defense expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Reactive Defense expired");
                         }
                     }
                 }
@@ -434,7 +435,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Reactive Defense activated for " + player.getName() + " from " + damagePercent + "% damage hit");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Reactive Defense activated!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Reactive Defense activated!");
             }
         }
 
@@ -460,7 +461,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Critical Immunity expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Critical Immunity expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Critical Immunity expired");
                         }
                     }
                 }
@@ -473,7 +474,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Critical Immunity activated for " + player.getName() + " from " + damagePercent + "% damage hit");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Critical Immunity activated!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Critical Immunity activated!");
             }
         }
 
@@ -488,7 +489,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Last Resort duration extended for " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Resort duration extended");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Last Resort duration extended");
                 }
             } else {
                 // Apply damage reduction (using defense bonus as proxy for damage reduction)
@@ -502,7 +503,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Last Resort activated for " + player.getName() + " at " + healthPercent + "% health");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Resort activated!");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Last Resort activated!");
                 }
             }
             
@@ -530,7 +531,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Last Resort expired for " + player.getName());
                         if (player.isOnline()) {
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Last Resort expired");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Last Resort expired");
                         }
                     }
                 }
@@ -654,7 +655,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     
                     plugin.getLogger().info("  Shield Block Sources: " + sources.toString());
                     
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] → Shield Block reduced damage: " + 
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] → Shield Block reduced damage: " + 
                         String.format("%.1f", originalDamage) + " → " + String.format("%.1f", finalDamage) + 
                         " (30% reduction)");
                 }
@@ -670,7 +671,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
             
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Player " + player.getName() + " blocked with vanilla shield mechanics");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Vanilla Shield Block!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Vanilla Shield Block!");
             }
         }
     }
@@ -735,7 +736,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         if (debuggingFlag == 1) {
                             plugin.getLogger().info("Block Momentum expired for " + player.getName());
                             if (player.isOnline()) {
-                                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Block Momentum expired");
+                                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Block Momentum expired");
                             }
                         }
                     }
@@ -748,7 +749,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Block Momentum activated for " + player.getName() + " after " + blocks + " blocks");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Block Momentum activated!");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Block Momentum activated!");
                 }
             }
         }
@@ -762,7 +763,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Counter Attack ready for " + player.getName());
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Counter Attack ready!");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Counter Attack ready!");
             }
         }
 
@@ -782,7 +783,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Block Healing activated for " + player.getName() + 
                         " (healed " + healAmount + " HP)");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Block Healing: +" + healAmount + " HP");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Block Healing: +" + healAmount + " HP");
             }
         }
 
@@ -829,7 +830,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                             if (debuggingFlag == 1) {
                                 plugin.getLogger().info("Weakening Block stacks expired for enemy " + attackerId);
                                 if (player.isOnline()) {
-                                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Block expired for enemy");
+                                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Weakening Block expired for enemy");
                                 }
                             }
                         }
@@ -840,7 +841,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Weakening Block applied to enemy " + attackerId + 
                                 " by " + player.getName() + " (" + stacks + "/4 stacks)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Block: " + stacks + "/4 stacks");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Weakening Block: " + stacks + "/4 stacks");
                     }
                 }
             }
@@ -872,7 +873,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         plugin.getLogger().info("→ Stunned enemy for 1 second");
                         plugin.getLogger().info("Shield Bash stunned enemy " + attacker.getType() + 
                                 " by " + player.getName());
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Shield Bash stunned enemy!");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Shield Bash stunned enemy!");
                     }
                 }
             }
@@ -899,7 +900,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Damage Reflection activated for " + player.getName() + 
                             " (reflected " + reflectionDamage + " damage to " + attacker.getType() + ")");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Damage Reflection: " + reflectionDamage + " damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Damage Reflection: " + reflectionDamage + " damage");
                 }
             }
         }
@@ -928,7 +929,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Critical Block activated for " + player.getName() + 
                             " (reflected " + reflectionDamage + " damage to " + attacker.getType() + ")");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Critical Block: " + reflectionDamage + " damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Critical Block: " + reflectionDamage + " damage");
                 }
             }
         }
@@ -961,7 +962,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
             if (debuggingFlag == 1) {
                 plugin.getLogger().info("Counter Attack activated for " + player.getName() + 
                         " (+" + bonusDamage + " damage)");
-                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Counter Attack: +" + bonusDamage + " damage");
+                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Counter Attack: +" + bonusDamage + " damage");
             }
         }
 
@@ -1002,7 +1003,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         if (debuggingFlag == 1) {
                             plugin.getLogger().info("Weakening Strike expired for enemy " + targetId);
                             if (player.isOnline()) {
-                                player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike expired for enemy");
+                                ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike expired for enemy");
                             }
                         }
                     }
@@ -1017,7 +1018,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     plugin.getLogger().info("→ Weakened enemy for 5 seconds (-10% damage)");
                     plugin.getLogger().info("Weakening Strike applied to enemy " + targetId + 
                             " by " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike applied to enemy");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike applied to enemy");
                 }
             }
         }
@@ -1050,7 +1051,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         plugin.getLogger().info("→ Taunted enemy to focus on player");
                         plugin.getLogger().info("Taunt applied to enemy " + attacker.getType() + 
                                 " by " + player.getName());
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Taunt applied to enemy");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Taunt applied to enemy");
                     }
                 }
             }
@@ -1073,7 +1074,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     plugin.getLogger().info("→ Slowed enemy for 3 seconds (-20% speed)");
                     plugin.getLogger().info("Slowing Defense applied to enemy " + attacker.getType() + 
                             " by " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Slowing Defense applied to enemy");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Slowing Defense applied to enemy");
                 }
             }
         }
@@ -1102,7 +1103,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Weakening Block reduced damage from enemy " + attackerId + 
                                 " by " + (scaledReduction * 100) + "% (scaled from " + (baseReduction * 100) + "%, " + stacks + " stacks)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Block: -" + 
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Weakening Block: -" + 
                                 (scaledReduction * 100) + "% damage (scaled from " + (baseReduction * 100) + "%, " + stacks + " stacks)");
                     }
                 }
@@ -1129,7 +1130,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Weakening Strike reduced damage from enemy " + attackerId + 
                                 " by " + (reductionFactor * 100) + "% (scaled based on current damage)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike: -" + 
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Weakening Strike: -" + 
                                 String.format("%.1f", reductionFactor * 100) + "% damage (scaled from 10%)");
                     }
                 }
@@ -1150,7 +1151,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Critical Immunity reduced critical hit damage for " + player.getName() + 
                             " by 50%");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Critical Immunity: -50% crit damage");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Critical Immunity: -50% crit damage");
                 }
             }
         }
@@ -1199,7 +1200,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         if (debuggingFlag == 1) {
                             plugin.getLogger().info("Stationary Defense activated for " + player.getName() + 
                                     " (+" + (10 * purchaseCount) + "% defense)");
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Stationary Defense activated!");
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Stationary Defense activated!");
                         }
                     }
                 }
@@ -1221,7 +1222,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Stationary Defense deactivated for " + player.getName());
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Stationary Defense deactivated");
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Stationary Defense deactivated");
                     }
                 }
             }
@@ -1261,7 +1262,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         if (debuggingFlag == 1 && nearbyEnemies > 0) {
             plugin.getLogger().info("Proximity Defense activated for " + player.getName() + 
                     " (+" + defenseBonus + "% defense from " + nearbyEnemies + " nearby enemies)");
-            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Proximity Defense: +" + 
+            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Proximity Defense: +" + 
                     defenseBonus + "% defense (" + nearbyEnemies + " enemies)");
         }
     }
@@ -1301,7 +1302,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Surrounded Healing activated for " + player.getName() + 
                             " (+5% healing when surrounded by 3+ enemies)");
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Surrounded Healing: +5% healing (surrounded by " + 
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Surrounded Healing: +5% healing (surrounded by " + 
                             nearbyEnemies + " enemies)");
                 }
             }
@@ -1315,7 +1316,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Surrounded Healing deactivated for " + player.getName());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Surrounded Healing deactivated");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Surrounded Healing deactivated");
                 }
             }
         }
@@ -1361,7 +1362,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Protective Aura applied to party member " + ally.getName() + 
                                 " by " + player.getName() + " (+10% defense)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Protective Aura applied to " + ally.getName());
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Protective Aura applied to " + ally.getName());
                     }
                 }
 
@@ -1378,7 +1379,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         plugin.getLogger().info("Ally Protection applied to party member " + ally.getName() + 
                                 " by " + player.getName() + " (+" + (10 * purchaseCount) + "% shield block, +" + 
                                 (5 * purchaseCount) + "% damage)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Ally Protection applied to " + ally.getName());
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Ally Protection applied to " + ally.getName());
                     }
                 }
 
@@ -1391,7 +1392,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     if (debuggingFlag == 1) {
                         plugin.getLogger().info("Healthy Protection applied to party member " + ally.getName() + 
                                 " by " + player.getName() + " (15% damage reduction)");
-                        player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Healthy Protection applied to " + ally.getName());
+                        ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Healthy Protection applied to " + ally.getName());
                     }
                 }
 
@@ -1447,7 +1448,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                         if (debuggingFlag == 1) {
                             plugin.getLogger().info("Guardian Angel activated for " + player.getName() + 
                                     " to heal ally " + ally.getName() + " for " + healAmount + " HP");
-                            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Guardian Angel healed " + 
+                            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Guardian Angel healed " + 
                                     ally.getName() + " for " + healAmount + " HP");
                         }
                     }
@@ -1526,7 +1527,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
                     plugin.getLogger().info("Heavy Armor Mastery activated for " + player.getName() + 
                             " (+" + armorBonus + " armor from " + heavyArmorPieces + " heavy armor pieces)");
                     plugin.getLogger().info("  Armor pieces: " + armorTypes.toString());
-                    player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Heavy Armor Mastery: +" + 
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Heavy Armor Mastery: +" + 
                             armorBonus + " armor (" + heavyArmorPieces + " pieces: " + armorTypes.toString() + ")");
                 }
             }
@@ -1589,7 +1590,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Potion Master extended " + effect.getType() + " duration for " + player.getName() + 
                     " from " + originalDuration + " to " + extendedDuration + " ticks");
-            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Potion Master: Extended " + 
+            ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] Potion Master: Extended " + 
                     effect.getType() + " by " + (20 * purchaseCount) + "%");
         }
     }

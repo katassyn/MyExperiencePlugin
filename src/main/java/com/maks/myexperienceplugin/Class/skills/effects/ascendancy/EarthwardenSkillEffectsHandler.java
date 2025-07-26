@@ -575,7 +575,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     /**
      * Handle entity damage events
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
         if (event.isCancelled()) {
             return;
