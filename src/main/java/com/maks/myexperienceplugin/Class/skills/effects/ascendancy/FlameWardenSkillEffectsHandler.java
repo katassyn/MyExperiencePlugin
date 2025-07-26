@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
 import com.maks.myexperienceplugin.utils.DebugUtils;
+import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -132,7 +133,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             case 3: // Gain fire resistance potion effect infinity
                 // Apply fire resistance potion effect (infinite duration, hidden)
                 player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false));
-                player.sendMessage(ChatColor.GOLD + "You feel protected from fire! (Fire Resistance effect applied)");
+                ChatNotificationUtils.send(player, ChatColor.GOLD + "You feel protected from fire! (Fire Resistance effect applied)");
                 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("FLAMEWARDEN SKILL 3: Applied hidden fire resistance effect to " + player.getName());
@@ -452,7 +453,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             double damageBonus = Math.min(BURNING_AURA_MAX, burningEnemiesCount * BURNING_AURA_BONUS);
 
             // Send chat message with burning enemies count
-            player.sendMessage(ChatColor.GOLD + "[Burning Aura] " + burningEnemiesCount + " burning enemies nearby");
+            ChatNotificationUtils.send(player, ChatColor.GOLD + "[Burning Aura] " + burningEnemiesCount + " burning enemies nearby");
 
             if (damageBonus > 0) {
                 double originalDamage = event.getDamage();
@@ -471,7 +472,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
             int burningEnemiesCount = countBurningEnemiesNearby(player, 10);
             
             // Send chat message with burning enemies count
-            player.sendMessage(ChatColor.GOLD + "[Burning Presence] " + burningEnemiesCount + " burning enemies nearby" + 
+            ChatNotificationUtils.send(player, ChatColor.GOLD + "[Burning Presence] " + burningEnemiesCount + " burning enemies nearby" +
                     (burningEnemiesCount >= 3 ? " - ACTIVE!" : " - Need 3+ for activation"));
 
             if (burningEnemiesCount >= 3) {
@@ -1174,7 +1175,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 // Show notification to player when they respawn
                 if (player.isOnline()) {
                     ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "☀ Phoenix Rebirth Activated! ☀");
-                    player.sendMessage(ChatColor.GOLD + "You exploded in a fiery rebirth! (5 minute cooldown)");
+                    ChatNotificationUtils.send(player, ChatColor.GOLD + "You exploded in a fiery rebirth! (5 minute cooldown)");
                 }
 
                 if (debuggingFlag == 1) {

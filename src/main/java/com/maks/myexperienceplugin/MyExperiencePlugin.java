@@ -825,7 +825,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Remove all summons for Beastmaster players
         String ascendancy = classManager.getPlayerAscendancy(uuid);
-        if ("Beastmaster".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+        if ("Beastmaster".equalsIgnoreCase(ascendancy) && ascendancySkillEffectIntegrator != null) {
             com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
                 (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
                 ascendancySkillEffectIntegrator.getHandler("Beastmaster");
@@ -930,7 +930,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             // Respawn summons for Beastmaster players
             UUID uuid = player.getUniqueId();
             String ascendancy = classManager.getPlayerAscendancy(uuid);
-            if ("Beastmaster".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            if ("Beastmaster".equalsIgnoreCase(ascendancy) && ascendancySkillEffectIntegrator != null) {
                 com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler handler = 
                     (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler) 
                     ascendancySkillEffectIntegrator.getHandler("Beastmaster");
