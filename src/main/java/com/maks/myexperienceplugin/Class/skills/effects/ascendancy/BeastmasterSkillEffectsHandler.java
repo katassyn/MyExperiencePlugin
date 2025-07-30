@@ -50,7 +50,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
     private static final long RATE_LIMIT_DELAY = 100L; // 0.1 second rate limiting for summon checks
     private static final long AUTO_RESUMMON_DELAY = 3000L; // 3 seconds delay for auto-resummon
     // Enable debug logging to help diagnose summon issues
-    private static final int debuggingFlag = 1; // Set to 0 to disable
+    private static final int debuggingFlag = 0; // Set to 0 to disable
 
     // Track active summons by player
     private final Map<UUID, UUID> playerWolf = new ConcurrentHashMap<>();
