@@ -598,6 +598,8 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         // Apply Protective Aura around players with skill 3 and Ally Guard (skill 9)
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             UUID playerId = player.getUniqueId();
+            long now = System.currentTimeMillis();
+
             boolean protective = isPurchased(playerId, ID_OFFSET + 3);
             boolean allyGuard = isPurchased(playerId, ID_OFFSET + 9);
             // Ally Defense Boost (skill 14)
@@ -687,7 +689,8 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
             // Periodic Barrier (skill 8)
             if (isPurchased(playerId, ID_OFFSET + 8)) {
-                long now = System.currentTimeMillis();
+                now = System.currentTimeMillis();
+
                 long last = periodicBarrierLast.getOrDefault(playerId, 0L);
                 if (now - last >= 5000) {
                     periodicBarrierLast.put(playerId, now);
