@@ -13,7 +13,7 @@ import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.
 import com.maks.myexperienceplugin.Class.skills.classes.dragonknight.ascendancy.ScaleGuardianSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.SpellWeaverSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ElementalistSkillManager;
-import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ChromomancerSkillManager;
+import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ChronomancerSkillManager;
 import com.maks.myexperienceplugin.Class.skills.classes.spellweaver.ascendancy.ArcaneProtectorSkillManager;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
@@ -109,7 +109,7 @@ public class SkillTreeManager {
         // SpellWeaver ascendancies
         Map<String, BaseSkillManager> spellWeaverAscendancies = new HashMap<>();
         spellWeaverAscendancies.put("Elementalist", new ElementalistSkillManager(plugin));
-        spellWeaverAscendancies.put("Chronomancer", new ChromomancerSkillManager(plugin));
+        spellWeaverAscendancies.put("Chronomancer", new ChronomancerSkillManager(plugin));
         spellWeaverAscendancies.put("ArcaneProtector", new ArcaneProtectorSkillManager(plugin));
 
         // Add to map

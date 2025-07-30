@@ -94,6 +94,27 @@ public class AscendancySkillTreeGUIListener implements Listener {
         earthwardenBranches.add("Healing Path");
         earthwardenBranches.add("Nature Path");
         ascendancyBranches.put("Earthwarden", earthwardenBranches);
+
+        // Elementalist branches
+        List<String> elementalistBranches = new java.util.ArrayList<>();
+        elementalistBranches.add("Fire Path");
+        elementalistBranches.add("Frost Path");
+        elementalistBranches.add("Stone Path");
+        ascendancyBranches.put("Elementalist", elementalistBranches);
+
+        // Chronomancer branches
+        List<String> chronomancerBranches = new java.util.ArrayList<>();
+        chronomancerBranches.add("Momentum Path");
+        chronomancerBranches.add("Time Path");
+        chronomancerBranches.add("Defense Path");
+        ascendancyBranches.put("Chronomancer", chronomancerBranches);
+
+        // Arcane Protector branches
+        List<String> arcaneProtectorBranches = new java.util.ArrayList<>();
+        arcaneProtectorBranches.add("Barrier Path");
+        arcaneProtectorBranches.add("Bulwark Path");
+        arcaneProtectorBranches.add("Guardian Path");
+        ascendancyBranches.put("ArcaneProtector", arcaneProtectorBranches);
     }
 
     private void initializeNodePositions() {
@@ -150,6 +171,9 @@ public class AscendancySkillTreeGUIListener implements Listener {
         branchNames.put("ScaleGuardian", Arrays.asList("Shield Path", "Defense Path", "Protection Path"));
         branchNames.put("Shadowstalker", Arrays.asList("Stealth Path", "Critical Path", "Poison Path"));
         branchNames.put("Earthwarden", Arrays.asList("Defense Path", "Healing Path", "Nature Path"));
+        branchNames.put("Elementalist", Arrays.asList("Fire Path", "Frost Path", "Stone Path"));
+        branchNames.put("Chronomancer", Arrays.asList("Momentum Path", "Time Path", "Defense Path"));
+        branchNames.put("ArcaneProtector", Arrays.asList("Barrier Path", "Bulwark Path", "Guardian Path"));
 
         // Utworzenie mapowań dla każdej podklasy
         for (String ascendancy : branchNames.keySet()) {
@@ -169,6 +193,9 @@ public class AscendancySkillTreeGUIListener implements Listener {
                 else if (ascendancy.equals("ScaleGuardian")) idOffset = 400000;
                 else if (ascendancy.equals("Shadowstalker")) idOffset = 500000;
                 else if (ascendancy.equals("Earthwarden")) idOffset = 600000;
+                else if (ascendancy.equals("Elementalist")) idOffset = 700000;
+                else if (ascendancy.equals("Chronomancer")) idOffset = 800000;
+                else if (ascendancy.equals("ArcaneProtector")) idOffset = 900000;
 
                 for (Map.Entry<Integer, Integer> entry : universalMap.entrySet()) {
                     positions.put(entry.getKey() + idOffset, entry.getValue());

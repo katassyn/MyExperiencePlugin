@@ -886,13 +886,49 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Clean up Berserker player data
         if ("Berserker".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
-            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler handler = 
-                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler) 
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler handler =
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BerserkerSkillEffectsHandler)
                 ascendancySkillEffectIntegrator.getHandler("Berserker");
 
             if (handler != null) {
                 handler.clearPlayerData(uuid);
                 getLogger().info("[BERSERKER] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up Elementalist player data
+        if ("Elementalist".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ElementalistSkillEffectsHandler handler =
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ElementalistSkillEffectsHandler)
+                ascendancySkillEffectIntegrator.getHandler("Elementalist");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[ELEMENTALIST] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up Chronomancer player data
+        if ("Chronomancer".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ChronomancerSkillEffectsHandler handler =
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ChronomancerSkillEffectsHandler)
+                ascendancySkillEffectIntegrator.getHandler("Chronomancer");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[CHRONOMANCER] Cleared all data for " + player.getName() + " on logout");
+            }
+        }
+
+        // Clean up ArcaneProtector player data
+        if ("ArcaneProtector".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ArcaneProtectorSkillEffectsHandler handler =
+                (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ArcaneProtectorSkillEffectsHandler)
+                ascendancySkillEffectIntegrator.getHandler("ArcaneProtector");
+
+            if (handler != null) {
+                handler.clearPlayerData(uuid);
+                getLogger().info("[ARCANEPROTECTOR] Cleared all data for " + player.getName() + " on logout");
             }
         }
 
