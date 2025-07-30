@@ -9,74 +9,74 @@ import org.bukkit.entity.Player;
 
 
 
-public class ElementalistSkillManager extends BaseSkillManager {
-    private static final int ID_OFFSET = 700000;
+public class ChronomancerSkillManager extends BaseSkillManager {
+    private static final int ID_OFFSET = 800000;
     private static final String[] NAMES = {
-            "Elemental Touch",
-            "Lingering Elements",
-            "Elemental Power",
-            "Lightning Jump",
-            "Frost Slow",
-            "Stone Burst",
-            "Lightning Empower",
-            "Frost Attack Slow",
-            "Frost Heal",
-            "Stone Stun",
-            "Lightning Stacks",
-            "Lightning Speed",
-            "Frozen Weakness",
-            "Stone Shield",
-            "Elemental Defense",
-            "Frost Kill Heal",
-            "Shock Spread",
-            "Resistance Break",
-            "Frost Nova Low HP",
-            "Stone Kill Power",
-            "Stone Defense",
-            "Lightning Overcharge",
-            "Frost Slow Stack",
-            "Stone Splash",
-            "Elemental Explosion",
-            "Elemental Surge",
-            "Elemental Affinity"
+            "Slow Strike",
+            "Speed Surge",
+            "Evasive Power",
+            "Attack Hinder",
+            "Triple Slow",
+            "Kill Heal",
+            "Focused Assault",
+            "Survival Dampening",
+            "Dodge Defense",
+            "Calm Recovery",
+            "Slowed Heal",
+            "Rapid Strikes",
+            "Weakening Slow",
+            "Kill Purge",
+            "Panic Slow",
+            "Dodge Power",
+            "Momentum Build",
+            "Dodge Explosion",
+            "Hit Evasion Boost",
+            "Slow Damage Boost",
+            "Rewind Death",
+            "Cooldown Reset",
+            "Dodge Mitigation",
+            "Extended Slow",
+            "Temporal Barrier",
+            "Time Freeze",
+            "Post-Dodge Power"
     };
 
     private static final String[] DESCRIPTIONS = {
-            "Your attacks have 10% chance to apply a random element (lightning, frost, stone) for 3s",
-            "Elemental effects last 1s longer",
-            "Each elemental effect grants 2% Spell damage while active",
-            "Lightning jumps to an additional enemy applying shock",
-            "Frost additionally slows movement by 10%",
-            "Stone deals 3% of your damage as area damage",
-            "Lightning hits grant 3% Spell damage for 5s",
-            "Frost additionally reduces enemy attack speed by 10%",
-            "Hitting a frosted target heals you for 2% max HP",
-            "Stone effect has 10% extra chance to stun",
-            "Each additional shock increases lightning damage by 5%",
-            "Killing a shocked enemy grants 10% movement speed for 4s",
-            "Frozen targets take 7% more damage",
-            "Enemies with stone effect reduce your damage taken by 3% (max 15%)",
-            "Each elemental effect grants 1% damage reduction (max 5%)",
-            "Killing a frosted target restores 5% max HP",
-            "Lightning hit has 20% chance to shock nearby foes",
-            "Lightning hit reduces target resistance by 3% (max 12%)",
-            "When HP <30% frost automatically applies to enemies within 4 blocks",
-            "Killing a stoned target increases Spell damage by 7% for 5s",
-            "Stone hits increase your defense by 5% for 4s",
-            "Lightning effects can stack 3 times, each adding 4% damage",
-            "Frost can stack, further slowing by 5% per stack (max 20%)",
-            "Each stone hit deals an extra 5% of your damage as area damage",
-            "On death release an elemental explosion dealing 15% of your damage within 5 blocks",
-            "Activating an element increases Spell damage by 10% for 10s",
-            "All elemental effects have an extra 15% chance to apply"
+            "Your attacks have 10% chance to slow the enemy by 10% for 3s",
+            "Each hit grants 2% movement speed for 3s (up to 10%)",
+            "Dodging damage makes your next hit deal 5% more damage",
+            "Hits reduce enemy attack speed by 5% for 4s (stack to 15%)",
+            "Every third hit adds another 5% slow (max 20%)",
+            "Killing an enemy restores 3% HP over 4s",
+            "Repeated attacks on the same target grant 2% Spell damage (up to 10%)",
+            "When below 50% HP enemy damage is reduced by 7%",
+            "Dodging increases your defense by 5% for 5s (stack to 15%)",
+            "After 4s without damage you heal 5% HP",
+            "Hitting slowed enemies restores 1% HP (max 5% per 5s)",
+            "Hits grant 3% attack speed for 3s (stack to 12%)",
+            "Slowed enemies deal 5% less damage to you",
+            "Killing an enemy shortens negative effects on you by 1s",
+            "When HP <30% you slow all enemies within 5 blocks by 20% for 5s",
+            "Each dodge grants 3% Spell damage for 5s (stack to 15%)",
+            "Hits grant 1% Spell damage for 5s (stack to 10%)",
+            "After dodging, your next hit deals area damage equal to 7% of your damage",
+            "Being hit increases your dodge chance by 10% for 3s",
+            "Slowed enemies take 5% additional damage",
+            "On death you rewind 3s restoring 20% HP (5 min cooldown)",
+            "Hits have 10% chance to reset cooldowns of other Chronomancer effects",
+            "Each dodge reduces next damage by 5% for 4s (stack to 15%)",
+            "Hitting slowed targets extends the slow by 1s",
+            "At HP <15% activate Temporal Barrier reducing all damage by 50% for 5s",
+            "Your hits have 15% chance to freeze time around the enemy for 1s",
+            "After dodging gain 15% Spell damage for 5s"
     };
 
     private static final int[] COSTS = {
-            1,1,1,2,2,2,2,2,2,2,3,2,3,3,3,2,3,3,3,3,3,3,3,3,5,5,5
+            1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,5,5,5
     };
 
-    public ElementalistSkillManager(MyExperiencePlugin plugin) {
-        super(plugin, "Elementalist");
+    public ChronomancerSkillManager(MyExperiencePlugin plugin) {
+        super(plugin, "Chronomancer");
     }
 
     @Override

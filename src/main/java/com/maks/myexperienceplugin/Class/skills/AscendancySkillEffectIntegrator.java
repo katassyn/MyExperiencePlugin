@@ -33,6 +33,9 @@ public class AscendancySkillEffectIntegrator implements Listener {
     private int earthwardenPeriodicTaskId = -1;
     private int flamewardenPeriodicTaskId = -1;
     private int scaleguardianPeriodicTaskId = -1;
+    private int elementalistPeriodicTaskId = -1;
+    private int chronomancerPeriodicTaskId = -1;
+    private int arcaneProtectorPeriodicTaskId = -1;
 
     // Counter for periodic tasks to manage check frequency
     private int schedulerCounter = 0;
@@ -93,9 +96,9 @@ public class AscendancySkillEffectIntegrator implements Listener {
         plugin.getLogger().info("[ASCENDANCY DEBUG] Created ElementalistSkillEffectsHandler and added to ascendancyHandlers map");
 
         // Create Chronomancer handler
-        ChromomancerSkillEffectsHandler chronomancerHandler = new ChromomancerSkillEffectsHandler(plugin);
+        ChronomancerSkillEffectsHandler chronomancerHandler = new ChronomancerSkillEffectsHandler(plugin);
         ascendancyHandlers.put("Chronomancer", chronomancerHandler);
-        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ChromomancerSkillEffectsHandler and added to ascendancyHandlers map");
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Created ChronomancerSkillEffectsHandler and added to ascendancyHandlers map");
 
         // Create ArcaneProtector handler
         ArcaneProtectorSkillEffectsHandler arcaneProtectorHandler = new ArcaneProtectorSkillEffectsHandler(plugin);
@@ -125,7 +128,7 @@ public class AscendancySkillEffectIntegrator implements Listener {
         plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ElementalistSkillEffectsHandler with main SkillEffectsHandler");
 
         skillEffectsHandler.registerClassHandler("Chronomancer", chronomancerHandler);
-        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ChromomancerSkillEffectsHandler with main SkillEffectsHandler");
+        plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ChronomancerSkillEffectsHandler with main SkillEffectsHandler");
 
         skillEffectsHandler.registerClassHandler("ArcaneProtector", arcaneProtectorHandler);
         plugin.getLogger().info("[ASCENDANCY DEBUG] Registered ArcaneProtectorSkillEffectsHandler with main SkillEffectsHandler");
@@ -218,6 +221,30 @@ public class AscendancySkillEffectIntegrator implements Listener {
             }
         }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
 
+        // Start Elementalist periodic task (every 5 seconds)
+        elementalistPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("Elementalist")) {
+                ElementalistSkillEffectsHandler handler = (ElementalistSkillEffectsHandler) ascendancyHandlers.get("Elementalist");
+                handler.applyPeriodicEffects();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
+        // Start Chronomancer periodic task (every 5 seconds)
+        chronomancerPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("Chronomancer")) {
+                ChronomancerSkillEffectsHandler handler = (ChronomancerSkillEffectsHandler) ascendancyHandlers.get("Chronomancer");
+                handler.applyPeriodicEffects();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
+        // Start ArcaneProtector periodic task (every 5 seconds)
+        arcaneProtectorPeriodicTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (ascendancyHandlers.containsKey("ArcaneProtector")) {
+                ArcaneProtectorSkillEffectsHandler handler = (ArcaneProtectorSkillEffectsHandler) ascendancyHandlers.get("ArcaneProtector");
+                handler.applyPeriodicEffects();
+            }
+        }, 100L, 100L); // Initial delay 5s, repeat every 5s (100 ticks)
+
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Started periodic tasks for ascendancy skill effects");
         }
@@ -255,6 +282,21 @@ public class AscendancySkillEffectIntegrator implements Listener {
         if (scaleguardianPeriodicTaskId != -1) {
             Bukkit.getScheduler().cancelTask(scaleguardianPeriodicTaskId);
             scaleguardianPeriodicTaskId = -1;
+        }
+
+        if (elementalistPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(elementalistPeriodicTaskId);
+            elementalistPeriodicTaskId = -1;
+        }
+
+        if (chronomancerPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(chronomancerPeriodicTaskId);
+            chronomancerPeriodicTaskId = -1;
+        }
+
+        if (arcaneProtectorPeriodicTaskId != -1) {
+            Bukkit.getScheduler().cancelTask(arcaneProtectorPeriodicTaskId);
+            arcaneProtectorPeriodicTaskId = -1;
         }
 
         if (debuggingFlag == 1) {
