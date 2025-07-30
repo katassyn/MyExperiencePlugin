@@ -544,13 +544,31 @@ public class SkillEffectsHandler implements Listener {
         if ("FlameWarden".equals(ascendancy)) {
             BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
             if (handler instanceof com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler) {
-                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler flameHandler = 
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler flameHandler =
                     (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.FlameWardenSkillEffectsHandler) handler;
                 flameHandler.handlePlayerDeath(event, player, stats);
                 
                 if (debuggingFlag == 1) {
                     plugin.getLogger().info("Processed Phoenix Rebirth check for " + player.getName());
                 }
+            }
+        }
+
+        if ("Elementalist".equals(ascendancy)) {
+            BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
+            if (handler instanceof com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ElementalistSkillEffectsHandler) {
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ElementalistSkillEffectsHandler elHandler =
+                        (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ElementalistSkillEffectsHandler) handler;
+                elHandler.handlePlayerDeath(event);
+            }
+        }
+
+        if ("ArcaneProtector".equals(ascendancy)) {
+            BaseSkillEffectsHandler handler = classHandlers.get(ascendancy);
+            if (handler instanceof com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ArcaneProtectorSkillEffectsHandler) {
+                com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ArcaneProtectorSkillEffectsHandler apHandler =
+                        (com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ArcaneProtectorSkillEffectsHandler) handler;
+                apHandler.handlePlayerDeath(event, player, stats);
             }
         }
 

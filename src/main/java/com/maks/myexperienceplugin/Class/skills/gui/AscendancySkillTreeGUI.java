@@ -91,6 +91,27 @@ public class AscendancySkillTreeGUI {
         earthwardenBranches.add("Nature Path");
         ascendancyBranches.put("Earthwarden", earthwardenBranches);
 
+        // Elementalist branches
+        List<String> elementalistBranches = new ArrayList<>();
+        elementalistBranches.add("Fire Path");
+        elementalistBranches.add("Frost Path");
+        elementalistBranches.add("Stone Path");
+        ascendancyBranches.put("Elementalist", elementalistBranches);
+
+        // Chronomancer branches
+        List<String> chronomancerBranches = new ArrayList<>();
+        chronomancerBranches.add("Momentum Path");
+        chronomancerBranches.add("Time Path");
+        chronomancerBranches.add("Defense Path");
+        ascendancyBranches.put("Chronomancer", chronomancerBranches);
+
+        // Arcane Protector branches
+        List<String> arcaneProtectorBranches = new ArrayList<>();
+        arcaneProtectorBranches.add("Barrier Path");
+        arcaneProtectorBranches.add("Bulwark Path");
+        arcaneProtectorBranches.add("Guardian Path");
+        ascendancyBranches.put("ArcaneProtector", arcaneProtectorBranches);
+
         // Add more ascendancies as needed
     }
 
@@ -167,6 +188,10 @@ public class AscendancySkillTreeGUI {
         List<String> earthwardenBranches = Arrays.asList("Defense Path", "Healing Path", "Nature Path");
         branchNames.put("Earthwarden", earthwardenBranches);
 
+        branchNames.put("Elementalist", Arrays.asList("Fire Path", "Frost Path", "Stone Path"));
+        branchNames.put("Chronomancer", Arrays.asList("Momentum Path", "Time Path", "Defense Path"));
+        branchNames.put("ArcaneProtector", Arrays.asList("Barrier Path", "Bulwark Path", "Guardian Path"));
+
         // Inicjalizacja układów dla wszystkich podklas
         for (String ascendancy : branchNames.keySet()) {
             Map<String, Map<Integer, Integer>> branches = new HashMap<>();
@@ -185,6 +210,9 @@ public class AscendancySkillTreeGUI {
                 else if (ascendancy.equals("ScaleGuardian")) idOffset = 400000;
                 else if (ascendancy.equals("Shadowstalker")) idOffset = 500000;
                 else if (ascendancy.equals("Earthwarden")) idOffset = 600000;
+                else if (ascendancy.equals("Elementalist")) idOffset = 700000;
+                else if (ascendancy.equals("Chronomancer")) idOffset = 800000;
+                else if (ascendancy.equals("ArcaneProtector")) idOffset = 900000;
 
                 for (Map.Entry<Integer, Integer> entry : universalPositions.entrySet()) {
                     branchPositions.put(entry.getKey() + idOffset, entry.getValue());
@@ -659,6 +687,66 @@ public class AscendancySkillTreeGUI {
                 lore.add(ChatColor.GRAY + "• Environmental resistance");
                 lore.add(ChatColor.GRAY + "• Entangling strikes against enemies");
                 lore.add(ChatColor.GRAY + "• Nature's blessing abilities");
+            }
+        } else if ("Elementalist".equals(ascendancy)) {
+            if ("Fire Path".equals(branchName)) {
+                material = Material.BLAZE_POWDER;
+                lore.add(ChatColor.GRAY + "Master fiery spells and burning damage");
+                lore.add(ChatColor.GRAY + "• Ignite foes with explosions");
+                lore.add(ChatColor.GRAY + "• Fire shields and phoenix powers");
+                lore.add(ChatColor.GRAY + "• Increased spell damage from flames");
+            } else if ("Frost Path".equals(branchName)) {
+                material = Material.ICE;
+                lore.add(ChatColor.GRAY + "Control ice to hinder enemies");
+                lore.add(ChatColor.GRAY + "• Slowing chills and ice barriers");
+                lore.add(ChatColor.GRAY + "• Frozen foes take extra damage");
+                lore.add(ChatColor.GRAY + "• Healing from icy strikes");
+            } else {
+                material = Material.COBBLESTONE;
+                lore.add(ChatColor.GRAY + "Harness stone for defense and stuns");
+                lore.add(ChatColor.GRAY + "• Splash damage from stone hits");
+                lore.add(ChatColor.GRAY + "• Sturdy defenses and crowd control");
+                lore.add(ChatColor.GRAY + "• Bonus spell power after kills");
+            }
+        } else if ("Chronomancer".equals(ascendancy)) {
+            if ("Momentum Path".equals(branchName)) {
+                material = Material.FEATHER;
+                lore.add(ChatColor.GRAY + "Manipulate speed and dodging");
+                lore.add(ChatColor.GRAY + "• Movement bonuses from attacks");
+                lore.add(ChatColor.GRAY + "• Dodging empowers your spells");
+                lore.add(ChatColor.GRAY + "• Rapid strikes build momentum");
+            } else if ("Time Path".equals(branchName)) {
+                material = Material.CLOCK;
+                lore.add(ChatColor.GRAY + "Slow your foes and alter time");
+                lore.add(ChatColor.GRAY + "• Powerful slows and freezes");
+                lore.add(ChatColor.GRAY + "• Extend debuffs and rewind fate");
+                lore.add(ChatColor.GRAY + "• Time manipulation abilities");
+            } else {
+                material = Material.ENDER_PEARL;
+                lore.add(ChatColor.GRAY + "Temporal barriers and defenses");
+                lore.add(ChatColor.GRAY + "• Damage reduction when in peril");
+                lore.add(ChatColor.GRAY + "• Cooldown resets and survival");
+                lore.add(ChatColor.GRAY + "• Post-dodge spell power boosts");
+            }
+        } else if ("ArcaneProtector".equals(ascendancy)) {
+            if ("Barrier Path".equals(branchName)) {
+                material = Material.PRISMARINE_SHARD;
+                lore.add(ChatColor.GRAY + "Create magical barriers to absorb damage");
+                lore.add(ChatColor.GRAY + "• Chance to form barriers on hit");
+                lore.add(ChatColor.GRAY + "• Spell power scales with active barriers");
+                lore.add(ChatColor.GRAY + "• Reflect and share protection");
+            } else if ("Bulwark Path".equals(branchName)) {
+                material = Material.IRON_BLOCK;
+                lore.add(ChatColor.GRAY + "Bolster your defenses when wounded");
+                lore.add(ChatColor.GRAY + "• Increased damage reduction");
+                lore.add(ChatColor.GRAY + "• Area barriers for allies");
+                lore.add(ChatColor.GRAY + "• Cheat death mechanics");
+            } else {
+                material = Material.SHIELD;
+                lore.add(ChatColor.GRAY + "Guard allies with protective auras");
+                lore.add(ChatColor.GRAY + "• Grant barriers to teammates");
+                lore.add(ChatColor.GRAY + "• Boost spell power from barriers");
+                lore.add(ChatColor.GRAY + "• Final stand defensive abilities");
             }
         } else {
             material = Material.PAPER;

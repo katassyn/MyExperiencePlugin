@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -78,9 +79,46 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     private final Map<UUID, Location> nullificationFieldLocation = new ConcurrentHashMap<>();
     private final Map<UUID, Long> nullificationFieldExpiry = new ConcurrentHashMap<>();
 
+    // Track active barriers for spell damage bonus (skill 26)
+    private final Map<UUID, Integer> activeBarrierCounts = new ConcurrentHashMap<>();
+
+    // Track defense bonus from nearby allies (skill 14)
+    private final Map<UUID, Integer> allyDefenseBonuses = new ConcurrentHashMap<>();
+
+    // Empowered hit after barrier (skill 19)
+    private final Map<UUID, Boolean> empoweredHit = new ConcurrentHashMap<>();
+
+    // Barrier Fortitude tracking (skill 21)
+    private final Map<UUID, Integer> barrierActivationCount = new ConcurrentHashMap<>();
+    private final Map<UUID, List<Long>> fortitudeExpiries = new ConcurrentHashMap<>();
+
+    // Shared Shield tracking (skill 24)
+    private final Map<UUID, Set<UUID>> sharedShieldTargets = new ConcurrentHashMap<>();
+
     // Maps to track sanctuary
     private final Map<UUID, Location> sanctuaryLocation = new ConcurrentHashMap<>();
     private final Map<UUID, Long> sanctuaryExpiry = new ConcurrentHashMap<>();
+
+    // Early skill tracking
+    private final Map<UUID, Integer> damageResponseStacks = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> damageResponseExpiry = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> slayerGuardStacks = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> slayerGuardExpiry = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> periodicBarrierLast = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> periodicBarrierExpiry = new ConcurrentHashMap<>();
+
+    // Cheat Death tracking (skill 27)
+    private final Map<UUID, Long> cheatDeathExpiry = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> cheatDeathCooldown = new ConcurrentHashMap<>();
+
+    // Critical Fortitude tracking (skill 10)
+    private final Map<UUID, Long> criticalFortitudeExpiry = new ConcurrentHashMap<>();
+
+    // Last Stand cooldown (skill 25)
+    private final Map<UUID, Long> lastStandCooldown = new ConcurrentHashMap<>();
+
+    // Posthumous Shield cooldown (skill 22)
+    private final Map<UUID, Long> posthumousShieldCooldown = new ConcurrentHashMap<>();
 
     public ArcaneProtectorSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -157,6 +195,67 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         UUID playerId = player.getUniqueId();
         double damage = event.getDamage();
 
+        long now = System.currentTimeMillis();
+
+        // Critical Fortitude active
+        if (criticalFortitudeExpiry.getOrDefault(playerId, 0L) > now) {
+            event.setDamage(event.getDamage() * 0.9);
+        }
+
+        // If Cheat Death barrier is active, block damage
+        if (cheatDeathExpiry.getOrDefault(playerId, 0L) > now) {
+            event.setCancelled(true);
+            return;
+        }
+
+        // Detect critical hit on player to activate Critical Fortitude (skill 10)
+        if (isPurchased(playerId, ID_OFFSET + 10) && event instanceof EntityDamageByEntityEvent) {
+            EntityDamageByEntityEvent edbe = (EntityDamageByEntityEvent) event;
+            if (edbe.getDamager() instanceof Player) {
+                Player attacker = (Player) edbe.getDamager();
+                if (plugin.getCriticalStrikeSystem().rollForCritical(attacker)) {
+                    criticalFortitudeExpiry.put(playerId, now + 4000);
+                    ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Critical Fortitude!");
+                }
+            }
+        }
+
+        // Apply Damage Response stacks (skill 2)
+        if (damageResponseStacks.containsKey(playerId)) {
+            if (damageResponseExpiry.getOrDefault(playerId, 0L) > now) {
+                int stacks = damageResponseStacks.getOrDefault(playerId, 0);
+                double reduction = 0.03 * stacks;
+                event.setDamage(damage * (1 - reduction));
+            } else {
+                damageResponseStacks.remove(playerId);
+                damageResponseExpiry.remove(playerId);
+            }
+        }
+
+        // Apply Slayer's Guard stacks (skill 7)
+        if (slayerGuardStacks.containsKey(playerId)) {
+            if (slayerGuardExpiry.getOrDefault(playerId, 0L) > now) {
+                int stacks = slayerGuardStacks.getOrDefault(playerId, 0);
+                double reduction = 0.03 * stacks;
+                event.setDamage(event.getDamage() * (1 - reduction));
+            } else {
+                slayerGuardStacks.remove(playerId);
+                slayerGuardExpiry.remove(playerId);
+            }
+        }
+
+        // Half-Health Defense (skill 5)
+        if (isPurchased(playerId, ID_OFFSET + 5) && player.getHealth() < player.getMaxHealth() * 0.5) {
+            event.setDamage(event.getDamage() * 0.95);
+        }
+
+        // Periodic Barrier (skill 8)
+        if (periodicBarrierExpiry.getOrDefault(playerId, 0L) > now) {
+            event.setDamage(event.getDamage() * 0.93);
+            periodicBarrierExpiry.remove(playerId);
+            deactivateBarrierBonus(player);
+        }
+
         // Check for Mana Barrier (skill 4)
         if (isPurchased(playerId, ID_OFFSET + 4)) {
             // Convert 10% of damage to mana cost
@@ -219,10 +318,13 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             }
         }
 
-        // Check for Spell Ward (skill 17)
-        if (isPurchased(playerId, ID_OFFSET + 17) && event.getCause() == EntityDamageEvent.DamageCause.MAGIC) {
-            // Reduce spell damage by 20%
-            event.setDamage(damage * 0.8);
+        // Check for Area Barrier damage reduction (skill 17)
+        if (isPurchased(playerId, ID_OFFSET + 17)
+                && (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION
+                || event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
+                || event.getCause() == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK)) {
+            // Reduce area damage by 10%
+            event.setDamage(event.getDamage() * 0.9);
 
             // Visual effect
             player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
@@ -276,8 +378,9 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                 double sharedDamage = damage * 0.3;
                 event.setDamage(damage - sharedDamage);
 
-                // Apply damage to ally
-                ally.damage(sharedDamage);
+                // Apply damage to ally scaled with SpellWeaver bonuses
+                double finalShared = calculateSpellDamage(sharedDamage, player, stats);
+                ally.damage(finalShared);
 
                 // Visual effect
                 player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
@@ -287,30 +390,23 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             }
         }
 
-        // Check for Mana Shield (skill 16)
-        if (isPurchased(playerId, ID_OFFSET + 16)) {
-            // Check for nearby allies
-            List<Entity> nearbyEntities = player.getNearbyEntities(5, 5, 5);
-            for (Entity entity : nearbyEntities) {
-                if (entity instanceof Player) {
-                    Player ally = (Player) entity;
-                    String allyClass = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
-
-                    // Only apply to allies (not enemies)
-                    if (allyClass != null && !allyClass.isEmpty()) {
-                        // Convert 20% of ally's damage to player's mana
-                        double convertedDamage = damage * 0.2;
-                        // In a real implementation, this would reduce player's mana
-                        manaBarrierValues.put(playerId, manaBarrierValues.getOrDefault(playerId, 0.0) + convertedDamage);
-
-                        // Visual effect
-                        player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-                        ally.getWorld().spawnParticle(Particle.SPELL_MOB, ally.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-                        ActionBarUtils.sendActionBar(ally, ChatColor.BLUE + player.getName() + " is shielding you with mana!");
-                    }
+        // Barrier Reflection (skill 23)
+        boolean barrierActive = arcaneShieldExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()
+                || arcaneAegisExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()
+                || arcaneArmorExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()
+                || periodicBarrierExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis();
+        if (barrierActive && isPurchased(playerId, ID_OFFSET + 23) && event instanceof EntityDamageByEntityEvent) {
+            if (Math.random() < 0.15) {
+                EntityDamageByEntityEvent edbe = (EntityDamageByEntityEvent) event;
+                if (edbe.getDamager() instanceof LivingEntity) {
+                    LivingEntity attacker = (LivingEntity) edbe.getDamager();
+                    double reflect = event.getDamage() * 0.10;
+                    attacker.damage(reflect, player);
+                    attacker.getWorld().spawnParticle(Particle.SPELL_MOB, attacker.getLocation().add(0,1,0), 10,0.5,1,0.5,0.05);
                 }
             }
         }
+
 
         // Check for Sanctuary (skill 27)
         if (isPurchased(playerId, ID_OFFSET + 27)) {
@@ -335,6 +431,36 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                 }
             }
         }
+
+        // Last Stand (skill 25) - activate barrier at low HP
+        if (isPurchased(playerId, ID_OFFSET + 25)
+                && player.getHealth() - event.getFinalDamage() <= player.getMaxHealth() * 0.15
+                && lastStandCooldown.getOrDefault(playerId, 0L) <= now) {
+            arcaneImmunityExpiry.put(playerId, now + 3000);
+            lastStandCooldown.put(playerId, now + 180000); // 3 min cooldown
+            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0,1,0), 40,1,1,1,0.1);
+            ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Last Stand activated!");
+        }
+
+        // Cheat Death (skill 27) - trigger when damage would kill the player
+        if (isPurchased(playerId, ID_OFFSET + 27)
+                && player.getHealth() - event.getFinalDamage() <= 0
+                && cheatDeathCooldown.getOrDefault(playerId, 0L) <= now) {
+            event.setCancelled(true);
+            player.setHealth(Math.min(player.getMaxHealth() * 0.3, player.getMaxHealth()));
+            cheatDeathExpiry.put(playerId, now + 5000); // 5s immunity
+            cheatDeathCooldown.put(playerId, now + 300000); // 5 min cooldown
+            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0,1,0), 50,1,1,1,0.1);
+            ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Cheat Death activated!");
+            return;
+        }
+
+        // After processing damage, increment Damage Response stacks (skill 2)
+        if (isPurchased(playerId, ID_OFFSET + 2)) {
+            int stacks = Math.min(damageResponseStacks.getOrDefault(playerId, 0) + 1, 4);
+            damageResponseStacks.put(playerId, stacks);
+            damageResponseExpiry.put(playerId, System.currentTimeMillis() + 4000);
+        }
     }
 
     @Override
@@ -345,15 +471,36 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         if (event.getDamager() == player && event.getEntity() instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) event.getEntity();
 
+            // Magic Barrier Chance (skill 1)
+            if (isPurchased(playerId, ID_OFFSET + 1) && Math.random() < 0.10) {
+                activateArcaneShield(player);
+            }
+
+            // Weakening Strike (skill 4)
+            if (isPurchased(playerId, ID_OFFSET + 4) && Math.random() < 0.10) {
+                target.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 60, 0, false, true, true));
+            }
+
+            // Attack Slow (skill 6)
+            if (isPurchased(playerId, ID_OFFSET + 6)) {
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 80, 0, false, true, true));
+            }
+
+            // Empowered Hit (skill 19)
+            if (empoweredHit.remove(playerId) != null) {
+                event.setDamage(event.getDamage() * 1.05);
+            }
+
             // Check for Arcane Reflection (skill 7)
             if (isPurchased(playerId, ID_OFFSET + 7) && arcaneShieldExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()) {
                 // Reflect 15% of damage
                 double reflectedDamage = event.getDamage() * 0.15;
-                target.damage(reflectedDamage, player);
+                double finalDamage = calculateSpellDamage(reflectedDamage, player, stats);
+                target.damage(finalDamage, player);
 
                 // Visual effect
                 target.getWorld().spawnParticle(Particle.SPELL_MOB, target.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Reflected " + String.format("%.1f", reflectedDamage) + " damage!");
+                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Reflected " + String.format("%.1f", finalDamage) + " damage!");
             }
 
             // Check for Arcane Resonance (skill 15)
@@ -371,6 +518,32 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                     }
                 }
             }
+
+            // Ally Barrier (skill 15)
+            if (isPurchased(playerId, ID_OFFSET + 15) && Math.random() < 0.10) {
+                Player lowest = null;
+                double ratio = 2.0;
+                for (Entity e : player.getNearbyEntities(8,8,8)) {
+                    if (e instanceof Player) {
+                        Player ally = (Player) e;
+                        String allyClass = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
+                        if (allyClass != null && !allyClass.isEmpty()) {
+                            double r = ally.getHealth() / ally.getMaxHealth();
+                            if (r < ratio) {
+                                ratio = r;
+                                lowest = ally;
+                            }
+                        }
+                    }
+                }
+                if (lowest != null) {
+                    UUID aId = lowest.getUniqueId();
+                    arcaneShieldExpiry.put(aId, System.currentTimeMillis() + 4000);
+                    activateBarrierBonus(lowest);
+                    lowest.getWorld().spawnParticle(Particle.SPELL_MOB, lowest.getLocation().add(0,1,0),20,0.5,1,0.5,0.05);
+                    ActionBarUtils.sendActionBar(lowest, ChatColor.BLUE + "Barrier granted by " + player.getName());
+                }
+            }
         }
 
         // Check if player is being attacked
@@ -381,21 +554,208 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             if (isPurchased(playerId, ID_OFFSET + 7) && arcaneShieldExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()) {
                 // Reflect 15% of damage
                 double reflectedDamage = event.getDamage() * 0.15;
-                attacker.damage(reflectedDamage, player);
+                double finalDamage = calculateSpellDamage(reflectedDamage, player, stats);
+                attacker.damage(finalDamage, player);
 
                 // Visual effect
                 attacker.getWorld().spawnParticle(Particle.SPELL_MOB, attacker.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Reflected " + String.format("%.1f", reflectedDamage) + " damage!");
+                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Reflected " + String.format("%.1f", finalDamage) + " damage!");
             }
         }
     }
 
     @Override
     public void handleEntityDeath(EntityDeathEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
-        // No specific death effects for ArcaneProtector
+        UUID playerId = player.getUniqueId();
+
+        // Slayer's Guard stacks (skill 7)
+        if (isPurchased(playerId, ID_OFFSET + 7)) {
+            int stacks = Math.min(slayerGuardStacks.getOrDefault(playerId, 0) + 1, 4);
+            slayerGuardStacks.put(playerId, stacks);
+            slayerGuardExpiry.put(playerId, System.currentTimeMillis() + 5000);
+        }
+
+        // Mass Barrier on kill (skill 18)
+        if (isPurchased(playerId, ID_OFFSET + 18)) {
+            long now = System.currentTimeMillis();
+            for (Entity e : player.getNearbyEntities(8, 8, 8)) {
+                if (e instanceof Player && e != player) {
+                    Player ally = (Player) e;
+                    String cl = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
+                    if (cl != null && !cl.isEmpty()) {
+                        UUID allyId = ally.getUniqueId();
+                        arcaneShieldExpiry.put(allyId, now + 4000);
+                        activateBarrierBonus(ally);
+                        ally.getWorld().spawnParticle(Particle.SPELL_MOB, ally.getLocation().add(0,1,0), 20,0.5,1,0.5,0.05);
+                        ActionBarUtils.sendActionBar(ally, ChatColor.AQUA + "Mass Barrier from " + player.getName());
+                    }
+                }
+            }
+        }
     }
 
     public void applyPeriodicEffects() {
+        // Apply Protective Aura around players with skill 3 and Ally Guard (skill 9)
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            UUID playerId = player.getUniqueId();
+            long now = System.currentTimeMillis();
+            boolean protective = isPurchased(playerId, ID_OFFSET + 3);
+            boolean allyGuard = isPurchased(playerId, ID_OFFSET + 9);
+            // Ally Defense Boost (skill 14)
+            if (isPurchased(playerId, ID_OFFSET + 14)) {
+                int allies = 0;
+                for (Entity e : player.getNearbyEntities(5,5,5)) {
+                    if (e instanceof Player) {
+                        Player ally = (Player) e;
+                        String cl = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
+                        if (cl != null && !cl.isEmpty()) {
+                            allies++;
+                        }
+                    }
+                }
+                int bonus = Math.min(allies, 5);
+                int prev = allyDefenseBonuses.getOrDefault(playerId, 0);
+                if (bonus != prev) {
+                    allyDefenseBonuses.put(playerId, bonus);
+                    SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(player);
+                    st.addDefenseBonus(bonus - prev);
+                    plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                }
+            } else if (allyDefenseBonuses.containsKey(playerId)) {
+                int prev = allyDefenseBonuses.remove(playerId);
+                SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(player);
+                st.addDefenseBonus(-prev);
+                plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+            }
+            if (protective || allyGuard) {
+                for (Entity entity : player.getNearbyEntities(5, 5, 5)) {
+                    if (entity instanceof Player) {
+                        Player ally = (Player) entity;
+                        String allyClass = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
+                        if (allyClass != null && !allyClass.isEmpty()) {
+                            ally.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 0, false, true, true));
+                        }
+                    }
+                }
+                player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 0.5, 0), 5, 1, 1, 1, 0.05);
+            }
+
+            // Shared Shield allies bonus (skill 24)
+            boolean barrierActive = arcaneShieldExpiry.getOrDefault(playerId,0L) > now
+                    || arcaneAegisExpiry.getOrDefault(playerId,0L) > now
+                    || arcaneArmorExpiry.getOrDefault(playerId,0L) > now
+                    || periodicBarrierExpiry.getOrDefault(playerId,0L) > now;
+            Set<UUID> activeSet = sharedShieldTargets.computeIfAbsent(playerId, k -> new HashSet<>());
+            if (isPurchased(playerId, ID_OFFSET + 24) && barrierActive) {
+                Set<UUID> current = new HashSet<>();
+                for (Entity e : player.getNearbyEntities(5,5,5)) {
+                    if (e instanceof Player) {
+                        Player ally = (Player) e;
+                        String cl = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
+                        if (cl != null && !cl.isEmpty()) {
+                            current.add(ally.getUniqueId());
+                            if (!activeSet.contains(ally.getUniqueId())) {
+                                activeSet.add(ally.getUniqueId());
+                                SkillEffectsHandler.PlayerSkillStats stA = plugin.getSkillEffectsHandler().getPlayerStats(ally);
+                                stA.addDefenseBonus(3);
+                                plugin.getSkillEffectsHandler().refreshPlayerStats(ally);
+                            }
+                        }
+                    }
+                }
+                for (UUID a : new HashSet<>(activeSet)) {
+                    if (!current.contains(a)) {
+                        activeSet.remove(a);
+                        Player al = plugin.getServer().getPlayer(a);
+                        if (al != null) {
+                            SkillEffectsHandler.PlayerSkillStats stA = plugin.getSkillEffectsHandler().getPlayerStats(al);
+                            stA.addDefenseBonus(-3);
+                            plugin.getSkillEffectsHandler().refreshPlayerStats(al);
+                        }
+                    }
+                }
+            } else if (!barrierActive && !activeSet.isEmpty()) {
+                for (UUID a : activeSet) {
+                    Player al = plugin.getServer().getPlayer(a);
+                    if (al != null) {
+                        SkillEffectsHandler.PlayerSkillStats stA = plugin.getSkillEffectsHandler().getPlayerStats(al);
+                        stA.addDefenseBonus(-3);
+                        plugin.getSkillEffectsHandler().refreshPlayerStats(al);
+                    }
+                }
+                activeSet.clear();
+            }
+
+            // Periodic Barrier (skill 8)
+            if (isPurchased(playerId, ID_OFFSET + 8)) {
+                now = System.currentTimeMillis();
+                long last = periodicBarrierLast.getOrDefault(playerId, 0L);
+                if (now - last >= 5000) {
+                    periodicBarrierLast.put(playerId, now);
+                    periodicBarrierExpiry.put(playerId, now + 10000);
+                    activateBarrierBonus(player);
+                    player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0,1,0), 10,0.5,1,0.5,0.05);
+                }
+            }
+        }
+
+        // Remove expired barriers and bonuses
+        long now = System.currentTimeMillis();
+        for (UUID id : new HashSet<>(arcaneShieldExpiry.keySet())) {
+            if (arcaneShieldExpiry.get(id) < now) {
+                arcaneShieldExpiry.remove(id);
+                Player p = plugin.getServer().getPlayer(id);
+                if (p != null) deactivateBarrierBonus(p);
+            }
+        }
+        for (UUID id : new HashSet<>(arcaneAegisExpiry.keySet())) {
+            if (arcaneAegisExpiry.get(id) < now) {
+                arcaneAegisExpiry.remove(id);
+                Player p = plugin.getServer().getPlayer(id);
+                if (p != null) deactivateBarrierBonus(p);
+            }
+        }
+        for (UUID id : new HashSet<>(arcaneArmorExpiry.keySet())) {
+            if (arcaneArmorExpiry.get(id) < now) {
+                arcaneArmorExpiry.remove(id);
+                Player p = plugin.getServer().getPlayer(id);
+                if (p != null) deactivateBarrierBonus(p);
+            }
+        }
+
+        for (UUID id : new HashSet<>(periodicBarrierExpiry.keySet())) {
+            if (periodicBarrierExpiry.get(id) < now) {
+                periodicBarrierExpiry.remove(id);
+                Player p = plugin.getServer().getPlayer(id);
+                if (p != null) deactivateBarrierBonus(p);
+            }
+        }
+
+        // Remove expired Barrier Fortitude stacks
+        for (UUID id : new HashSet<>(fortitudeExpiries.keySet())) {
+            List<Long> list = fortitudeExpiries.get(id);
+            if (list == null) continue;
+            int removed = 0;
+            Iterator<Long> it = list.iterator();
+            while (it.hasNext()) {
+                if (it.next() < now) {
+                    it.remove();
+                    removed++;
+                }
+            }
+            if (removed > 0) {
+                Player p = plugin.getServer().getPlayer(id);
+                if (p != null) {
+                    SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(p);
+                    st.addMaxHealth(-2 * removed);
+                    plugin.getSkillEffectsHandler().refreshPlayerStats(p);
+                }
+            }
+            if (list.isEmpty()) {
+                fortitudeExpiries.remove(id);
+            }
+        }
+
         // Process healing circles
         for (UUID playerId : healingCircles.keySet()) {
             List<Location> circles = healingCircles.get(playerId);
@@ -603,6 +963,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
         // Set shield duration (30 seconds)
         arcaneShieldExpiry.put(playerId, System.currentTimeMillis() + 30000);
+        activateBarrierBonus(player);
 
         // Visual effect
         player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 30, 0.5, 1, 0.5, 0.1);
@@ -614,6 +975,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
         // Set aegis duration (5 seconds)
         arcaneAegisExpiry.put(playerId, System.currentTimeMillis() + 5000);
+        activateBarrierBonus(player);
 
         // Visual effect
         player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 40, 0.5, 1, 0.5, 0.1);
@@ -625,6 +987,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
         // Set armor duration (20 seconds)
         arcaneArmorExpiry.put(playerId, System.currentTimeMillis() + 20000);
+        activateBarrierBonus(player);
 
         // Visual effect
         player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 30, 0.5, 1, 0.5, 0.1);
@@ -802,6 +1165,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                     // Apply protective effects
                     UUID allyId = ally.getUniqueId();
                     arcaneShieldExpiry.put(allyId, System.currentTimeMillis() + 10000); // 10s shield
+                    activateBarrierBonus(ally);
 
                     // Visual effect
                     ally.getWorld().spawnParticle(Particle.SPELL_MOB, ally.getLocation().add(0, 1, 0), 30, 0.5, 1, 0.5, 0.1);
@@ -819,8 +1183,114 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
     }
 
+    private void activateBarrierBonus(Player player) {
+        UUID id = player.getUniqueId();
+        activeBarrierCounts.put(id, activeBarrierCounts.getOrDefault(id, 0) + 1);
+        // Empowered Hit (skill 19)
+        if (isPurchased(id, ID_OFFSET + 19)) {
+            empoweredHit.put(id, true);
+        }
+        // Negative Guard (skill 20)
+        if (isPurchased(id, ID_OFFSET + 20)) {
+            reduceNegativeEffects(player);
+        }
+        // Barrier Fortitude (skill 21)
+        if (isPurchased(id, ID_OFFSET + 21)) {
+            int count = barrierActivationCount.getOrDefault(id, 0) + 1;
+            barrierActivationCount.put(id, count);
+            if (count % 3 == 0) {
+                List<Long> timers = fortitudeExpiries.computeIfAbsent(id, k -> new ArrayList<>());
+                if (timers.size() < 5) {
+                    timers.add(System.currentTimeMillis() + 10000);
+                    SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(player);
+                    st.addMaxHealth(2);
+                    plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                }
+            }
+        }
+        if (isPurchased(id, ID_OFFSET + 26)) {
+            SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+            stats.addSpellDamageBonus(5);
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+        }
+        if (isPurchased(id, ID_OFFSET + 16)) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 200, 0, false, true, true));
+        }
+    }
+
+    private void deactivateBarrierBonus(Player player) {
+        UUID id = player.getUniqueId();
+        int count = activeBarrierCounts.getOrDefault(id, 0);
+        if (count > 0) {
+            activeBarrierCounts.put(id, count - 1);
+            if (isPurchased(id, ID_OFFSET + 26)) {
+                SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+                stats.addSpellDamageBonus(-5);
+                plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+            }
+            if (isPurchased(id, ID_OFFSET + 16) && count == 1) {
+                player.removePotionEffect(PotionEffectType.SPEED);
+            }
+        }
+    }
+
+    private void reduceNegativeEffects(Player player) {
+        for (PotionEffect effect : player.getActivePotionEffects()) {
+            PotionEffectType type = effect.getType();
+            if (type == PotionEffectType.POISON || type == PotionEffectType.SLOW ||
+                type == PotionEffectType.WEAKNESS || type == PotionEffectType.BLINDNESS ||
+                type == PotionEffectType.WITHER) {
+                int newDur = (int) (effect.getDuration() * 0.9);
+                player.removePotionEffect(type);
+                player.addPotionEffect(new PotionEffect(type, newDur, effect.getAmplifier(), false, effect.isAmbient(), effect.hasParticles()));
+            }
+        }
+    }
+
+    /**
+     * Calculate damage for ascendancy abilities while applying SpellWeaver bonuses.
+     * @param baseDamage Raw damage before Spellweaver modifiers
+     * @param player     The caster
+     * @param stats      Player stats containing spell damage bonuses
+     * @return Final damage after applying bonuses and critical chance
+     */
+    private double calculateSpellDamage(double baseDamage, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
+        double damage = baseDamage + stats.getSpellDamageBonus();
+        damage *= stats.getSpellDamageMultiplier();
+        if (Math.random() * 100 < stats.getSpellCriticalChance()) {
+            damage *= 2.0;
+            ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Spell Critical! x2 dmg");
+        }
+        return damage;
+    }
+
     private int getSkillPurchaseCount(UUID playerId, int skillId) {
         return plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, skillId);
+    }
+
+    /**
+     * Handle Posthumous Shield when the player dies (skill 22)
+     */
+    public void handlePlayerDeath(PlayerDeathEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
+        UUID id = player.getUniqueId();
+        long now = System.currentTimeMillis();
+
+        if (isPurchased(id, ID_OFFSET + 22) && posthumousShieldCooldown.getOrDefault(id, 0L) <= now) {
+            for (Entity e : player.getNearbyEntities(8, 8, 8)) {
+                if (e instanceof Player) {
+                    Player ally = (Player) e;
+                    String allyClass = plugin.getClassManager().getPlayerAscendancy(ally.getUniqueId());
+                    if (allyClass != null && !allyClass.isEmpty()) {
+                        UUID allyId = ally.getUniqueId();
+                        arcaneShieldExpiry.put(allyId, now + 5000);
+                        activateBarrierBonus(ally);
+                        ally.getWorld().spawnParticle(Particle.SPELL_MOB, ally.getLocation().add(0,1,0), 20, 0.5,1,0.5,0.05);
+                        ActionBarUtils.sendActionBar(ally, ChatColor.AQUA + "Shielded by " + player.getName() + "!");
+                    }
+                }
+            }
+            posthumousShieldCooldown.put(id, now + 300000); // 5 min cooldown
+        }
     }
 
     public void clearPlayerData(UUID playerId) {
@@ -845,6 +1315,23 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         nullificationFieldExpiry.remove(playerId);
         sanctuaryLocation.remove(playerId);
         sanctuaryExpiry.remove(playerId);
+        activeBarrierCounts.remove(playerId);
+        damageResponseStacks.remove(playerId);
+        damageResponseExpiry.remove(playerId);
+        slayerGuardStacks.remove(playerId);
+        slayerGuardExpiry.remove(playerId);
+        periodicBarrierLast.remove(playerId);
+        periodicBarrierExpiry.remove(playerId);
+        allyDefenseBonuses.remove(playerId);
+        empoweredHit.remove(playerId);
+        barrierActivationCount.remove(playerId);
+        fortitudeExpiries.remove(playerId);
+        sharedShieldTargets.remove(playerId);
+        cheatDeathExpiry.remove(playerId);
+        cheatDeathCooldown.remove(playerId);
+        posthumousShieldCooldown.remove(playerId);
+        criticalFortitudeExpiry.remove(playerId);
+        lastStandCooldown.remove(playerId);
 
         plugin.getLogger().info("Cleared all ArcaneProtector data for player ID: " + playerId);
     }
