@@ -57,17 +57,6 @@ public class PlayerLevelDisplayHandler implements Listener {
             team.setAllowFriendlyFire(true);
             team.setCanSeeFriendlyInvisibles(false);
         }
-        String rankPrefix = "";
-        if (plugin.getLuckPerms() != null) {
-            net.luckperms.api.model.user.User lpUser = plugin.getLuckPerms().getUserManager().getUser(player.getUniqueId());
-            if (lpUser != null) {
-                String lpPrefix = lpUser.getCachedData().getMetaData().getPrefix();
-                if (lpPrefix != null) {
-                    rankPrefix = ChatColor.translateAlternateColorCodes('&', lpPrefix);
-                }
-            }
-        }
-
         team.setPrefix(String.format("§b[ %d ] §r", level));
         team.setSuffix("");
 
@@ -84,13 +73,12 @@ public class PlayerLevelDisplayHandler implements Listener {
             }
         }
 
-        String tabName = display;
-        if (!rankPrefix.isEmpty()) {
-            tabName = rankPrefix + " " + display;
-        }
-        player.setPlayerListName(tabName);
+        // LuckPerms automatically adds the rank prefix to the tab name, so only use the
+        // player's display name here to avoid duplicate prefixes.
+        player.setPlayerListName(display);
 
-        player.setCustomName(display);
+        // Show level and nick above the player's head without any rank prefix
+        player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
 
         player.setCustomNameVisible(true);
     }
