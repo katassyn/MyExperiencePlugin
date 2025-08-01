@@ -7,8 +7,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
@@ -53,7 +56,19 @@ public class PlayerLevelDisplayHandler implements Listener {
             team.setAllowFriendlyFire(true);
             team.setCanSeeFriendlyInvisibles(false);
         }
-        team.setPrefix(String.format("§b[ %d ] §r", level));
+        String rankPrefix = "";
+        if (plugin.getLuckPerms() != null) {
+            net.luckperms.api.model.user.User lpUser = plugin.getLuckPerms().getUserManager().getUser(player.getUniqueId());
+            if (lpUser != null) {
+                String lpPrefix = lpUser.getCachedData().getMetaData().getPrefix();
+                if (lpPrefix != null) {
+                    rankPrefix = lpPrefix;
+                }
+            }
+        }
+
+        team.setPrefix(String.format("§b[ %d ] §r%s", level, rankPrefix));
+
         team.addEntry(player.getName());
 
         String display = player.getName();
@@ -66,10 +81,22 @@ public class PlayerLevelDisplayHandler implements Listener {
                 }
             }
         }
-        String formatted = String.format("§b[ %d ] §r%s", level, display);
+        String formatted = String.format("§b[ %d ] §r%s%s", level, rankPrefix, display);
         player.setPlayerListName(formatted);
         player.setCustomName(formatted);
         player.setCustomNameVisible(true);
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> updatePlayerTab(event.getPlayer()), 1L);
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> updatePlayerTab(player), 1L);
+
     }
 
     public void updateAllPlayerTabs() {

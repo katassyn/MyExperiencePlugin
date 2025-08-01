@@ -28,6 +28,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.maks.myexperienceplugin.Class.skills.gui.AscendancySkillTreeGUI;
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.event.user.UserDataRecalculateEvent;
 
 import java.io.File;
 import java.sql.Connection;
@@ -169,6 +170,15 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDisconnectListener(partyManager), this);
         getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
+
+        if (luckPerms != null) {
+            luckPerms.getEventBus().subscribe(this, UserDataRecalculateEvent.class, event -> {
+                Player player = Bukkit.getPlayer(event.getUser().getUniqueId());
+                if (player != null) {
+                    Bukkit.getScheduler().runTask(this, () -> playerLevelDisplayHandler.updatePlayerTab(player));
+                }
+            });
+        }
         
         // Register party damage prevention listener
         getServer().getPluginManager().registerEvents(new PartyDamagePreventionListener(this), this);
@@ -668,10 +678,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     }
 
     public void updatePlayerDisplay(Player player) {
-        int level = playerLevels.getOrDefault(player.getUniqueId(), 1);
-        player.setPlayerListName(String.format("§b[ %d ] §r%s", level, player.getName()));
-        player.setCustomName(String.format("§b[ %d ] §r%s", level, player.getName()));
-        player.setCustomNameVisible(true);
+        if (playerLevelDisplayHandler != null) {
+            playerLevelDisplayHandler.updatePlayerTab(player);
+        }
     }
     
     /**
@@ -804,6 +813,10 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
     public double getBonusExpValue() {
         return getConfig().getDouble("Bonus_exp.Value", 100.0);
+    }
+
+    public LuckPerms getLuckPerms() {
+        return luckPerms;
     }
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
