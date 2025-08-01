@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -62,12 +63,13 @@ public class PlayerLevelDisplayHandler implements Listener {
             if (lpUser != null) {
                 String lpPrefix = lpUser.getCachedData().getMetaData().getPrefix();
                 if (lpPrefix != null) {
-                    rankPrefix = lpPrefix;
+                    rankPrefix = ChatColor.translateAlternateColorCodes('&', lpPrefix);
                 }
             }
         }
 
-        team.setPrefix(String.format("§b[ %d ] §r%s", level, rankPrefix));
+        team.setPrefix(String.format("§b[ %d ] §r", level));
+        team.setSuffix("");
 
         team.addEntry(player.getName());
 
@@ -77,13 +79,19 @@ public class PlayerLevelDisplayHandler implements Listener {
             if (user != null) {
                 String nick = user.getNick();
                 if (nick != null && !nick.isEmpty()) {
-                    display = nick;
+                    display = ChatColor.translateAlternateColorCodes('&', nick);
                 }
             }
         }
-        String formatted = String.format("§b[ %d ] §r%s%s", level, rankPrefix, display);
-        player.setPlayerListName(formatted);
-        player.setCustomName(formatted);
+
+        String tabName = display;
+        if (!rankPrefix.isEmpty()) {
+            tabName = rankPrefix + " " + display;
+        }
+        player.setPlayerListName(tabName);
+
+        player.setCustomName(display);
+
         player.setCustomNameVisible(true);
     }
 
