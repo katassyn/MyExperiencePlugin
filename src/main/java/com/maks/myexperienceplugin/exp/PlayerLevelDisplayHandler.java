@@ -11,6 +11,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
@@ -67,6 +68,7 @@ public class PlayerLevelDisplayHandler implements Listener {
         }
 
         team.setPrefix(String.format("§b[ %d ] §r%s", level, rankPrefix));
+
         team.addEntry(player.getName());
 
         String display = player.getName();
@@ -94,6 +96,7 @@ public class PlayerLevelDisplayHandler implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         Bukkit.getScheduler().runTaskLater(plugin, () -> updatePlayerTab(player), 1L);
+
     }
 
     public void updateAllPlayerTabs() {
