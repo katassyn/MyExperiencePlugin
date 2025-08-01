@@ -3,6 +3,8 @@ package com.maks.myexperienceplugin.exp;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
+import net.luckperms.api.LuckPerms;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -20,10 +22,14 @@ public class PlayerLevelDisplayHandler implements Listener {
 
     private final MyExperiencePlugin plugin;
     private final Essentials essentials;
+    private final LuckPerms luckPerms;
+
 
     public PlayerLevelDisplayHandler(MyExperiencePlugin plugin) {
         this.plugin = plugin;
         this.essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+        this.luckPerms = plugin.getLuckPerms();
+
     }
 
     @EventHandler
@@ -73,9 +79,19 @@ public class PlayerLevelDisplayHandler implements Listener {
             }
         }
 
-        // LuckPerms automatically adds the rank prefix to the tab name, so only use the
-        // player's display name here to avoid duplicate prefixes.
-        player.setPlayerListName(display);
+        String rankPrefix = "";
+        if (luckPerms != null) {
+            net.luckperms.api.model.user.User lpUser = luckPerms.getPlayerAdapter(Player.class).getUser(player);
+            if (lpUser != null) {
+                String lpPrefix = lpUser.getCachedData().getMetaData().getPrefix();
+                if (lpPrefix != null) {
+                    rankPrefix = ChatColor.translateAlternateColorCodes('&', lpPrefix) + " ";
+                }
+            }
+        }
+
+        String tabName = String.format("§b[ %d ] §r%s%s", level, rankPrefix, display);
+        player.setPlayerListName(tabName);
 
         // Show level and nick above the player's head without any rank prefix
         player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
