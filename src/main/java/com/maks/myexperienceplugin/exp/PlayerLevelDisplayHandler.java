@@ -90,7 +90,12 @@ public class PlayerLevelDisplayHandler implements Listener {
             }
         }
 
-        String tabName = String.format("%s%s", rankPrefix, display);
+        // Ensure the nickname does not already contain the rank prefix
+        if (!rankPrefix.isEmpty() && display.startsWith(rankPrefix)) {
+            display = display.substring(rankPrefix.length()).trim();
+        }
+
+        String tabName = rankPrefix + display;
 
         player.setPlayerListName(tabName);
 
