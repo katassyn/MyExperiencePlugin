@@ -4,6 +4,7 @@ import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
 import net.luckperms.api.LuckPerms;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -13,6 +14,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
@@ -22,10 +24,12 @@ public class PlayerLevelDisplayHandler implements Listener {
     private final Essentials essentials;
     private final LuckPerms luckPerms;
 
+
     public PlayerLevelDisplayHandler(MyExperiencePlugin plugin) {
         this.plugin = plugin;
         this.essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
         this.luckPerms = plugin.getLuckPerms();
+
     }
 
     @EventHandler
@@ -61,6 +65,7 @@ public class PlayerLevelDisplayHandler implements Listener {
         }
         team.setPrefix(String.format("§b[ %d ] §r", level));
         team.setSuffix("");
+
         team.addEntry(player.getName());
 
         String display = player.getName();
@@ -91,10 +96,12 @@ public class PlayerLevelDisplayHandler implements Listener {
         }
 
         String tabName = rankPrefix + display;
+
         player.setPlayerListName(tabName);
 
         // Show level and nick above the player's head without any rank prefix
         player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
+
         player.setCustomNameVisible(true);
     }
 
@@ -107,6 +114,7 @@ public class PlayerLevelDisplayHandler implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         Bukkit.getScheduler().runTaskLater(plugin, () -> updatePlayerTab(player), 1L);
+
     }
 
     public void updateAllPlayerTabs() {
@@ -117,6 +125,7 @@ public class PlayerLevelDisplayHandler implements Listener {
 
     private void removePlayerTeam(Player player) {
         Scoreboard scoreboard = player.getScoreboard();
+
         if (scoreboard == null) {
             return;
         }
