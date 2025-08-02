@@ -99,10 +99,14 @@ public class PlayerLevelDisplayHandler implements Listener {
         // Use nickname alone in the tab list; prefix comes from scoreboard team
         player.setPlayerListName(display);
 
-        // Show level and nick above the player's head without any rank prefix
-        player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
+        // Set the player's display name first so plugins like Essentials update correctly
+        player.setDisplayName(rankPrefix + display);
 
-        player.setCustomNameVisible(true);
+        // Reapply the custom name on the next tick to ensure it isn't overwritten
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
+            player.setCustomNameVisible(true);
+        });
     }
 
     @EventHandler
