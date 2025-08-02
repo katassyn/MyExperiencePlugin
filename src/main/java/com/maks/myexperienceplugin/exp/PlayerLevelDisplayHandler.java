@@ -49,12 +49,9 @@ public class PlayerLevelDisplayHandler implements Listener {
     public void updatePlayerTab(Player player) {
         int level = plugin.getPlayerLevel(player);
 
-        // Użyj scoreboardu przypisanego do gracza (LuckPerms może używać własnego)
-        Scoreboard scoreboard = player.getScoreboard();
-        if (scoreboard == null) {
-            plugin.getLogger().warning("Scoreboard not available. Skipping tab update for " + player.getName());
-            return;
-        }
+        // Use the main scoreboard so all players share the same teams
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        player.setScoreboard(scoreboard);
 
         String teamName = "level_" + player.getName();
         Team team = scoreboard.getTeam(teamName);
@@ -63,11 +60,6 @@ public class PlayerLevelDisplayHandler implements Listener {
             team.setAllowFriendlyFire(true);
             team.setCanSeeFriendlyInvisibles(false);
         }
-        team.setPrefix(String.format("§b[ %d ] §r", level));
-        team.setSuffix("");
-
-        team.addEntry(player.getName());
-
         String display = player.getName();
         if (essentials != null) {
             User user = essentials.getUser(player);
@@ -78,26 +70,34 @@ public class PlayerLevelDisplayHandler implements Listener {
                 }
             }
         }
-
         String rankPrefix = "";
         if (luckPerms != null) {
             net.luckperms.api.model.user.User lpUser = luckPerms.getPlayerAdapter(Player.class).getUser(player);
             if (lpUser != null) {
                 String lpPrefix = lpUser.getCachedData().getMetaData().getPrefix();
                 if (lpPrefix != null) {
-                    rankPrefix = ChatColor.translateAlternateColorCodes('&', lpPrefix) + " ";
+                    rankPrefix = ChatColor.translateAlternateColorCodes('&', lpPrefix);
                 }
             }
         }
+
+        // Build team prefix combining level and rank prefix
+        String teamPrefix = String.format("§b[ %d ] §r", level);
+        if (!rankPrefix.isEmpty()) {
+            teamPrefix += rankPrefix + " ";
+        }
+        team.setPrefix(teamPrefix);
+        team.setSuffix("");
+
+        team.addEntry(player.getName());
 
         // Ensure the nickname does not already contain the rank prefix
         if (!rankPrefix.isEmpty() && display.startsWith(rankPrefix)) {
             display = display.substring(rankPrefix.length()).trim();
         }
 
-        String tabName = rankPrefix + display;
-
-        player.setPlayerListName(tabName);
+        // Use nickname alone in the tab list; prefix comes from scoreboard team
+        player.setPlayerListName(display);
 
         // Show level and nick above the player's head without any rank prefix
         player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
@@ -107,7 +107,9 @@ public class PlayerLevelDisplayHandler implements Listener {
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        Bukkit.getScheduler().runTaskLater(plugin, () -> updatePlayerTab(event.getPlayer()), 1L);
+        Player player = event.getPlayer();
+        removePlayerTeam(player);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> updatePlayerTab(player), 1L);
     }
 
     @EventHandler
@@ -124,11 +126,7 @@ public class PlayerLevelDisplayHandler implements Listener {
     }
 
     private void removePlayerTeam(Player player) {
-        Scoreboard scoreboard = player.getScoreboard();
-
-        if (scoreboard == null) {
-            return;
-        }
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
         Team team = scoreboard.getTeam("level_" + player.getName());
         if (team != null) {
             team.unregister();
