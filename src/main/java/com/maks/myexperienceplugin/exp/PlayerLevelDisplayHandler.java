@@ -49,8 +49,8 @@ public class PlayerLevelDisplayHandler implements Listener {
     public void updatePlayerTab(Player player) {
         int level = plugin.getPlayerLevel(player);
 
-        // Pobierz główny scoreboard serwera
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        // Użyj scoreboardu przypisanego do gracza (LuckPerms może używać własnego)
+        Scoreboard scoreboard = player.getScoreboard();
         if (scoreboard == null) {
             plugin.getLogger().warning("Scoreboard not available. Skipping tab update for " + player.getName());
             return;
@@ -119,7 +119,8 @@ public class PlayerLevelDisplayHandler implements Listener {
     }
 
     private void removePlayerTeam(Player player) {
-        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        Scoreboard scoreboard = player.getScoreboard();
+
         if (scoreboard == null) {
             return;
         }
