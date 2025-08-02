@@ -90,7 +90,8 @@ public class PlayerLevelDisplayHandler implements Listener {
             }
         }
 
-        String tabName = String.format("§b[ %d ] §r%s%s", level, rankPrefix, display);
+        String tabName = String.format("%s%s", rankPrefix, display);
+
         player.setPlayerListName(tabName);
 
         // Show level and nick above the player's head without any rank prefix
