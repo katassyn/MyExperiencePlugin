@@ -1007,14 +1007,31 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
                         if (skillTreeManager.getPurchasedSkills(uuid).contains(300003)) {
                             // Apply fire resistance effect
                             player.addPotionEffect(new org.bukkit.potion.PotionEffect(
-                                org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE, 
+                                org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE,
                                 Integer.MAX_VALUE, 0, false, false, true));
-                            getLogger().info("[FLAMEWARDEN] Applied infinite fire resistance to " + player.getName() + " on login");
                         }
                     }, 20L); // 1 second delay
                 }
             }
         }, 40L); // 2 second delay
+    }
+
+    @EventHandler
+    public void onPlayerRespawn(org.bukkit.event.player.PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+        String ascendancy = classManager.getPlayerAscendancy(uuid);
+
+        if ("FlameWarden".equals(ascendancy) && ascendancySkillEffectIntegrator != null) {
+            // Reapply infinite fire resistance shortly after respawn
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                if (skillTreeManager.getPurchasedSkills(uuid).contains(300003)) {
+                    player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.FIRE_RESISTANCE,
+                        Integer.MAX_VALUE, 0, false, false, true));
+                }
+            }, 20L); // 1 second delay
+        }
     }
 
     // Add this method to your MyExperiencePlugin class:
