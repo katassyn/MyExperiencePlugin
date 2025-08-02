@@ -96,6 +96,9 @@ public class PlayerLevelDisplayHandler implements Listener {
             display = display.substring(rankPrefix.length()).trim();
         }
 
+        // Set the player's display name so chat reflects the rank prefix
+        player.setDisplayName(rankPrefix + display);
+
         // Use nickname alone in the tab list; prefix comes from scoreboard team
         player.setPlayerListName(display);
 
