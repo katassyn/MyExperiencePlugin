@@ -12,10 +12,12 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -25,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Handles ArcaneProtector-specific skill effects
  */
-public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler {
+public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler implements Listener {
     private static final int ID_OFFSET = 900000;
 
     // Debug flag
@@ -47,7 +49,6 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     }
 
     // Maps to track shields and barriers
-    private final Map<UUID, Double> manaBarrierValues = new ConcurrentHashMap<>();
     private final Map<UUID, Long> arcaneShieldExpiry = new ConcurrentHashMap<>();
     private final Map<UUID, Long> arcaneAegisExpiry = new ConcurrentHashMap<>();
     private final Map<UUID, Long> arcaneArmorExpiry = new ConcurrentHashMap<>();
@@ -62,9 +63,8 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     private final Map<UUID, List<Location>> healingCircles = new ConcurrentHashMap<>();
     private final Map<UUID, Long> healingCirclesExpiry = new ConcurrentHashMap<>();
 
-    // Maps to track spell absorption and deflection
+    // Maps to track spell absorption
     private final Map<UUID, Long> spellAbsorptionCooldown = new ConcurrentHashMap<>();
-    private final Map<UUID, Long> spellDeflectionCooldown = new ConcurrentHashMap<>();
 
     // Maps to track arcane bonds
     private final Map<UUID, UUID> arcaneBonds = new ConcurrentHashMap<>();
@@ -74,8 +74,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     private final Map<UUID, Long> dispelMagicCooldown = new ConcurrentHashMap<>();
     private final Map<UUID, Long> cleansingAuraExpiry = new ConcurrentHashMap<>();
 
-    // Maps to track arcane immunity and nullification field
-    private final Map<UUID, Long> arcaneImmunityExpiry = new ConcurrentHashMap<>();
+    // Maps to track nullification field
     private final Map<UUID, Location> nullificationFieldLocation = new ConcurrentHashMap<>();
     private final Map<UUID, Long> nullificationFieldExpiry = new ConcurrentHashMap<>();
 
@@ -107,15 +106,23 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     private final Map<UUID, Long> periodicBarrierLast = new ConcurrentHashMap<>();
     private final Map<UUID, Long> periodicBarrierExpiry = new ConcurrentHashMap<>();
 
-    // Cheat Death tracking (skill 27)
-    private final Map<UUID, Long> cheatDeathExpiry = new ConcurrentHashMap<>();
+    // [11] tymczasowe +2% spell dmg / 5s za KAŻDĄ aktywację bariery (max 5 stacków)
+    private final Map<UUID, Deque<Long>> mdBarrierSpellBuffs = new ConcurrentHashMap<>();
+
+    // [13] awaryjna bariera 15% / 5s przy HP<30%
+    private final Map<UUID, Long> mdLowHp30BarrierExpiry = new ConcurrentHashMap<>();
+
+    // (25) Last Stand 3s, CD 3 min
+    private final Map<UUID, Long> lastStandExpiry = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastStandCooldown = new ConcurrentHashMap<>();
+
+    // (27) Cheat Death barrier tracking
+    private final Map<UUID, Double> cheatDeathBarrierLeft = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> cheatDeathBarrierExpiry = new ConcurrentHashMap<>();
     private final Map<UUID, Long> cheatDeathCooldown = new ConcurrentHashMap<>();
 
     // Critical Fortitude tracking (skill 10)
     private final Map<UUID, Long> criticalFortitudeExpiry = new ConcurrentHashMap<>();
-
-    // Last Stand cooldown (skill 25)
-    private final Map<UUID, Long> lastStandCooldown = new ConcurrentHashMap<>();
 
     // Posthumous Shield cooldown (skill 22)
     private final Map<UUID, Long> posthumousShieldCooldown = new ConcurrentHashMap<>();
@@ -128,10 +135,35 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
     public ArcaneProtectorSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
     public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
+        {
+            UUID pid = player.getUniqueId();
+            long now = System.currentTimeMillis();
+
+            // [11] +2% spell dmg *za każdy* aktywowany ostatnio shield (5s, max 5 stacków)
+            if (isPurchased(pid, ID_OFFSET + 11)) {
+                int stacks = 0;
+                Deque<Long> q = mdBarrierSpellBuffs.get(pid);
+                if (q != null) {
+                    for (Long t : q) {
+                        if (t > now) stacks++;
+                    }
+                }
+                if (stacks > 0) {
+                    stats.multiplySpellDamageMultiplier(1.0 + 0.02 * Math.min(5, stacks));
+                }
+            }
+
+            // (26) każda „AKTYWNA” bariera → +5% spell dmg
+            if (isPurchased(pid, ID_OFFSET + 26) && isAnyBarrierActive(pid)) {
+                stats.multiplySpellDamageMultiplier(1.05);
+            }
+        }
+
         int originalId = skillId - ID_OFFSET;
 
         switch (originalId) {
@@ -156,12 +188,8 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                     ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 3: Protective Aura enabled");
                 }
                 break;
-            case 4: // Mana Barrier
+            case 4: // Weaken
                 // Effect applied in damage handler
-                if (debuggingFlag == 1) {
-                    plugin.getLogger().info("ARCANE PROTECTOR SKILL 4: Will apply Mana Barrier dynamically");
-                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ARCANE PROTECTOR SKILL 4: Mana Barrier enabled");
-                }
                 break;
             case 7: // Arcane Reflection
                 // Effect applied in damage handler
@@ -183,13 +211,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             case 12: // Fortified Barrier
                 // Effect applied in damage handler
                 break;
-            case 13: // Arcane Resistance
-                // Effect applied in damage handler
-                break;
             case 17: // Spell Ward
-                // Effect applied in damage handler
-                break;
-            case 22: // Spell Deflection
                 // Effect applied in damage handler
                 break;
             // Other skills are handled dynamically
@@ -199,27 +221,100 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     @Override
     public void handleEntityDamage(EntityDamageEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
-        double damage = event.getDamage();
-
         long now = System.currentTimeMillis();
 
+        // [13] przy HP<30% — uruchom barierę 15% na 5s (bez CD)
+        if (isPurchased(playerId, ID_OFFSET + 13)) {
+            double hpAfter = player.getHealth() - event.getFinalDamage();
+            if (hpAfter <= player.getMaxHealth() * 0.30 && mdLowHp30BarrierExpiry.getOrDefault(playerId, 0L) <= now) {
+                mdLowHp30BarrierExpiry.put(playerId, now + 5000);
+                player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0,1,0), 30, .6,1,.6, .05);
+                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Emergency Barrier (15%)");
+            }
+        }
+
+        // (25) Last Stand: przy HP<15% – 3s pełnej ochrony, CD 3 min
+        if (isPurchased(playerId, ID_OFFSET + 25)) {
+            if (lastStandExpiry.getOrDefault(playerId, 0L) > now) {
+                event.setCancelled(true);
+                return;
+            }
+            if (player.getHealth() <= player.getMaxHealth() * 0.15 && lastStandCooldown.getOrDefault(playerId, 0L) <= now) {
+                lastStandCooldown.put(playerId, now + 180_000);
+                lastStandExpiry.put(playerId, now + 3000);
+                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Last Stand!");
+                event.setCancelled(true);
+                return;
+            }
+        }
+
+        // (27) Cheat Death: bariera 30% HP na 5s, CD 5 min
+        if (isPurchased(playerId, ID_OFFSET + 27)
+                && player.getHealth() - event.getFinalDamage() <= 0
+                && cheatDeathCooldown.getOrDefault(playerId, 0L) <= now) {
+            cheatDeathCooldown.put(playerId, now + 300_000);
+            cheatDeathBarrierLeft.put(playerId, player.getMaxHealth() * 0.30);
+            cheatDeathBarrierExpiry.put(playerId, now + 5000);
+            player.setHealth(Math.max(1.0, player.getHealth()));
+            ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Cheat Death!");
+            event.setCancelled(true);
+            return;
+        }
+
+        // aktywna bariera „cheat death” – pochłania obrażenia
+        if (cheatDeathBarrierExpiry.getOrDefault(playerId, 0L) > now) {
+            double left = cheatDeathBarrierLeft.getOrDefault(playerId, 0.0);
+            double dmg = event.getFinalDamage();
+            if (left >= dmg) {
+                cheatDeathBarrierLeft.put(playerId, left - dmg);
+                event.setCancelled(true);
+                return;
+            } else {
+                cheatDeathBarrierLeft.remove(playerId);
+                cheatDeathBarrierExpiry.remove(playerId);
+                event.setDamage(dmg - left);
+            }
+        }
+
         // [MD] Konsumpcja barier w TEJ kolejności: on-hit (5%), potem periodic (7%)
-        // Jednorazowa bariera z #1
         if (Boolean.TRUE.equals(onHitBarrierReady.get(playerId))) {
             event.setDamage(event.getDamage() * 0.95);
-            onHitBarrierReady.put(playerId, false); // skonsumowana
-        }
-        // Periodyczna bariera z #8 (jeśli aktywna)
-        else if (periodicBarrierExpiry.getOrDefault(playerId, 0L) > now) {
+            onHitBarrierReady.put(playerId, false);
+            handleBarrierActivation(player);
+            if (isPurchased(playerId, ID_OFFSET + 23) && event instanceof EntityDamageByEntityEvent) {
+                if (Math.random() < 0.15) {
+                    Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+                    if (damager instanceof LivingEntity) {
+                        ((LivingEntity) damager).damage(event.getFinalDamage() * 0.10, player);
+                    }
+                }
+            }
+        } else if (periodicBarrierExpiry.getOrDefault(playerId, 0L) > now) {
             event.setDamage(event.getDamage() * 0.93);
-            periodicBarrierExpiry.remove(playerId); // skonsumowana
+            periodicBarrierExpiry.remove(playerId);
+            handleBarrierActivation(player);
+            if (isPurchased(playerId, ID_OFFSET + 23) && event instanceof EntityDamageByEntityEvent) {
+                if (Math.random() < 0.15) {
+                    Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+                    if (damager instanceof LivingEntity) {
+                        ((LivingEntity) damager).damage(event.getFinalDamage() * 0.10, player);
+                    }
+                }
+            }
         }
+
+        double damage = event.getDamage();
 
         // Critical Fortitude active
         if (criticalFortitudeExpiry.getOrDefault(playerId, 0L) > now) {
             event.setDamage(event.getDamage() * 0.9);
         }
-        
+
+        // [13] aktywna bariera 15%
+        if (mdLowHp30BarrierExpiry.getOrDefault(playerId, 0L) > now) {
+            event.setDamage(event.getDamage() * 0.85);
+        }
+
         // [MD][4] Jeśli napastnik jest „osłabiony", jego dmg w Ciebie -5%
         if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent edbe = (EntityDamageByEntityEvent) event;
@@ -229,12 +324,6 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                     event.setDamage(event.getDamage() * 0.95);
                 }
             }
-        }
-
-        // If Cheat Death barrier is active, block damage
-        if (cheatDeathExpiry.getOrDefault(playerId, 0L) > now) {
-            event.setCancelled(true);
-            return;
         }
 
         // Detect critical hit on player to activate Critical Fortitude (skill 10)
@@ -279,21 +368,6 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         }
 
         // Periodic Barrier (skill 8) - implementation moved to the top of the method
-
-        // Check for Mana Barrier (skill 4)
-        if (isPurchased(playerId, ID_OFFSET + 4)) {
-            // Convert 10% of damage to mana cost
-            double convertedDamage = damage * 0.1;
-            // In a real implementation, this would reduce player's mana
-            manaBarrierValues.put(playerId, manaBarrierValues.getOrDefault(playerId, 0.0) + convertedDamage);
-
-            // Reduce actual damage
-            event.setDamage(damage - convertedDamage);
-
-            // Visual effect
-            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-            ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Mana Barrier absorbed " + String.format("%.1f", convertedDamage) + " damage!");
-        }
 
         // Check for Arcane Shield (skill 1)
         if (isPurchased(playerId, ID_OFFSET + 1) && arcaneShieldExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()) {
@@ -342,53 +416,13 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             }
         }
 
-        // Check for Area Barrier damage reduction (skill 17)
+        // [17] Dodatkowa redukcja AoE -10% tylko gdy bariera aktywna
         if (isPurchased(playerId, ID_OFFSET + 17)
+                && isAnyBarrierActive(playerId)
                 && (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION
                 || event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
                 || event.getCause() == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK)) {
-            // Reduce area damage by 10%
-            event.setDamage(event.getDamage() * 0.9);
-
-            // Visual effect
-            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-        }
-
-        // Check for Spell Deflection (skill 22)
-        if (isPurchased(playerId, ID_OFFSET + 22) && event.getCause() == EntityDamageEvent.DamageCause.MAGIC) {
-            // 15% chance to completely negate
-            if (rollChance(15, player, "Spell Deflection") && spellDeflectionCooldown.getOrDefault(playerId, 0L) < System.currentTimeMillis()) {
-                // Cancel the event
-                event.setCancelled(true);
-
-                // Set cooldown (3 seconds)
-                spellDeflectionCooldown.put(playerId, System.currentTimeMillis() + 3000);
-
-                // Visual effect
-                player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 40, 0.5, 1, 0.5, 0.1);
-                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Spell completely deflected!");
-            }
-        }
-
-        // Check for Arcane Resistance (skill 13)
-        if (isPurchased(playerId, ID_OFFSET + 13) && event.getCause() == EntityDamageEvent.DamageCause.MAGIC) {
-            // Reduce magic damage by 25%
-            event.setDamage(damage * 0.75);
-
-            // Visual effect
-            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-        }
-
-        // Check for Arcane Immunity (skill 23)
-        if (isPurchased(playerId, ID_OFFSET + 23) && event.getCause() == EntityDamageEvent.DamageCause.MAGIC) {
-            if (arcaneImmunityExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()) {
-                // Complete immunity to magic damage
-                event.setCancelled(true);
-
-                // Visual effect
-                player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 40, 0.5, 1, 0.5, 0.1);
-                ActionBarUtils.sendActionBar(player, ChatColor.BLUE + "Magic damage completely negated!");
-            }
+            event.setDamage(event.getDamage() * 0.90);
         }
 
         // Check for Arcane Bond (skill 20)
@@ -456,27 +490,20 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             }
         }
 
-        // Last Stand (skill 25) - activate barrier at low HP
-        if (isPurchased(playerId, ID_OFFSET + 25)
-                && player.getHealth() - event.getFinalDamage() <= player.getMaxHealth() * 0.15
-                && lastStandCooldown.getOrDefault(playerId, 0L) <= now) {
-            arcaneImmunityExpiry.put(playerId, now + 3000);
-            lastStandCooldown.put(playerId, now + 180000); // 3 min cooldown
-            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0,1,0), 40,1,1,1,0.1);
-            ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Last Stand activated!");
-        }
-
-        // Cheat Death (skill 27) - trigger when damage would kill the player
-        if (isPurchased(playerId, ID_OFFSET + 27)
-                && player.getHealth() - event.getFinalDamage() <= 0
-                && cheatDeathCooldown.getOrDefault(playerId, 0L) <= now) {
-            event.setCancelled(true);
-            player.setHealth(Math.min(player.getMaxHealth() * 0.3, player.getMaxHealth()));
-            cheatDeathExpiry.put(playerId, now + 5000); // 5s immunity
-            cheatDeathCooldown.put(playerId, now + 300000); // 5 min cooldown
-            player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0,1,0), 50,1,1,1,0.1);
-            ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Cheat Death activated!");
-            return;
+        // jeśli ten cios zabija, a node 22 aktywny i CD minął: Resistance dla sojuszników
+        if (isPurchased(playerId, ID_OFFSET + 22) && player.getHealth() - event.getFinalDamage() <= 0
+                && posthumousShieldCooldown.getOrDefault(playerId, 0L) <= now) {
+            posthumousShieldCooldown.put(playerId, now + 300_000);
+            var loc = player.getLocation().clone();
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                for (Player ally : loc.getWorld().getNearbyPlayers(loc, 5)) {
+                    if (!ally.equals(player)) {
+                        ally.addPotionEffect(new PotionEffect(
+                                PotionEffectType.DAMAGE_RESISTANCE, 100, 0, true, true, true));
+                        ActionBarUtils.sendActionBar(ally, ChatColor.BLUE + "Posthumous Shield!");
+                    }
+                }
+            });
         }
 
         // After processing damage, increment Damage Response stacks (skill 2)
@@ -497,13 +524,13 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             long now = System.currentTimeMillis();
 
             // [MD][1] 10% szansy: przygotuj barierę 5% na kolejny przyjęty hit (bez czasu – skonsumujemy przy następnym dmg)
-            if (isPurchased(playerId, ID_OFFSET + 1) && Math.random() < 0.10) {
+            if (isPurchased(playerId, ID_OFFSET + 1) && rollChance(10, player, "Barrier ready")) {
                 onHitBarrierReady.put(playerId, true);
                 ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Magic Barrier ready (5%)");
             }
 
             // [MD][4] 10% szansy: osłab wroga (-5% dmg) na 3s
-            if (isPurchased(playerId, ID_OFFSET + 4) && Math.random() < 0.10) {
+            if (isPurchased(playerId, ID_OFFSET + 4) && rollChance(10, player, "Weaken")) {
                 weakenedEnemiesUntil.put(target.getUniqueId(), now + 3000);
                 target.getWorld().spawnParticle(Particle.SPELL_MOB_AMBIENT, target.getLocation().add(0,1,0), 10, 0.4,0.6,0.4, 0.02);
             }
@@ -1146,17 +1173,6 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         ActionBarUtils.sendActionBar(target, ChatColor.YELLOW + "Arcane Bond created with " + player.getName() + "!");
     }
 
-    public void activateArcaneImmunity(Player player) {
-        UUID playerId = player.getUniqueId();
-
-        // Set immunity duration (3 seconds)
-        arcaneImmunityExpiry.put(playerId, System.currentTimeMillis() + 3000);
-
-        // Visual effect
-        player.getWorld().spawnParticle(Particle.SPELL_MOB, player.getLocation().add(0, 1, 0), 40, 0.5, 1, 0.5, 0.1);
-        ActionBarUtils.sendActionBar(player, ChatColor.GOLD + "Arcane Immunity activated!");
-    }
-
     public void createNullificationField(Player player) {
         UUID playerId = player.getUniqueId();
 
@@ -1218,6 +1234,14 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     private void activateBarrierBonus(Player player) {
         UUID id = player.getUniqueId();
         activeBarrierCounts.put(id, activeBarrierCounts.getOrDefault(id, 0) + 1);
+        // [11] +2% spell dmg na 5s (stackuje do 5)
+        if (isPurchased(id, ID_OFFSET + 11)) {
+            Deque<Long> q = mdBarrierSpellBuffs.computeIfAbsent(id, k -> new ArrayDeque<>());
+            if (q.size() < 5) q.addLast(System.currentTimeMillis() + 5000);
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+            plugin.getServer().getScheduler().runTaskLater(plugin,
+                    () -> plugin.getSkillEffectsHandler().refreshPlayerStats(player), 100);
+        }
         // Empowered Hit (skill 19)
         if (isPurchased(id, ID_OFFSET + 19)) {
             empoweredHit.put(id, true);
@@ -1250,6 +1274,16 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         }
     }
 
+    public void registerDodge(Player player) {
+        UUID id = player.getUniqueId();
+        if (!isPurchased(id, ID_OFFSET + 12)) return;
+        long until = System.currentTimeMillis() + 4000;
+        arcaneShieldExpiry.put(id, until);
+        activateBarrierBonus(player);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> deactivateBarrierBonus(player), 80);
+        ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Evasive Shield (10%)");
+    }
+
     private void deactivateBarrierBonus(Player player) {
         UUID id = player.getUniqueId();
         int count = activeBarrierCounts.getOrDefault(id, 0);
@@ -1275,6 +1309,65 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                 int newDur = (int) (effect.getDuration() * 0.9);
                 player.removePotionEffect(type);
                 player.addPotionEffect(new PotionEffect(type, newDur, effect.getAmplifier(), false, effect.isAmbient(), effect.hasParticles()));
+            }
+        }
+    }
+
+    public boolean isAnyBarrierActive(UUID pid) {
+        long now = System.currentTimeMillis();
+        return arcaneShieldExpiry.getOrDefault(pid, 0L) > now ||
+               periodicBarrierExpiry.getOrDefault(pid, 0L) > now ||
+               arcaneAegisExpiry.getOrDefault(pid, 0L) > now ||
+               arcaneArmorExpiry.getOrDefault(pid, 0L) > now ||
+               mdLowHp30BarrierExpiry.getOrDefault(pid, 0L) > now ||
+               lastStandExpiry.getOrDefault(pid, 0L) > now ||
+               cheatDeathBarrierExpiry.getOrDefault(pid, 0L) > now;
+    }
+
+    private void handleBarrierActivation(Player p) {
+        UUID pid = p.getUniqueId();
+        int c = barrierActivationCount.getOrDefault(pid, 0) + 1;
+        barrierActivationCount.put(pid, c);
+        if (c % 3 == 0 && isPurchased(pid, ID_OFFSET + 21)) {
+            var attr = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+            if (attr != null) {
+                java.util.UUID modId = java.util.UUID.nameUUIDFromBytes(("AP_MAXHP_" + pid).getBytes());
+                attr.getModifiers().stream().filter(m -> m.getName().equals("AP_MAXHP_BONUS")).forEach(attr::removeModifier);
+                var mod = new org.bukkit.attribute.AttributeModifier(modId, "AP_MAXHP_BONUS", 0.02,
+                        org.bukkit.attribute.AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+                attr.addModifier(mod);
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                    var a = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+                    if (a != null) a.getModifiers().stream().filter(m -> m.getName().equals("AP_MAXHP_BONUS")).forEach(a::removeModifier);
+                }, 200);
+            }
+        }
+    }
+
+    @org.bukkit.event.EventHandler
+    public void onEffect(EntityPotionEffectEvent e) {
+        if (!(e.getEntity() instanceof Player)) return;
+        Player p = (Player) e.getEntity();
+        UUID pid = p.getUniqueId();
+        if (!isPurchased(pid, ID_OFFSET + 20)) return;
+
+        if (isAnyBarrierActive(pid)) {
+            var ne = e.getNewEffect();
+            if (ne == null) return;
+            var bad = java.util.EnumSet.of(
+                    PotionEffectType.BLINDNESS,
+                    PotionEffectType.WEAKNESS,
+                    PotionEffectType.SLOW,
+                    PotionEffectType.SLOW_DIGGING,
+                    PotionEffectType.POISON,
+                    PotionEffectType.WITHER,
+                    PotionEffectType.HUNGER,
+                    PotionEffectType.DARKNESS
+            );
+            if (bad.contains(ne.getType())) {
+                int newDur = Math.max(1, (int) Math.floor(ne.getDuration() * 0.90));
+                e.setNewEffect(new PotionEffect(ne.getType(), newDur, ne.getAmplifier(),
+                        ne.isAmbient(), ne.hasParticles(), ne.hasIcon()));
             }
         }
     }
@@ -1326,7 +1419,6 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     }
 
     public void clearPlayerData(UUID playerId) {
-        manaBarrierValues.remove(playerId);
         arcaneShieldExpiry.remove(playerId);
         arcaneAegisExpiry.remove(playerId);
         arcaneArmorExpiry.remove(playerId);
@@ -1337,17 +1429,17 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         healingCircles.remove(playerId);
         healingCirclesExpiry.remove(playerId);
         spellAbsorptionCooldown.remove(playerId);
-        spellDeflectionCooldown.remove(playerId);
         arcaneBonds.remove(playerId);
         arcaneBondsExpiry.remove(playerId);
         dispelMagicCooldown.remove(playerId);
         cleansingAuraExpiry.remove(playerId);
-        arcaneImmunityExpiry.remove(playerId);
         nullificationFieldLocation.remove(playerId);
         nullificationFieldExpiry.remove(playerId);
         sanctuaryLocation.remove(playerId);
         sanctuaryExpiry.remove(playerId);
         activeBarrierCounts.remove(playerId);
+        mdBarrierSpellBuffs.remove(playerId);
+        mdLowHp30BarrierExpiry.remove(playerId);
         damageResponseStacks.remove(playerId);
         damageResponseExpiry.remove(playerId);
         slayerGuardStacks.remove(playerId);
@@ -1359,10 +1451,12 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         barrierActivationCount.remove(playerId);
         fortitudeExpiries.remove(playerId);
         sharedShieldTargets.remove(playerId);
-        cheatDeathExpiry.remove(playerId);
+        cheatDeathBarrierLeft.remove(playerId);
+        cheatDeathBarrierExpiry.remove(playerId);
         cheatDeathCooldown.remove(playerId);
         posthumousShieldCooldown.remove(playerId);
         criticalFortitudeExpiry.remove(playerId);
+        lastStandExpiry.remove(playerId);
         lastStandCooldown.remove(playerId);
 
         plugin.getLogger().info("Cleared all ArcaneProtector data for player ID: " + playerId);
