@@ -352,6 +352,20 @@ public class SkillEffectsHandler implements Listener {
                 }
             }
         }
+        
+        // [Arcane Protector][3] Defensive Presence – -2% dmg dla ofiary, jeśli w 5 blokach stoi AP z tym nodem
+        if (event.getEntity() instanceof Player) {
+            Player victim = (Player) event.getEntity();
+            for (Player near : victim.getWorld().getNearbyPlayers(victim.getLocation(), 5)) {
+                if (near.equals(victim)) continue;
+                if ("SpellWeaver".equalsIgnoreCase(plugin.getClassManager().getPlayerClass(near.getUniqueId()))
+                        && "ArcaneProtector".equalsIgnoreCase(plugin.getClassManager().getPlayerAscendancy(near.getUniqueId()))
+                        && plugin.getSkillTreeManager().getSkillPurchaseCount(near.getUniqueId(), 900000 + 3) > 0) { // ID_OFFSET + 3
+                    event.setDamage(event.getDamage() * 0.98); // -2%
+                    break; // nie stackujemy wielu AP
+                }
+            }
+        }
 
         // First check for ascendancy-specific handler
         BaseSkillEffectsHandler handler = null;

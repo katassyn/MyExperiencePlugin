@@ -4,15 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf7838df-4fe5-4873-9e97-893af63b5618" name="Changes" comment="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path.">
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+    <list default="true" id="cf7838df-4fe5-4873-9e97-893af63b5618" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dependency-reduced-pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/PlayerLevelDisplayHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/PlayerLevelDisplayHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/MyExperiencePlugin.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/MyExperiencePlugin.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BaseSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BaseSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ArcaneProtectorSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ArcaneProtectorSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ChronomancerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ChronomancerSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ElementalistSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ElementalistSkillEffectsHandler.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +74,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix/spellweaver-nodes-ticks&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
@@ -255,6 +253,8 @@
       <workItem from="1754160283581" duration="612000" />
       <workItem from="1754163824829" duration="42000" />
       <workItem from="1754202709968" duration="652000" />
+      <workItem from="1754635509465" duration="2190000" />
+      <workItem from="1754638897405" duration="2010000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed ranger skill tree a bit + added new structure of classes + ascendancys">
       <option name="closed" value="true" />
@@ -400,7 +400,15 @@
       <option name="project" value="LOCAL" />
       <updated>1753854143147</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="fix">
+      <option name="closed" value="true" />
+      <created>1754635523706</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1754635523706</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -437,7 +445,8 @@
     <MESSAGE value="Introduce new utilities and features for debugging, party integration, and skill effects.&#10;&#10;- Added `DebugUtils` for standardized debugging messages and chance rolls with detailed output.&#10;- Implemented `PartyClassIntegration` for party-based damage and buff checks.&#10;- Added `PartyDamagePreventionListener` to prevent damage and effects among party members.&#10;- Refactored `BerserkerVisualEffects` with optimized particle and sound effects.&#10;- Introduced `UpdateRankingsCommand` to manually trigger player ranking updates asynchronously.&#10;- Enhanced `FlameWardenSkillEffectsHandler` for dynamic debug notifications and improved skill handling." />
     <MESSAGE value="Enhance `BeastmasterSkillEffectsHandler` with unified cooldowns, summon maintenance, and duplicate cleanup. Include debug capabilities and additional event handling (respawn, world change, quit)." />
     <MESSAGE value="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path." />
-    <option name="LAST_COMMIT_MESSAGE" value="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path." />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

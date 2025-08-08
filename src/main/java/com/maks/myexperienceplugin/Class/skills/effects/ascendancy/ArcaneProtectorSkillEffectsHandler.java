@@ -119,6 +119,12 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
     // Posthumous Shield cooldown (skill 22)
     private final Map<UUID, Long> posthumousShieldCooldown = new ConcurrentHashMap<>();
+    
+    // [MD][1] Jednorazowa bariera z proca on-hit (5%)
+    private final Map<UUID, Boolean> onHitBarrierReady = new ConcurrentHashMap<>();
+
+    // [MD][4] Osłabienie wroga (-5% outgoing dmg na 3s)
+    private final Map<UUID, Long> weakenedEnemiesUntil = new ConcurrentHashMap<>();
 
     public ArcaneProtectorSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -197,9 +203,32 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
 
         long now = System.currentTimeMillis();
 
+        // [MD] Konsumpcja barier w TEJ kolejności: on-hit (5%), potem periodic (7%)
+        // Jednorazowa bariera z #1
+        if (Boolean.TRUE.equals(onHitBarrierReady.get(playerId))) {
+            event.setDamage(event.getDamage() * 0.95);
+            onHitBarrierReady.put(playerId, false); // skonsumowana
+        }
+        // Periodyczna bariera z #8 (jeśli aktywna)
+        else if (periodicBarrierExpiry.getOrDefault(playerId, 0L) > now) {
+            event.setDamage(event.getDamage() * 0.93);
+            periodicBarrierExpiry.remove(playerId); // skonsumowana
+        }
+
         // Critical Fortitude active
         if (criticalFortitudeExpiry.getOrDefault(playerId, 0L) > now) {
             event.setDamage(event.getDamage() * 0.9);
+        }
+        
+        // [MD][4] Jeśli napastnik jest „osłabiony", jego dmg w Ciebie -5%
+        if (event instanceof EntityDamageByEntityEvent) {
+            EntityDamageByEntityEvent edbe = (EntityDamageByEntityEvent) event;
+            if (edbe.getDamager() instanceof LivingEntity) {
+                UUID did = ((LivingEntity) edbe.getDamager()).getUniqueId();
+                if (weakenedEnemiesUntil.getOrDefault(did, 0L) > now) {
+                    event.setDamage(event.getDamage() * 0.95);
+                }
+            }
         }
 
         // If Cheat Death barrier is active, block damage
@@ -249,12 +278,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
             event.setDamage(event.getDamage() * 0.95);
         }
 
-        // Periodic Barrier (skill 8)
-        if (periodicBarrierExpiry.getOrDefault(playerId, 0L) > now) {
-            event.setDamage(event.getDamage() * 0.93);
-            periodicBarrierExpiry.remove(playerId);
-            deactivateBarrierBonus(player);
-        }
+        // Periodic Barrier (skill 8) - implementation moved to the top of the method
 
         // Check for Mana Barrier (skill 4)
         if (isPurchased(playerId, ID_OFFSET + 4)) {
@@ -470,20 +494,25 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         // Check if player is the attacker
         if (event.getDamager() == player && event.getEntity() instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) event.getEntity();
+            long now = System.currentTimeMillis();
 
-            // Magic Barrier Chance (skill 1)
+            // [MD][1] 10% szansy: przygotuj barierę 5% na kolejny przyjęty hit (bez czasu – skonsumujemy przy następnym dmg)
             if (isPurchased(playerId, ID_OFFSET + 1) && Math.random() < 0.10) {
-                activateArcaneShield(player);
+                onHitBarrierReady.put(playerId, true);
+                ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Magic Barrier ready (5%)");
             }
 
-            // Weakening Strike (skill 4)
+            // [MD][4] 10% szansy: osłab wroga (-5% dmg) na 3s
             if (isPurchased(playerId, ID_OFFSET + 4) && Math.random() < 0.10) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 60, 0, false, true, true));
+                weakenedEnemiesUntil.put(target.getUniqueId(), now + 3000);
+                target.getWorld().spawnParticle(Particle.SPELL_MOB_AMBIENT, target.getLocation().add(0,1,0), 10, 0.4,0.6,0.4, 0.02);
             }
 
-            // Attack Slow (skill 6)
-            if (isPurchased(playerId, ID_OFFSET + 6)) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 80, 0, false, true, true));
+            // [MD][6] Trafienia: -5% atkspeed na 4s (stack do 15%) – prosty fallback: SLOW_DIGGING
+            if (isPurchased(playerId, ID_OFFSET + 6) && target instanceof LivingEntity) {
+                LivingEntity le = (LivingEntity) target;
+                int amp = 0; // 0≈10%, 1≈20%
+                le.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW_DIGGING, 80, amp, true, true, true));
             }
 
             // Empowered Hit (skill 19)
@@ -568,9 +597,10 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
     public void handleEntityDeath(EntityDeathEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
 
-        // Slayer's Guard stacks (skill 7)
-        if (isPurchased(playerId, ID_OFFSET + 7)) {
-            int stacks = Math.min(slayerGuardStacks.getOrDefault(playerId, 0) + 1, 4);
+        // [MD][7] Slayer's Guard – po zabiciu – -3% dmg taken na 5s (stack do -12%)
+        if (isPurchased(playerId, ID_OFFSET + 7) && event.getEntity().getKiller() != null
+                && event.getEntity().getKiller().equals(player)) {
+            int stacks = Math.min(4, slayerGuardStacks.getOrDefault(playerId, 0) + 1);
             slayerGuardStacks.put(playerId, stacks);
             slayerGuardExpiry.put(playerId, System.currentTimeMillis() + 5000);
         }

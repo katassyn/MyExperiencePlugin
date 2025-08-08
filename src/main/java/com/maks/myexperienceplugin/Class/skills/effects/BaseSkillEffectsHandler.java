@@ -7,34 +7,41 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-/**
- * Base class for all skill effect handlers
- */
+/** Base class for all skill effect handlers. Time unit: ticks (20 ticks = 1s). */
 public abstract class BaseSkillEffectsHandler {
     protected final MyExperiencePlugin plugin;
-    protected final int debuggingFlag = 0;
+    protected int debuggingFlag = 0;
 
-    public BaseSkillEffectsHandler(MyExperiencePlugin plugin) {
+    protected BaseSkillEffectsHandler(MyExperiencePlugin plugin) {
         this.plugin = plugin;
     }
 
-    /**
-     * Apply class-specific skill effects to player stats
-     */
-    public abstract void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player);
+    /** Add passive bonuses from purchased nodes into stats (called during stats rebuild). */
+    public abstract void applySkillEffects(
+            SkillEffectsHandler.PlayerSkillStats stats,
+            int skillId,
+            int purchaseCount,
+            Player player
+    );
 
-    /**
-     * Handle entity damage event for class-specific effects (e.g., evade, block)
-     */
-    public abstract void handleEntityDamage(EntityDamageEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats);
+    /** Called when player receives damage. */
+    public abstract void handleEntityDamage(
+            EntityDamageEvent event,
+            Player player,
+            SkillEffectsHandler.PlayerSkillStats stats
+    );
 
-    /**
-     * Handle entity damage by entity event for class-specific effects (e.g., bonus damage)
-     */
-    public abstract void handleEntityDamageByEntity(EntityDamageByEntityEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats);
+    /** Called when player deals damage. */
+    public abstract void handleEntityDamageByEntity(
+            EntityDamageByEntityEvent event,
+            Player player,
+            SkillEffectsHandler.PlayerSkillStats stats
+    );
 
-    /**
-     * Handle entity death event for class-specific effects (e.g., heal on kill)
-     */
-    public abstract void handleEntityDeath(EntityDeathEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats);
+    /** Called when an entity dies (for on-kill mechanics). */
+    public abstract void handleEntityDeath(
+            EntityDeathEvent event,
+            Player player,
+            SkillEffectsHandler.PlayerSkillStats stats
+    );
 }

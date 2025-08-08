@@ -124,12 +124,27 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
     // Hit Evasion Boost duration (skill 19)
     private final Map<UUID, Long> hitEvasionBoostExpiry = new ConcurrentHashMap<>();
 
+    // [MD][7] Focused Assault – focus on jednym celu
+    private final Map<UUID, UUID> focusTarget = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> focusStacks = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> focusExpiry = new ConcurrentHashMap<>();
+
+    // [MD][3] Evasive Power – następny hit +5% po uniknięciu
+    private final Map<UUID, Boolean> nextHitEmpowered = new ConcurrentHashMap<>();
+
     public ChronomancerSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
     }
 
     @Override
     public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
+        // [MD][7] Focused Assault: 2% * stack (max 10%) – działa gdy trzymasz fokus na jednym celu
+        {
+            UUID pid = player.getUniqueId();
+            Integer fs = focusStacks.getOrDefault(pid, 0);
+            if (fs > 0) stats.multiplySpellDamageMultiplier(1.0 + 0.02 * Math.min(5, fs));
+        }
+        
         int originalId = skillId - ID_OFFSET;
 
         switch (originalId) {
@@ -447,11 +462,74 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         if (event.getDamager() == player && event.getEntity() instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) event.getEntity();
             UUID targetId = target.getUniqueId();
+            
+            long currentTime = System.currentTimeMillis();
 
-            // Slow Strike (skill 1)
-            if (isPurchased(playerId, ID_OFFSET + 1) && Math.random() < 0.10) {
-                applySlowEffect(player, target, 3000);
+            // [MD][3] Jeśli po uniku czeka wzmocnienie – skonsumuj: +5% do TEGO ciosu
+            if (Boolean.TRUE.equals(nextHitEmpowered.get(playerId))) {
+                event.setDamage(event.getDamage() * 1.05);
+                nextHitEmpowered.put(playerId, false);
             }
+
+            // [MD][1] 10% szansy: Slow 10% na 3s (60t)
+            if (isPurchased(playerId, ID_OFFSET + 1) && Math.random() < 0.10) {
+                target.addPotionEffect(
+                    new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW, 60, 0, true, true, true)
+                );
+            }
+
+            // [MD][2] Każde trafienie: +2% MS na 3s (stack do 10% -> 5 stacków)
+            if (isPurchased(playerId, ID_OFFSET + 2)) {
+                int stacks = Math.min(5, speedSurgeStacks.getOrDefault(playerId, 0) + 1);
+                speedSurgeStacks.put(playerId, stacks);
+                speedSurgeExpiry.put(playerId, currentTime + 3000); // 3s
+                applyMovementSpeedEffects(player, stats);
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> applyMovementSpeedEffects(player, stats), 60);
+            }
+
+            // [MD][4] Trafienia: -5% enemy atkspeed na 4s (stack do 15%)
+            if (isPurchased(playerId, ID_OFFSET + 4)) {
+                int stacks = Math.min(3, attackHinderStacks
+                        .computeIfAbsent(playerId, k -> new ConcurrentHashMap<>())
+                        .merge(targetId, 1, Integer::sum));
+                attackHinderExpiry.computeIfAbsent(playerId, k -> new ConcurrentHashMap<>()).put(targetId, currentTime + 4000);
+                target.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                    org.bukkit.potion.PotionEffectType.SLOW_DIGGING, 80, stacks - 1, true, true, true));
+            }
+
+            // [MD][5] Co trzeci hit: dodatkowe 5% slow (max 20%) na 3s
+            if (isPurchased(playerId, ID_OFFSET + 5)) {
+                int hits = (tripleSlowHitCounter.getOrDefault(playerId, 0) + 1) % 3;
+                tripleSlowHitCounter.put(playerId, hits);
+                if (hits == 0) {
+                    int stacks = Math.min(4, tripleSlowStacks
+                            .computeIfAbsent(playerId, k -> new ConcurrentHashMap<>())
+                            .merge(targetId, 1, Integer::sum)); // 4*5% = 20%
+                    tripleSlowExpiry.computeIfAbsent(playerId, k -> new ConcurrentHashMap<>()).put(targetId, currentTime + 3000);
+                    target.addPotionEffect(
+                        new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW, 60, stacks - 1, true, true, true)
+                    );
+                }
+            }
+
+            // [MD][7] Focused Assault – fokus na jednym celu: +2%/stack do 10%
+            if (isPurchased(playerId, ID_OFFSET + 7)) {
+                UUID last = focusTarget.get(playerId);
+                int stacks = (last != null && last.equals(targetId)) ? Math.min(5, focusStacks.getOrDefault(playerId, 0) + 1) : 1;
+                focusTarget.put(playerId, targetId);
+                focusStacks.put(playerId, stacks);
+                focusExpiry.put(playerId, currentTime + 5000); // 5s bez trafień = reset
+                plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                    if (focusExpiry.getOrDefault(playerId, 0L) <= System.currentTimeMillis()) {
+                        focusStacks.remove(playerId);
+                        focusTarget.remove(playerId);
+                        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                    }
+                }, 100);
+            }
+
+            // Original Slow Strike implementation removed to avoid duplication
 
             // Consume Evasive Power bonus (skill 3)
             if (evasivePowerExpiry.containsKey(playerId)) {
@@ -742,7 +820,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 }
             }
 
-            // Survival Dampening (skill 8)
+            // [MD][8] "<50% HP: -7% incoming"
             if (isPurchased(playerId, ID_OFFSET + 8) && player.getHealth() <= player.getMaxHealth() * 0.5) {
                 event.setDamage(event.getDamage() * 0.93);
             }
@@ -798,10 +876,17 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Accelerate activated!");
         }
 
-        // Kill Heal (skill 6)
-        if (isPurchased(playerId, ID_OFFSET + 6)) {
-            double heal = player.getMaxHealth() * 0.03;
-            player.setHealth(Math.min(player.getHealth() + heal, player.getMaxHealth()));
+        // [MD][6] heal over time 3% / 4s
+        if (isPurchased(playerId, ID_OFFSET + 6) && event.getEntity().getKiller() != null
+                && event.getEntity().getKiller().equals(player)) {
+            double max = player.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
+            double total = max * 0.03;      // 3% HP łącznie
+            double perTick = total / 4.0;   // co 1s przez 4s
+            final int[] left = {4};
+            plugin.getServer().getScheduler().runTaskTimer(plugin, task -> {
+                if (left[0]-- <= 0 || !player.isOnline() || player.isDead()) { task.cancel(); return; }
+                player.setHealth(Math.min(max, player.getHealth() + perTick));
+            }, 0, 20);
         }
     }
 
@@ -1288,8 +1373,10 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         dodgeMitigationStacks.put(playerId, stacks);
         dodgeMitigationExpiry.put(playerId, System.currentTimeMillis() + 4000);
 
-        // Activate Evasive Power buff
+        // [MD][3] Hook po uniknięciu — ustaw „następny hit +5%"
         if (isPurchased(playerId, ID_OFFSET + 3)) {
+            nextHitEmpowered.put(playerId, true);
+            // (opcjonalnie) okno 5s na zużycie
             evasivePowerExpiry.put(playerId, System.currentTimeMillis() + 5000);
         }
 

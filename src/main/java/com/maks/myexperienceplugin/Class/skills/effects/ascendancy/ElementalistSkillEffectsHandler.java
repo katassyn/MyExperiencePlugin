@@ -61,6 +61,9 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
     // Resistance Break stacks (skill 18)
     private final Map<UUID, Map<UUID, Integer>> resistanceBreakStacks = new ConcurrentHashMap<>();
     private final Map<UUID, Map<UUID, Long>> resistanceBreakExpiry = new ConcurrentHashMap<>();
+    
+    // === [MD] Elementalist (nodes 1–8) ===
+    private final Map<UUID, Long> mdLightningBuffUntil = new ConcurrentHashMap<>(); // node 7 (+3% spell dmg przez 5s po LIGHTNING)
 
     public ElementalistSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
@@ -68,6 +71,24 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
     @Override
     public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
+        // === [MD] Elementalist nodes 1–8: dynamiczne buffy ===
+        try {
+            UUID pid = player.getUniqueId();
+
+            // Node 3: Każdy AKTYWNY efekt żywiołu (Lightning/Frost/Stone) = +2% Spell DMG
+            if (isPurchased(pid, ID_OFFSET + 3)) {
+                int stacks = mdCountActiveElementalEffects(pid);
+                if (stacks > 0) {
+                    stats.multiplySpellDamageMultiplier(1.0 + (0.02 * stacks));
+                }
+            }
+
+            // Node 7: Trafienia Piorunem → +3% Spell DMG przez 5s
+            if (isPurchased(pid, ID_OFFSET + 7) && mdLightningBuffActive(pid)) {
+                stats.multiplySpellDamageMultiplier(1.03);
+            }
+        } catch (Throwable ignored) { /* nie psujemy rebuildu jeśli coś nie istnieje */ }
+        
         int originalId = skillId - ID_OFFSET;
 
         switch (originalId) {
@@ -372,6 +393,86 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         if (event.getDamager() == player && event.getEntity() instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) event.getEntity();
             UUID targetId = target.getUniqueId();
+            
+            // === [MD] Elementalist nodes 1–8 ===
+            UUID pid = player.getUniqueId();
+            UUID tid = target.getUniqueId();
+
+            // Node 6: Jeśli cel jest STONE → każde Twoje trafienie robi AoE = 3% aktualnego dmg (promień ~3.5)
+            if (isPurchased(pid, ID_OFFSET + 6)) {
+                Map<UUID, Long> stoneMap = stonedEnemies.get(pid);
+                long now = System.currentTimeMillis();
+                if (stoneMap != null && stoneMap.getOrDefault(tid, 0L) > now) {
+                    double aoe = event.getDamage() * 0.03;
+                    if (aoe > 0) {
+                        mdDoAoeDamage(player, target.getLocation(), 3.5, aoe, target);
+                    }
+                }
+            }
+
+            // Node 1: 10% szansy na losowy efekt (Lightning / Frost / Stone), bazowo 3s
+            if (isPurchased(pid, ID_OFFSET + 1) && rollChance(player, 0.10)) {
+                int extraSec = (isPurchased(pid, ID_OFFSET + 2) ? 1 : 0);  // Node 2: +1s
+                int durTicks = (3 + extraSec) * 20;
+                long untilMs = System.currentTimeMillis() + (durTicks * 50L);
+
+                int pick = (int) (Math.random() * 3); // 0:Lightning, 1:Frost, 2:Stone
+                switch (pick) {
+                    case 0: { // LIGHTNING
+                        // Znakujemy cel jako "charged"
+                        chargedEnemies.computeIfAbsent(pid, k -> new ConcurrentHashMap<>()).put(tid, untilMs);
+
+                        // Node 7: +3% spell dmg przez 5s po LIGHTNING
+                        if (isPurchased(pid, ID_OFFSET + 7)) {
+                            mdLightningBuffUntil.put(pid, System.currentTimeMillis() + 5000L);
+                            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                            mdRefreshStatsLater(player, 100); // po 5s
+                        }
+
+                        // Node 4: Chain na 1 dodatkowy cel w 5 blokach
+                        if (isPurchased(pid, ID_OFFSET + 4)) {
+                            LivingEntity extra = mdFindNearestEnemy(target, 5.0, le -> !le.getUniqueId().equals(tid));
+                            if (extra != null) {
+                                chargedEnemies.get(pid).put(extra.getUniqueId(), untilMs);
+                                extra.getWorld().spawnParticle(Particle.CRIT_MAGIC, extra.getLocation().add(0,1,0), 10, 0.5,1,0.5, 0.05);
+                            }
+                        }
+
+                        // odśwież staty teraz i po wygaśnięciu (dla node 3)
+                        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                        mdRefreshStatsLater(player, durTicks);
+                        break;
+                    }
+                    case 1: { // FROST
+                        frozenEnemies.computeIfAbsent(pid, k -> new ConcurrentHashMap<>()).put(tid, untilMs);
+
+                        // Node 5: -10% movespeed (prostym potionem SLOW I jako bezpieczny fallback)
+                        if (isPurchased(pid, ID_OFFSET + 5)) {
+                            target.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                    org.bukkit.potion.PotionEffectType.SLOW, durTicks, 0, true, true, true));
+                        }
+
+                        // Node 8: -10% attack speed (fallback: SLOW_DIGGING I)
+                        if (isPurchased(pid, ID_OFFSET + 8)) {
+                            target.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                                    org.bukkit.potion.PotionEffectType.SLOW_DIGGING, durTicks, 0, true, true, true));
+                        }
+
+                        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                        mdRefreshStatsLater(player, durTicks);
+                        break;
+                    }
+                    default: { // STONE
+                        stonedEnemies.computeIfAbsent(pid, k -> new ConcurrentHashMap<>()).put(tid, untilMs);
+
+                        // (node 6 AoE obsługujemy wyżej na każdym trafieniu)
+                        plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+                        mdRefreshStatsLater(player, durTicks);
+                        break;
+                    }
+                }
+            }
+            // === [/MD] Elementalist nodes 1–8 ===
 
             // Determine if this is a spell attack (for demonstration, we'll assume all player attacks are spells)
             boolean isSpellAttack = true;
@@ -1169,6 +1270,50 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         }
     }
 
+    private int mdCountActiveElementalEffects(UUID playerId) {
+        int count = 0;
+        long now = System.currentTimeMillis();
+        Map<UUID, Long> m;
+        m = chargedEnemies.get(playerId); if (m != null) for (Long t : m.values()) if (t != null && t > now) count++;
+        m = frozenEnemies.get(playerId);  if (m != null) for (Long t : m.values()) if (t != null && t > now) count++;
+        m = stonedEnemies.get(playerId);  if (m != null) for (Long t : m.values()) if (t != null && t > now) count++;
+        return count;
+    }
+
+    private boolean mdLightningBuffActive(UUID playerId) {
+        Long until = mdLightningBuffUntil.get(playerId);
+        return until != null && until > System.currentTimeMillis();
+    }
+
+    private void mdRefreshStatsLater(Player player, int delayTicks) {
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            plugin.getSkillEffectsHandler().refreshPlayerStats(player);
+        }, delayTicks);
+    }
+
+    private LivingEntity mdFindNearestEnemy(LivingEntity origin, double radius, java.util.function.Predicate<LivingEntity> filter) {
+        Location loc = origin.getLocation();
+        LivingEntity best = null; double bestD2 = Double.MAX_VALUE;
+        for (Entity e : origin.getWorld().getNearbyEntities(loc, radius, radius, radius)) {
+            if (!(e instanceof LivingEntity)) continue;
+            LivingEntity le = (LivingEntity)e;
+            if (le.isDead() || le.equals(origin)) continue;
+            if (filter != null && !filter.test(le)) continue;
+            double d2 = le.getLocation().distanceSquared(loc);
+            if (d2 < bestD2) { bestD2 = d2; best = le; }
+        }
+        return best;
+    }
+
+    private void mdDoAoeDamage(Player source, Location center, double radius, double damage, LivingEntity exclude) {
+        for (Entity e : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
+            if (!(e instanceof LivingEntity)) continue;
+            LivingEntity le = (LivingEntity)e;
+            if (le.isDead() || le.equals(exclude)) continue;
+            le.damage(damage, source);
+        }
+    }
+
     public void clearPlayerData(UUID playerId) {
         burningEnemies.remove(playerId);
         frozenEnemies.remove(playerId);
@@ -1184,6 +1329,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         stoneKillBuffExpiry.remove(playerId);
         resistanceBreakStacks.remove(playerId);
         resistanceBreakExpiry.remove(playerId);
+        mdLightningBuffUntil.remove(playerId);
 
         plugin.getLogger().info("Cleared all Elementalist data for player ID: " + playerId);
     }
