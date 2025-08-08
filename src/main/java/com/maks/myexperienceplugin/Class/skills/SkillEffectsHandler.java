@@ -7,6 +7,7 @@ import com.maks.myexperienceplugin.Class.skills.effects.RangerSkillEffectsHandle
 import com.maks.myexperienceplugin.Class.skills.effects.SpellWeaverSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ScaleGuardianSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.BeastmasterSkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ArcaneProtectorSkillEffectsHandler;
 import com.maks.myexperienceplugin.Class.skills.events.SkillPurchasedEvent;
 import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.utils.ActionBarUtils;
@@ -356,14 +357,28 @@ public class SkillEffectsHandler implements Listener {
         // [Arcane Protector][3] Defensive Presence – -2% dmg dla ofiary, jeśli w 5 blokach stoi AP z tym nodem
         if (event.getEntity() instanceof Player) {
             Player victim = (Player) event.getEntity();
+            double bestReduction = 0.0;
+            BaseSkillEffectsHandler apBaseHandler = classHandlers.get("ArcaneProtector");
+            ArcaneProtectorSkillEffectsHandler apHandler = apBaseHandler instanceof ArcaneProtectorSkillEffectsHandler
+                    ? (ArcaneProtectorSkillEffectsHandler) apBaseHandler : null;
             for (Player near : victim.getWorld().getNearbyPlayers(victim.getLocation(), 5)) {
                 if (near.equals(victim)) continue;
-                if ("SpellWeaver".equalsIgnoreCase(plugin.getClassManager().getPlayerClass(near.getUniqueId()))
-                        && "ArcaneProtector".equalsIgnoreCase(plugin.getClassManager().getPlayerAscendancy(near.getUniqueId()))
-                        && plugin.getSkillTreeManager().getSkillPurchaseCount(near.getUniqueId(), 900000 + 3) > 0) { // ID_OFFSET + 3
-                    event.setDamage(event.getDamage() * 0.98); // -2%
-                    break; // nie stackujemy wielu AP
-                }
+                if (!"SpellWeaver".equalsIgnoreCase(plugin.getClassManager().getPlayerClass(near.getUniqueId()))) continue;
+                if (!"Arcane Protector".equalsIgnoreCase(plugin.getClassManager().getPlayerAscendancy(near.getUniqueId()))) continue;
+                UUID apId = near.getUniqueId();
+
+                boolean n3 = plugin.getSkillTreeManager().getSkillPurchaseCount(apId, 900000 + 3) > 0;
+                boolean n9 = plugin.getSkillTreeManager().getSkillPurchaseCount(apId, 900000 + 9) > 0;
+                boolean n24 = plugin.getSkillTreeManager().getSkillPurchaseCount(apId, 900000 + 24) > 0
+                        && apHandler != null && apHandler.isAnyBarrierActive(apId);
+
+                double red = n9 ? 0.05 : (n3 ? 0.02 : 0.0);
+                if (n24) red += 0.03;
+
+                if (red > bestReduction) bestReduction = red;
+            }
+            if (bestReduction > 0) {
+                event.setDamage(event.getDamage() * (1 - bestReduction));
             }
         }
 

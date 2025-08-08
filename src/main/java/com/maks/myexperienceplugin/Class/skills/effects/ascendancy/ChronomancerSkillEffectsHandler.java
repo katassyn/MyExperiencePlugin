@@ -138,9 +138,16 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
     @Override
     public void applySkillEffects(SkillEffectsHandler.PlayerSkillStats stats, int skillId, int purchaseCount, Player player) {
-        // [MD][7] Focused Assault: 2% * stack (max 10%) – działa gdy trzymasz fokus na jednym celu
         {
             UUID pid = player.getUniqueId();
+            long now = System.currentTimeMillis();
+
+            // (27) +15% Spell dmg przez 5s po uniku
+            if (isPurchased(pid, ID_OFFSET + 27) && postDodgePowerExpiry.getOrDefault(pid, 0L) > now) {
+                stats.multiplySpellDamageMultiplier(1.15);
+            }
+
+            // [MD][7] Focused Assault: 2% * stack (max 10%) – działa gdy trzymasz fokus na jednym celu
             Integer fs = focusStacks.getOrDefault(pid, 0);
             if (fs > 0) stats.multiplySpellDamageMultiplier(1.0 + 0.02 * Math.min(5, fs));
         }
@@ -427,18 +434,20 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             }
         }
 
-        // Temporal Barrier active damage reduction (skill 25)
+        // Temporal Barrier (skill 25)
         if (isPurchased(playerId, ID_OFFSET + 25)) {
             long now = System.currentTimeMillis();
+            double hp = player.getHealth();
+            double max = player.getMaxHealth();
+            if (hp <= max * 0.15 && temporalBarrierCooldown.getOrDefault(playerId, 0L) <= now
+                    && temporalBarrierExpiry.getOrDefault(playerId, 0L) <= now) {
+                temporalBarrierCooldown.put(playerId, now + 300000); // 5 min
+                temporalBarrierExpiry.put(playerId, now + 5000); // 5s
+                ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Temporal Barrier!");
+                player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0,1,0), 40,1,1,1,0.1);
+            }
             if (temporalBarrierExpiry.getOrDefault(playerId, 0L) > now) {
                 event.setDamage(event.getDamage() * 0.5);
-            } else if (player.getHealth() - event.getFinalDamage() <= player.getMaxHealth() * 0.15
-                    && temporalBarrierCooldown.getOrDefault(playerId, 0L) <= now) {
-                temporalBarrierExpiry.put(playerId, now + 5000);
-                temporalBarrierCooldown.put(playerId, now + 180000);
-                event.setDamage(event.getDamage() * 0.5);
-                player.getWorld().spawnParticle(Particle.PORTAL, player.getLocation().add(0,1,0), 40,1,1,1,0.1);
-                ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Temporal Barrier activated!");
             }
         }
 
@@ -766,8 +775,12 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
             // Cooldown Reset (skill 22)
             if (isPurchased(playerId, ID_OFFSET + 22) && Math.random() < 0.10) {
-                resetSkillCooldowns(playerId);
-                ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Chronomancer cooldowns reset!");
+                temporalShiftCooldowns.remove(playerId);
+                rewindCooldowns.remove(playerId);
+                timeStopCooldowns.remove(playerId);
+                temporalBarrierCooldown.remove(playerId);
+                rewindDeathCooldown.remove(playerId);
+                ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Temporal reset!");
             }
 
             // Dodge Explosion (skill 18)
@@ -1365,40 +1378,47 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         temporalShiftCooldowns.remove(playerId);
         rewindCooldowns.remove(playerId);
         timeStopCooldowns.remove(playerId);
+        temporalBarrierCooldown.remove(playerId);
+        rewindDeathCooldown.remove(playerId);
         timeLoopCooldowns.remove(playerId);
     }
 
     private void registerDodge(UUID playerId) {
-        int stacks = Math.min(dodgeMitigationStacks.getOrDefault(playerId, 0) + 1, 3);
-        dodgeMitigationStacks.put(playerId, stacks);
-        dodgeMitigationExpiry.put(playerId, System.currentTimeMillis() + 4000);
+        long now = System.currentTimeMillis();
+
+        // (23) po każdym uniku: kolejne otrzymane dmg -5% na 4s (stack do 15%)
+        if (isPurchased(playerId, ID_OFFSET + 23)) {
+            int stacks = Math.min(dodgeMitigationStacks.getOrDefault(playerId, 0) + 1, 3);
+            dodgeMitigationStacks.put(playerId, stacks);
+            dodgeMitigationExpiry.put(playerId, now + 4000);
+        }
 
         // [MD][3] Hook po uniknięciu — ustaw „następny hit +5%"
         if (isPurchased(playerId, ID_OFFSET + 3)) {
             nextHitEmpowered.put(playerId, true);
-            // (opcjonalnie) okno 5s na zużycie
-            evasivePowerExpiry.put(playerId, System.currentTimeMillis() + 5000);
+            evasivePowerExpiry.put(playerId, now + 5000);
         }
 
-        // Grant Dodge Defense stack
+        // Grant Dodge Defense stack (skill 9)
         if (isPurchased(playerId, ID_OFFSET + 9)) {
             int def = Math.min(dodgeDefenseStacks.getOrDefault(playerId, 0) + 1, 3);
             dodgeDefenseStacks.put(playerId, def);
-            dodgeDefenseExpiry.put(playerId, System.currentTimeMillis() + 5000);
+            dodgeDefenseExpiry.put(playerId, now + 5000);
         }
 
+        // (27) +15% Spell dmg na 5s po uniku
         if (isPurchased(playerId, ID_OFFSET + 27)) {
+            postDodgePowerExpiry.put(playerId, now + 5000);
             Player p = plugin.getServer().getPlayer(playerId);
             if (p != null) {
-                SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(p);
-                st.addSpellDamageBonus(15);
                 plugin.getSkillEffectsHandler().refreshPlayerStats(p);
-                postDodgePowerExpiry.put(playerId, System.currentTimeMillis() + 5000);
+                plugin.getServer().getScheduler().runTaskLater(plugin, () ->
+                        plugin.getSkillEffectsHandler().refreshPlayerStats(plugin.getServer().getPlayer(playerId)), 100);
             }
         }
 
         if (isPurchased(playerId, ID_OFFSET + 18)) {
-            dodgeExplosionExpiry.put(playerId, System.currentTimeMillis() + 5000);
+            dodgeExplosionExpiry.put(playerId, now + 5000);
         }
     }
 
