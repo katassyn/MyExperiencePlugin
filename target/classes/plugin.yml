@@ -2,6 +2,7 @@ name: MyExperiencePlugin
 version: '1.0-SNAPSHOT'
 main: com.maks.myexperienceplugin.MyExperiencePlugin
 api-version: '1.20'
+softdepend: [Essentials]
 commands:
   exp:
     description: Displays player level and experience.

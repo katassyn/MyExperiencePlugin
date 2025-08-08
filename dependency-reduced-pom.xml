@@ -61,6 +61,10 @@
       <id>md_5-public</id>
       <url>https://repo.md-5.net/content/groups/public/</url>
     </repository>
+    <repository>
+      <id>essentials-repo</id>
+      <url>https://repo.essentialsx.net/releases/</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
@@ -85,6 +89,12 @@
       <groupId>net.luckperms</groupId>
       <artifactId>api</artifactId>
       <version>5.4</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.essentialsx</groupId>
+      <artifactId>EssentialsX</artifactId>
+      <version>2.20.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

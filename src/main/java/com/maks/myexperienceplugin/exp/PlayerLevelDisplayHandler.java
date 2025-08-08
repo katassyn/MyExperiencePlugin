@@ -96,20 +96,39 @@ public class PlayerLevelDisplayHandler implements Listener {
             display = display.substring(rankPrefix.length()).trim();
         }
 
-        // Set the player's display name so chat reflects the rank prefix
-        player.setDisplayName(rankPrefix + display);
+        // Set the player's display name for chat to show level + rank prefix + nickname
+        player.setDisplayName(String.format("§b[ %d ] §r%s%s", level, rankPrefix, display));
 
-        // Use nickname alone in the tab list; prefix comes from scoreboard team
-        player.setPlayerListName(display);
+        // Set the tab list name to show level + prefix + nickname
+        // We need to include the level and rank prefix in the player list name
+        player.setPlayerListName(String.format("§b[ %d ] §r%s%s", level, rankPrefix, display));
 
-        // Set the player's display name first so plugins like Essentials update correctly
-        player.setDisplayName(rankPrefix + display);
-
-        // Reapply the custom name on the next tick to ensure it isn't overwritten
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            player.setCustomName(String.format("§b[ %d ] §r%s", level, display));
+        // Create final copies of variables for use in lambda
+        final int finalLevel = level;
+        final String finalDisplay = display;
+        final String finalRankPrefix = rankPrefix != null ? rankPrefix : "";
+        
+        // Set the player's display name again to ensure it's not overwritten by other plugins
+        // Run with a small delay to ensure it's not immediately overwritten
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            player.setDisplayName(String.format("§b[ %d ] §r%s%s", finalLevel, finalRankPrefix, finalDisplay));
+        }, 2L);
+        
+        // Reapply the custom name with a slightly longer delay to ensure it isn't overwritten
+        // This ensures the name above the player's head shows ONLY level + nickname (no rank prefix)
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            player.setCustomName(String.format("§b[ %d ] §r%s", finalLevel, finalDisplay));
             player.setCustomNameVisible(true);
-        });
+            
+            // Force EssentialsX to not override our custom name
+            if (essentials != null) {
+                User user = essentials.getUser(player);
+                if (user != null) {
+                    // This will prevent Essentials from changing the custom name
+                    user.setDisplayNick();
+                }
+            }
+        }, 5L);
     }
 
     @EventHandler

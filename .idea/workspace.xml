@@ -4,90 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf7838df-4fe5-4873-9e97-893af63b5618" name="Changes" comment="Introduce new utilities and features for debugging, party integration, and skill effects.&#10;&#10;- Added `DebugUtils` for standardized debugging messages and chance rolls with detailed output.&#10;- Implemented `PartyClassIntegration` for party-based damage and buff checks.&#10;- Added `PartyDamagePreventionListener` to prevent damage and effects among party members.&#10;- Refactored `BerserkerVisualEffects` with optimized particle and sound effects.&#10;- Introduced `UpdateRankingsCommand` to manually trigger player ranking updates asynchronously.&#10;- Enhanced `FlameWardenSkillEffectsHandler` for dynamic debug notifications and improved skill handling.">
+    <list default="true" id="cf7838df-4fe5-4873-9e97-893af63b5618" name="Changes" comment="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path.">
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassGUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassNameNormalizer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassNameNormalizer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/SkillTree2Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/SkillTree2Command.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/SkillTreeCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/SkillTreeCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/AscendancySkillEffectIntegrator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/AscendancySkillEffectIntegrator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/AscendancySkillTreeCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/AscendancySkillTreeCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/ForceUpdateSkillPointsCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/ForceUpdateSkillPointsCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/PlayerAttributesCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/PlayerAttributesCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/PlayerSkillEffectsListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/PlayerSkillEffectsListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/ResetAttributesCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/ResetAttributesCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillIdOffsets.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillIdOffsets.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillMessages.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillMessages.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillPurchaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillPurchaseManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillStatsCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillStatsCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillSystemIntegrator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillSystemIntegrator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeGUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeGUIListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeGUIListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/base/BaseSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/base/BaseSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/base/SkillNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/base/SkillNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/base/SkillTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/base/SkillTree.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/DragonKnightSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/DragonKnightSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/ascendancy/BerserkerSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/ascendancy/BerserkerSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/ascendancy/FlameWardenSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/ascendancy/FlameWardenSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/ascendancy/ScaleGuardianSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/dragonknight/ascendancy/ScaleGuardianSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/RangerSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/RangerSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/ascendancy/BeastmasterSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/ascendancy/BeastmasterSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/ascendancy/EarthwardenSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/ascendancy/EarthwardenSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/ascendancy/ShadowstalkerSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/ranger/ascendancy/ShadowstalkerSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/spellweaver/SpellWeaverSkillManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/classes/spellweaver/SpellWeaverSkillManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BaseSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BaseSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BerserkerVisualEffects.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BerserkerVisualEffects.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/DragonKnightSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/DragonKnightSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/RangerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/RangerSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/SpellWeaverSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/SpellWeaverSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ArcaneProtectorSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ArcaneProtectorSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BeastmasterSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BeastmasterSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BerserkerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BerserkerSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ChromomancerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ChromomancerSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/EarthwardenSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/EarthwardenSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ElementalistSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ElementalistSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/FlameWardenSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/FlameWardenSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ScaleGuardianSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ScaleGuardianSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ShadowstalkerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ShadowstalkerSkillEffectsHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/events/SkillPurchasedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/events/SkillPurchasedEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/gui/AscendancySkillTreeGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/gui/AscendancySkillTreeGUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/gui/AscendancySkillTreeGUIListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/gui/AscendancySkillTreeGUIListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/listeners/BerserkerEquipmentListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/listeners/BerserkerEquipmentListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/CustomItemHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/CustomItemHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/DatabaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/DatabaseManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/MyExperiencePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/MyExperiencePlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/ResetRanksCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/ResetRanksCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyCooldownCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyCooldownCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyEffect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyEffectWithDuration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyEffectWithDuration.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyItemListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyItemListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyLevelConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyLevelConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyResetCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyResetCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/BerserkerEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/BerserkerEffect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/PhycisMagnetEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/PhycisMagnetEffect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/PhysisExpManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/PhysisExpManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/PhysisPercentageExpEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/PhysisPercentageExpEffect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/TonicExpEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/TonicExpEffect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/commands/UpdateRankingsCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/commands/UpdateRankingsCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PartyDamagePreventionListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PartyDamagePreventionListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PhysisExpListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PhysisExpListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PlayerDisconnectListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PlayerDisconnectListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PlayerJoinAlchemyListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PlayerJoinAlchemyListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyAPI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/utils/ActionBarUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/utils/ActionBarUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/utils/DebugUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/utils/DebugUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/utils/PartyClassIntegration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/utils/PartyClassIntegration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dependency-reduced-pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/PlayerLevelDisplayHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/PlayerLevelDisplayHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/MyExperiencePlugin.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/MyExperiencePlugin.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/BerserkerEffect.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/BerserkerEffect.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/PhycisMagnetEffect.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/PhycisMagnetEffect.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/PhysisPercentageExpEffect.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/PhysisPercentageExpEffect.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/TonicExpEffect.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/TonicExpEffect.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -162,11 +87,16 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.LLMConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\mastu\IdeaProjects\MyExperiencePlugin" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mastu\IdeaProjects\MyExperiencePlugin" />
       <recent name="C:\Users\makss\IdeaProjects\MyExperiencePlugin" />
     </key>
   </component>
@@ -307,7 +237,24 @@
       <workItem from="1753452382226" duration="824000" />
       <workItem from="1753453517091" duration="3663000" />
       <workItem from="1753460396064" duration="102000" />
-      <workItem from="1753521828041" duration="505000" />
+      <workItem from="1753521828041" duration="1715000" />
+      <workItem from="1753524686230" duration="8763000" />
+      <workItem from="1753771044881" duration="265000" />
+      <workItem from="1753771540428" duration="31000" />
+      <workItem from="1753787190907" duration="265000" />
+      <workItem from="1753854036211" duration="185000" />
+      <workItem from="1753859015794" duration="7642000" />
+      <workItem from="1753883634232" duration="859000" />
+      <workItem from="1753884904654" duration="201000" />
+      <workItem from="1753969821283" duration="198000" />
+      <workItem from="1754037646544" duration="3821000" />
+      <workItem from="1754058838310" duration="29000" />
+      <workItem from="1754070805262" duration="3752000" />
+      <workItem from="1754122509775" duration="5991000" />
+      <workItem from="1754129670334" duration="502000" />
+      <workItem from="1754160283581" duration="612000" />
+      <workItem from="1754163824829" duration="42000" />
+      <workItem from="1754202709968" duration="652000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed ranger skill tree a bit + added new structure of classes + ascendancys">
       <option name="closed" value="true" />
@@ -437,7 +384,23 @@
       <option name="project" value="LOCAL" />
       <updated>1753203267703</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Enhance `BeastmasterSkillEffectsHandler` with unified cooldowns, summon maintenance, and duplicate cleanup. Include debug capabilities and additional event handling (respawn, world change, quit).">
+      <option name="closed" value="true" />
+      <created>1753522574668</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1753522574668</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path.">
+      <option name="closed" value="true" />
+      <created>1753854143147</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1753854143147</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -472,7 +435,9 @@
     <MESSAGE value="Refactor skill system by introducing `SkillIdOffsets` for centralized ID offset management and `SkillMessages` for consistent skill-related message handling. Updated logic in skill managers and handlers to utilize these changes." />
     <MESSAGE value="Refactor skill trees to use a universal structure across all ascendancy classes" />
     <MESSAGE value="Introduce new utilities and features for debugging, party integration, and skill effects.&#10;&#10;- Added `DebugUtils` for standardized debugging messages and chance rolls with detailed output.&#10;- Implemented `PartyClassIntegration` for party-based damage and buff checks.&#10;- Added `PartyDamagePreventionListener` to prevent damage and effects among party members.&#10;- Refactored `BerserkerVisualEffects` with optimized particle and sound effects.&#10;- Introduced `UpdateRankingsCommand` to manually trigger player ranking updates asynchronously.&#10;- Enhanced `FlameWardenSkillEffectsHandler` for dynamic debug notifications and improved skill handling." />
-    <option name="LAST_COMMIT_MESSAGE" value="Introduce new utilities and features for debugging, party integration, and skill effects.&#10;&#10;- Added `DebugUtils` for standardized debugging messages and chance rolls with detailed output.&#10;- Implemented `PartyClassIntegration` for party-based damage and buff checks.&#10;- Added `PartyDamagePreventionListener` to prevent damage and effects among party members.&#10;- Refactored `BerserkerVisualEffects` with optimized particle and sound effects.&#10;- Introduced `UpdateRankingsCommand` to manually trigger player ranking updates asynchronously.&#10;- Enhanced `FlameWardenSkillEffectsHandler` for dynamic debug notifications and improved skill handling." />
+    <MESSAGE value="Enhance `BeastmasterSkillEffectsHandler` with unified cooldowns, summon maintenance, and duplicate cleanup. Include debug capabilities and additional event handling (respawn, world change, quit)." />
+    <MESSAGE value="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path." />
+    <option name="LAST_COMMIT_MESSAGE" value="Add `SpellWeaver` subclass skill trees: `Arcane Protector`, `Chronomancer`, and `Elementalist`. Define unique mechanics, abilities, and effects for each path." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
