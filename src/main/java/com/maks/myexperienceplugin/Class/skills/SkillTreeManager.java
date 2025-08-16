@@ -409,13 +409,8 @@ public class SkillTreeManager {
             if (node != null) {
                 int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
 
-                // Determine actual cost
-                int actualCost;
-                if (manager.isMultiPurchaseDiscountSkill(skillId)) {
-                    actualCost = 1; // Special skills cost 1 point per purchase
-                } else {
-                    actualCost = node.getCost();
-                }
+                // Determine actual cost (multi-level skills cost 1 point per purchase)
+                int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
 
                 int skillCost = actualCost * purchaseCount;
                 usedPoints += skillCost;
@@ -472,12 +467,7 @@ public class SkillTreeManager {
                     int purchaseCount = purchaseCounts.getOrDefault(skillId, 1);
                     
                     // FIXED: Use actual node cost instead of always 1
-                    int actualCost;
-                    if (manager != null && manager.isMultiPurchaseDiscountSkill(skillId)) {
-                        actualCost = 1; // Special skills cost 1 point per purchase
-                    } else {
-                        actualCost = node.getCost(); // Use the actual cost from the node
-                    }
+                    int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
                     
                     int skillCost = actualCost * purchaseCount;
                     usedPoints += skillCost;
@@ -536,12 +526,7 @@ public class SkillTreeManager {
 
         // Check if player has enough points
         int unusedPoints = getUnusedBasicSkillPoints(uuid);
-        int actualCost;
-        if (manager.isMultiPurchaseDiscountSkill(skillId)) {
-            actualCost = 1; // Special skills cost 1 point per purchase
-        } else {
-            actualCost = node.getCost();
-        }
+        int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
 
         if (unusedPoints < actualCost) {
             return false;
@@ -565,12 +550,7 @@ public class SkillTreeManager {
         SkillNode node = tree.getNode(skillId);
 
         // Determine actual cost
-        int actualCost;
-        if (manager.isMultiPurchaseDiscountSkill(skillId)) {
-            actualCost = 1; // Special skills cost 1 point per purchase
-        } else {
-            actualCost = node.getCost();
-        }
+        int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Purchasing skill " + skillId + " for player " + player.getName());
@@ -652,12 +632,7 @@ public class SkillTreeManager {
         int unusedPoints = getUnusedAscendancySkillPoints(uuid);
         
         // FIXED: Use actual node cost instead of always 1
-        int actualCost;
-        if (manager.isMultiPurchaseDiscountSkill(skillId)) {
-            actualCost = 1; // Special skills cost 1 point per purchase
-        } else {
-            actualCost = node.getCost(); // Use the actual cost from the node
-        }
+        int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
         
         if (unusedPoints < actualCost) {
             if (debuggingFlag == 1) {
@@ -714,12 +689,7 @@ public class SkillTreeManager {
         SkillNode node = tree.getNode(skillId);
 
         // Determine actual cost
-        int actualCost;
-        if (manager.isMultiPurchaseDiscountSkill(skillId)) {
-            actualCost = 1; // Special skills cost 1 point per purchase
-        } else {
-            actualCost = node.getCost();
-        }
+        int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
 
         if (debuggingFlag == 1) {
             plugin.getLogger().info("Purchasing ascendancy skill " + skillId +

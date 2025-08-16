@@ -175,7 +175,8 @@ public class SkillPurchaseManager {
                     SkillNode node = tree.getNode(nodeId);
 
                     if (node != null && purchaseCount < node.getMaxPurchases() &&
-                            skillTreeManager.getUnusedBasicSkillPoints(uuid) >= node.getCost()) {
+                            skillTreeManager.getUnusedBasicSkillPoints(uuid) >=
+                                    (node.getMaxPurchases() > 1 ? 1 : node.getCost())) {
 
                         success = skillTreeManager.purchaseSkill(player, nodeId);
 
@@ -274,7 +275,8 @@ public class SkillPurchaseManager {
                         SkillNode node = tree.getNode(nodeId);
 
                         if (node != null && purchaseCount < node.getMaxPurchases() &&
-                                skillTreeManager.getUnusedAscendancySkillPoints(uuid) >= 1) {
+                                skillTreeManager.getUnusedAscendancySkillPoints(uuid) >=
+                                        (node.getMaxPurchases() > 1 ? 1 : node.getCost())) {
 
                             success = skillTreeManager.purchaseAscendancySkill(player, nodeId);
 
