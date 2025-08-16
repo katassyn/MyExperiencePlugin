@@ -253,7 +253,8 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 int durTicks = 60 + (isPurchased(playerId, ID_OFFSET + 2) ? 20 : 0);
                 long untilMs = System.currentTimeMillis() + durTicks * 50L;
                 for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 4, 4, 4)) {
-                    if (e instanceof LivingEntity le && !le.isDead()) {
+                    if (e instanceof LivingEntity && !((LivingEntity) e).isDead()) {
+                        LivingEntity le = (LivingEntity) e;
                         UUID tid = le.getUniqueId();
                         frozenEnemies.computeIfAbsent(playerId, k -> new ConcurrentHashMap<>()).put(tid, untilMs);
                         if (isPurchased(playerId, ID_OFFSET + 5)) {
@@ -1205,7 +1206,8 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
             Location c = player.getLocation();
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 for (Entity e : c.getWorld().getNearbyEntities(c, 5, 5, 5)) {
-                    if (e instanceof LivingEntity le && !le.equals(player)) {
+                    if (e instanceof LivingEntity && !e.equals(player)) {
+                        LivingEntity le = (LivingEntity) e;
                         le.damage(base, player);
                     }
                 }

@@ -848,8 +848,8 @@ public class AscendancySkillTreeGUI {
         lore.add(ChatColor.GRAY + node.getDescription());
         lore.add("");
 
-        // Use the actual cost from the skill node
-        int actualCost = node.getCost();
+        // Use the actual cost from the skill node; multi-level skills cost 1 per upgrade
+        int actualCost = node.getMaxPurchases() > 1 ? 1 : node.getCost();
 
         if (isPurchased) {
             if (purchaseCount < node.getMaxPurchases()) {
