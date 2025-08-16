@@ -9,6 +9,9 @@ import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -494,7 +497,7 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         if (isPurchased(playerId, ID_OFFSET + 22) && player.getHealth() - event.getFinalDamage() <= 0
                 && posthumousShieldCooldown.getOrDefault(playerId, 0L) <= now) {
             posthumousShieldCooldown.put(playerId, now + 300_000);
-            var loc = player.getLocation().clone();
+            Location loc = player.getLocation().clone();
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 for (Player ally : loc.getWorld().getNearbyPlayers(loc, 5)) {
                     if (!ally.equals(player)) {
@@ -1329,16 +1332,22 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         int c = barrierActivationCount.getOrDefault(pid, 0) + 1;
         barrierActivationCount.put(pid, c);
         if (c % 3 == 0 && isPurchased(pid, ID_OFFSET + 21)) {
-            var attr = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
+            AttributeInstance attr = p.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (attr != null) {
                 java.util.UUID modId = java.util.UUID.nameUUIDFromBytes(("AP_MAXHP_" + pid).getBytes());
-                attr.getModifiers().stream().filter(m -> m.getName().equals("AP_MAXHP_BONUS")).forEach(attr::removeModifier);
-                var mod = new org.bukkit.attribute.AttributeModifier(modId, "AP_MAXHP_BONUS", 0.02,
-                        org.bukkit.attribute.AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+                attr.getModifiers().stream()
+                        .filter(m -> m.getName().equals("AP_MAXHP_BONUS"))
+                        .forEach(attr::removeModifier);
+                AttributeModifier mod = new AttributeModifier(modId, "AP_MAXHP_BONUS", 0.02,
+                        AttributeModifier.Operation.MULTIPLY_SCALAR_1);
                 attr.addModifier(mod);
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    var a = p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH);
-                    if (a != null) a.getModifiers().stream().filter(m -> m.getName().equals("AP_MAXHP_BONUS")).forEach(a::removeModifier);
+                    AttributeInstance a = p.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                    if (a != null) {
+                        a.getModifiers().stream()
+                                .filter(m -> m.getName().equals("AP_MAXHP_BONUS"))
+                                .forEach(a::removeModifier);
+                    }
                 }, 200);
             }
         }
@@ -1352,9 +1361,9 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
         if (!isPurchased(pid, ID_OFFSET + 20)) return;
 
         if (isAnyBarrierActive(pid)) {
-            var ne = e.getNewEffect();
+            PotionEffect ne = e.getNewEffect();
             if (ne == null) return;
-            var bad = java.util.EnumSet.of(
+            Set<PotionEffectType> bad = new HashSet<>(Arrays.asList(
                     PotionEffectType.BLINDNESS,
                     PotionEffectType.WEAKNESS,
                     PotionEffectType.SLOW,
@@ -1363,11 +1372,13 @@ public class ArcaneProtectorSkillEffectsHandler extends BaseSkillEffectsHandler 
                     PotionEffectType.WITHER,
                     PotionEffectType.HUNGER,
                     PotionEffectType.DARKNESS
-            );
+            ));
             if (bad.contains(ne.getType())) {
                 int newDur = Math.max(1, (int) Math.floor(ne.getDuration() * 0.90));
-                e.setNewEffect(new PotionEffect(ne.getType(), newDur, ne.getAmplifier(),
-                        ne.isAmbient(), ne.hasParticles(), ne.hasIcon()));
+                PotionEffect shortened = new PotionEffect(ne.getType(), newDur, ne.getAmplifier(),
+                        ne.isAmbient(), ne.hasParticles(), ne.hasIcon());
+                e.setCancelled(true);
+                p.addPotionEffect(shortened, true);
             }
         }
     }

@@ -8,6 +8,9 @@ import com.maks.myexperienceplugin.utils.ChatNotificationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -509,7 +512,6 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
             // Node 6: Jeśli cel jest STONE → każde Twoje trafienie robi AoE = 3% aktualnego dmg (promień ~3.5)
             if (isPurchased(pid, ID_OFFSET + 6)) {
                 Map<UUID, Long> stoneMap = stonedEnemies.get(pid);
-                long now = System.currentTimeMillis();
                 if (stoneMap != null && stoneMap.getOrDefault(tid, 0L) > now) {
                     double aoe = event.getDamage() * 0.03;
                     if (aoe > 0) {
@@ -1502,30 +1504,46 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
     private boolean mdStoned(UUID pid, UUID tid) { return mdHas(stonedEnemies.get(pid), tid); }
 
     private void mdApplyMoveSpeedModifier(LivingEntity le, String key, double pct, int ticks) {
-        var attr = le.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED);
+        AttributeInstance attr = le.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
         if (attr == null) return;
         UUID id = UUID.nameUUIDFromBytes(("EL_" + key + "_" + le.getUniqueId()).getBytes());
-        for (var m : new ArrayList<>(attr.getModifiers())) if (m.getName().equals(key)) attr.removeModifier(m);
-        var mod = new org.bukkit.attribute.AttributeModifier(id, key, -pct,
-                org.bukkit.attribute.AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+        for (AttributeModifier m : new ArrayList<>(attr.getModifiers())) {
+            if (m.getName().equals(key)) {
+                attr.removeModifier(m);
+            }
+        }
+        AttributeModifier mod = new AttributeModifier(id, key, -pct,
+                AttributeModifier.Operation.MULTIPLY_SCALAR_1);
         attr.addModifier(mod);
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            var a = le.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED);
-            if (a != null) a.getModifiers().stream().filter(mm -> mm.getName().equals(key)).forEach(a::removeModifier);
+            AttributeInstance a = le.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+            if (a != null) {
+                a.getModifiers().stream()
+                        .filter(mm -> mm.getName().equals(key))
+                        .forEach(a::removeModifier);
+            }
         }, ticks);
     }
 
     private void mdApplyAttackSpeedModifier(LivingEntity le, String key, double pct, int ticks) {
-        var attr = le.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED);
+        AttributeInstance attr = le.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
         if (attr == null) return;
         UUID id = UUID.nameUUIDFromBytes(("EL_" + key + "_" + le.getUniqueId()).getBytes());
-        for (var m : new ArrayList<>(attr.getModifiers())) if (m.getName().equals(key)) attr.removeModifier(m);
-        var mod = new org.bukkit.attribute.AttributeModifier(id, key, -pct,
-                org.bukkit.attribute.AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+        for (AttributeModifier m : new ArrayList<>(attr.getModifiers())) {
+            if (m.getName().equals(key)) {
+                attr.removeModifier(m);
+            }
+        }
+        AttributeModifier mod = new AttributeModifier(id, key, -pct,
+                AttributeModifier.Operation.MULTIPLY_SCALAR_1);
         attr.addModifier(mod);
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            var a = le.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED);
-            if (a != null) a.getModifiers().stream().filter(mm -> mm.getName().equals(key)).forEach(a::removeModifier);
+            AttributeInstance a = le.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
+            if (a != null) {
+                a.getModifiers().stream()
+                        .filter(mm -> mm.getName().equals(key))
+                        .forEach(a::removeModifier);
+            }
         }, ticks);
     }
 
