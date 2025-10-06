@@ -12,6 +12,7 @@ import com.maks.myexperienceplugin.party.PartyCommand;
 import com.maks.myexperienceplugin.party.PartyManager;
 import com.maks.myexperienceplugin.party.PartyManageCommand;
 import com.maks.myexperienceplugin.tutorial.TutorialManager;
+import com.maks.myexperienceplugin.protection.ProtectionScalingService;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -65,11 +66,18 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private SkillTreeGUI skillTreeGUI;
     private SkillEffectsHandler skillEffectsHandler;
     private AscendancySkillEffectIntegrator ascendancySkillEffectIntegrator;
+    private ProtectionScalingService protectionScalingService;
+
     public ClassManager getClassManager() {
         return classManager;
     }
+
     public ClassGUI getClassGUI() {
         return classGUI;
+    }
+
+    public ProtectionScalingService getProtectionScalingService() {
+        return protectionScalingService;
     }
     private AscendancySkillTreeGUI ascendancySkillTreeGUI; // Add this field
     private SkillPurchaseManager skillPurchaseManager;
@@ -160,6 +168,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         skillTreeManager = new SkillTreeManager(this);
         skillEffectsHandler = new SkillEffectsHandler(this, skillTreeManager);
         skillEffectsHandler.initializePeriodicTasks();
+        protectionScalingService = new ProtectionScalingService(this);
 
         // Initialize ascendancy skill effect integrator
         ascendancySkillEffectIntegrator = new AscendancySkillEffectIntegrator(this, skillEffectsHandler);
@@ -197,6 +206,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new TotemEffectListener(), this);
         getServer().getPluginManager().registerEvents(new LifestealListener(), this);
         getServer().getPluginManager().registerEvents(new ImmunityListener(), this);
+        getServer().getPluginManager().registerEvents(new ProtectionScalingListener(protectionScalingService), this);
         getServer().getPluginManager().registerEvents(new AlchemyItemListener(this, alchemyLevelConfig), this);
         getServer().getPluginManager().registerEvents(new PhysisExpListener(this), this);
 
@@ -251,7 +261,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("skilltree").setExecutor(new SkillTreeCommand(this, skillTreeGUI));
         getCommand("skillstats").setExecutor(new SkillStatsCommand(this, skillEffectsHandler));
         getCommand("skilltree2").setExecutor(new AscendancySkillTreeCommand(this, ascendancySkillTreeGUI));
-        getCommand("playerattributes").setExecutor(new PlayerAttributesCommand(this, skillEffectsHandler));
+        getCommand("playerattributes").setExecutor(new PlayerAttributesCommand(this, skillEffectsHandler, protectionScalingService));
 
 
         // Register commands - Reset attributes
@@ -1186,5 +1196,13 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
             }
             return false;
         });
+    }
+
+    @Override
+    public void reloadConfig() {
+        super.reloadConfig();
+        if (protectionScalingService != null) {
+            protectionScalingService.reload();
+        }
     }
 }

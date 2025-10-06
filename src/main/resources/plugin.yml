@@ -91,7 +91,7 @@ commands:
   playerattributes:
     description: Shows all player attributes and skill bonuses
     usage: /playerattributes
-    aliases: [pattr, attributes]
+    aliases: [pattr, attributes, player_attrib_stats]
     permission: myplugin.playerattributes
 
   resetattributes:

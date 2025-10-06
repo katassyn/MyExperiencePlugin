@@ -1,6 +1,8 @@
 package com.maks.myexperienceplugin.Class.skills;
 
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.protection.ProtectionScalingService;
+import com.maks.myexperienceplugin.protection.ProtectionScalingService.ProtectionScalingResult;
 import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -13,10 +15,14 @@ public class PlayerAttributesCommand implements CommandExecutor {
 
     private final MyExperiencePlugin plugin;
     private final SkillEffectsHandler skillEffectsHandler;
+    private final ProtectionScalingService protectionScalingService;
 
-    public PlayerAttributesCommand(MyExperiencePlugin plugin, SkillEffectsHandler skillEffectsHandler) {
+    public PlayerAttributesCommand(MyExperiencePlugin plugin,
+                                  SkillEffectsHandler skillEffectsHandler,
+                                  ProtectionScalingService protectionScalingService) {
         this.plugin = plugin;
         this.skillEffectsHandler = skillEffectsHandler;
+        this.protectionScalingService = protectionScalingService;
     }
 
     @Override
@@ -72,6 +78,20 @@ public class PlayerAttributesCommand implements CommandExecutor {
         player.sendMessage(ChatColor.YELLOW + "Luck Bonus: " + ChatColor.WHITE + stats.getLuckBonus() + "%");
         player.sendMessage(ChatColor.YELLOW + "Gold per Kill: " + ChatColor.WHITE + stats.getGoldPerKill() + "$");
 
+        ProtectionScalingResult protectionStats = protectionScalingService.calculateFor(player);
+        double displayReduction = protectionScalingService.isEnabled()
+                ? protectionStats.finalReduction()
+                : protectionStats.vanillaReduction();
+        player.sendMessage(ChatColor.YELLOW + "Protection Reduction: " + ChatColor.WHITE +
+                formatPercent(displayReduction * 100.0) +
+                ChatColor.GRAY + " (vanilla: " + formatPercent(protectionStats.vanillaReduction() * 100.0) + ")");
+
+        if (protectionStats.hasProtection()) {
+            player.sendMessage(ChatColor.YELLOW + "Total Protection Levels: " + ChatColor.WHITE +
+                    protectionStats.totalProtectionLevels() +
+                    ChatColor.GRAY + " (effective: " + protectionStats.clampedProtectionLevels() + ")");
+        }
+
         return true;
     }
 
@@ -85,5 +105,9 @@ public class PlayerAttributesCommand implements CommandExecutor {
         }
 
         return formatted.toString().trim();
+    }
+
+    private String formatPercent(double value) {
+        return String.format("%.2f%%", value);
     }
 }
