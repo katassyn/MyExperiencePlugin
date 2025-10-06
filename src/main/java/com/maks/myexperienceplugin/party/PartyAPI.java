@@ -25,7 +25,7 @@ public class PartyAPI {
     public static void initialize(MyExperiencePlugin pluginInstance) {
         plugin = pluginInstance;
         partyManager = plugin.getPartyManager();
-        
+
         if (debuggingFlag == 1) {
             Bukkit.getLogger().info("[PartyAPI] Party API initialized successfully");
         }
@@ -48,7 +48,7 @@ public class PartyAPI {
      */
     public static int getPartySize(Player player) {
         if (partyManager == null || !isInParty(player)) return 1;
-        
+
         Party party = partyManager.getParty(player);
         return party != null ? party.getMembers().size() : 1;
     }
@@ -72,25 +72,25 @@ public class PartyAPI {
      */
     public static List<Player> getPartyMembers(Player player) {
         List<Player> members = new ArrayList<>();
-        
+
         if (partyManager == null || !isInParty(player)) {
             members.add(player);
             return members;
         }
-        
+
         Party party = partyManager.getParty(player);
         if (party == null) {
             members.add(player);
             return members;
         }
-        
+
         for (UUID memberId : party.getMembers()) {
             Player member = Bukkit.getPlayer(memberId);
             if (member != null && member.isOnline()) {
                 members.add(member);
             }
         }
-        
+
         return members;
     }
 
@@ -101,7 +101,7 @@ public class PartyAPI {
      */
     public static void teleportParty(Player player, Location location) {
         List<Player> members = getPartyMembers(player);
-        
+
         for (Player member : members) {
             member.teleport(location);
             if (debuggingFlag == 1) {
@@ -117,7 +117,7 @@ public class PartyAPI {
      */
     public static void sendMessageToParty(Player player, String message) {
         List<Player> members = getPartyMembers(player);
-        
+
         for (Player member : members) {
             member.sendMessage(message);
         }
@@ -125,20 +125,81 @@ public class PartyAPI {
 
     /**
      * Sprawdza czy gracz jest liderem party
-     * Uwaga: w obecnej implementacji Party nie ma koncepcji lidera,
-     * więc zakładamy, że pierwsza osoba, która utworzyła party, jest liderem
-     * 
+     *
      * @param player Gracz do sprawdzenia
      * @return true jeśli gracz jest liderem party, false w przeciwnym razie
      */
     public static boolean isPartyLeader(Player player) {
         if (partyManager == null || !isInParty(player)) return false;
-        
+
         Party party = partyManager.getParty(player);
-        if (party == null || party.getMembers().isEmpty()) return false;
-        
-        // Zakładamy, że pierwszy członek w kolekcji jest liderem
-        UUID firstMemberId = party.getMembers().iterator().next();
-        return player.getUniqueId().equals(firstMemberId);
+        if (party == null) return false;
+
+        return party.isLeader(player.getUniqueId());
+    }
+
+    /**
+     * Pobiera lidera party
+     * @param player Gracz którego party chcemy sprawdzić
+     * @return Lider party lub null jeśli gracz nie jest w party
+     */
+    public static Player getPartyLeader(Player player) {
+        if (partyManager == null || !isInParty(player)) return null;
+
+        Party party = partyManager.getParty(player);
+        if (party == null) return null;
+
+        UUID leaderId = party.getLeader();
+        return Bukkit.getPlayer(leaderId);
+    }
+
+    /**
+     * Sprawdza czy dwóch graczy jest w tej samej party
+     * @param player1 Pierwszy gracz
+     * @param player2 Drugi gracz
+     * @return true jeśli gracze są w tej samej party
+     */
+    public static boolean areInSameParty(Player player1, Player player2) {
+        if (partyManager == null) return false;
+        if (!isInParty(player1) || !isInParty(player2)) return false;
+
+        Party party1 = partyManager.getParty(player1);
+        Party party2 = partyManager.getParty(player2);
+
+        return party1 != null && party1.equals(party2);
+    }
+
+    /**
+     * Tworzy nową party z graczem jako liderem
+     * @param player Gracz który zostanie liderem
+     * @return true jeśli party została utworzona, false jeśli gracz już jest w party
+     */
+    public static boolean createParty(Player player) {
+        if (partyManager == null) return false;
+        if (isInParty(player)) return false;
+
+        partyManager.getOrCreateParty(player);
+        return true;
+    }
+
+    /**
+     * Rozwiązuje party (tylko lider może to zrobić)
+     * @param player Gracz próbujący rozwiązać party
+     * @return true jeśli party została rozwiązana
+     */
+    public static boolean disbandParty(Player player) {
+        if (partyManager == null) return false;
+        return partyManager.disbandParty(player);
+    }
+
+    /**
+     * Przekazuje przywództwo party innemu członkowi
+     * @param currentLeader Obecny lider
+     * @param newLeader Nowy lider
+     * @return true jeśli przywództwo zostało przekazane
+     */
+    public static boolean transferLeadership(Player currentLeader, Player newLeader) {
+        if (partyManager == null) return false;
+        return partyManager.transferLeadership(currentLeader, newLeader);
     }
 }

@@ -382,28 +382,33 @@ public class SkillEffectsHandler implements Listener {
             }
         }
 
-        // First check for ascendancy-specific handler
-        BaseSkillEffectsHandler handler = null;
+        // FIXED: Call BOTH base class handler AND ascendancy handler to prevent skill loss
+        // First call base class handler (for core defensive skills)
+        BaseSkillEffectsHandler baseHandler = classHandlers.get(playerClass);
+        if (baseHandler != null) {
+            baseHandler.handleEntityDamage(event, player, stats);
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Applied base class handler for " + player.getName() + ": " + playerClass);
+            }
+        }
+
+        // Then call ascendancy handler (for specialized defensive skills)
         if (!ascendancy.isEmpty()) {
-            handler = classHandlers.get(ascendancy);
-            if (handler != null && debuggingFlag == 1) {
-                plugin.getLogger().info("Using ascendancy handler for " + player.getName() + ": " + ascendancy);
+            BaseSkillEffectsHandler ascendancyHandler = classHandlers.get(ascendancy);
+            if (ascendancyHandler != null) {
+                ascendancyHandler.handleEntityDamage(event, player, stats);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Applied ascendancy handler for " + player.getName() + ": " + ascendancy);
+                }
             }
         }
-        
-        // Fall back to base class handler if no ascendancy handler found
-        if (handler == null) {
-            handler = classHandlers.get(playerClass);
-            if (handler != null && debuggingFlag == 1) {
-                plugin.getLogger().info("Using base class handler for " + player.getName() + ": " + playerClass);
+
+        // Log if no handlers were found
+        if (baseHandler == null && (ascendancy.isEmpty() || classHandlers.get(ascendancy) == null)) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No handlers found for player " + player.getName() +
+                    " with class " + playerClass + " and ascendancy " + ascendancy);
             }
-        }
-        
-        if (handler != null) {
-            handler.handleEntityDamage(event, player, stats);
-        } else if (debuggingFlag == 1) {
-            plugin.getLogger().warning("No handler found for player " + player.getName() + 
-                " with class " + playerClass + " and ascendancy " + ascendancy);
         }
     }
 
@@ -490,32 +495,37 @@ public class SkillEffectsHandler implements Listener {
             lastDamageMessageTime.put(playerId, currentTime);
         }
 
-        // Now delegate to class-specific handler
+        // Now delegate to class-specific handlers
         String playerClass = plugin.getClassManager().getPlayerClass(playerId);
         String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
 
-        // First check for ascendancy-specific handler
-        BaseSkillEffectsHandler handler = null;
+        // FIXED: Call BOTH base class handler AND ascendancy handler to prevent skill loss
+        // First call base class handler (for core skills like Ranger's Triple Strike)
+        BaseSkillEffectsHandler baseHandler = classHandlers.get(playerClass);
+        if (baseHandler != null) {
+            baseHandler.handleEntityDamageByEntity(event, player, stats);
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Applied base class handler for " + player.getName() + ": " + playerClass);
+            }
+        }
+
+        // Then call ascendancy handler (for specialized skills)
         if (!ascendancy.isEmpty()) {
-            handler = classHandlers.get(ascendancy);
-            if (handler != null && debuggingFlag == 1) {
-                plugin.getLogger().info("Using ascendancy handler for " + player.getName() + ": " + ascendancy);
+            BaseSkillEffectsHandler ascendancyHandler = classHandlers.get(ascendancy);
+            if (ascendancyHandler != null) {
+                ascendancyHandler.handleEntityDamageByEntity(event, player, stats);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Applied ascendancy handler for " + player.getName() + ": " + ascendancy);
+                }
             }
         }
-        
-        // Fall back to base class handler if no ascendancy handler found
-        if (handler == null) {
-            handler = classHandlers.get(playerClass);
-            if (handler != null && debuggingFlag == 1) {
-                plugin.getLogger().info("Using base class handler for " + player.getName() + ": " + playerClass);
+
+        // Log if no handlers were found
+        if (baseHandler == null && (ascendancy.isEmpty() || classHandlers.get(ascendancy) == null)) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().warning("No handlers found for player " + player.getName() +
+                    " with class " + playerClass + " and ascendancy " + ascendancy);
             }
-        }
-        
-        if (handler != null) {
-            handler.handleEntityDamageByEntity(event, player, stats);
-        } else if (debuggingFlag == 1) {
-            plugin.getLogger().warning("No handler found for player " + player.getName() + 
-                " with class " + playerClass + " and ascendancy " + ascendancy);
         }
     }
 
@@ -526,32 +536,37 @@ public class SkillEffectsHandler implements Listener {
             UUID playerId = player.getUniqueId();
             PlayerSkillStats stats = getPlayerStats(player);
 
-            // Delegate to class-specific handler
+            // Delegate to class-specific handlers
             String playerClass = plugin.getClassManager().getPlayerClass(playerId);
             String ascendancy = plugin.getClassManager().getPlayerAscendancy(playerId);
 
-            // First check for ascendancy-specific handler
-            BaseSkillEffectsHandler handler = null;
+            // FIXED: Call BOTH base class handler AND ascendancy handler to prevent skill loss
+            // First call base class handler (for core on-kill mechanics like Ranger's Wind Stacks)
+            BaseSkillEffectsHandler baseHandler = classHandlers.get(playerClass);
+            if (baseHandler != null) {
+                baseHandler.handleEntityDeath(event, player, stats);
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Applied base class handler for " + player.getName() + ": " + playerClass);
+                }
+            }
+
+            // Then call ascendancy handler (for specialized on-kill mechanics)
             if (!ascendancy.isEmpty()) {
-                handler = classHandlers.get(ascendancy);
-                if (handler != null && debuggingFlag == 1) {
-                    plugin.getLogger().info("Using ascendancy handler for " + player.getName() + ": " + ascendancy);
+                BaseSkillEffectsHandler ascendancyHandler = classHandlers.get(ascendancy);
+                if (ascendancyHandler != null) {
+                    ascendancyHandler.handleEntityDeath(event, player, stats);
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Applied ascendancy handler for " + player.getName() + ": " + ascendancy);
+                    }
                 }
             }
-            
-            // Fall back to base class handler if no ascendancy handler found
-            if (handler == null) {
-                handler = classHandlers.get(playerClass);
-                if (handler != null && debuggingFlag == 1) {
-                    plugin.getLogger().info("Using base class handler for " + player.getName() + ": " + playerClass);
+
+            // Log if no handlers were found
+            if (baseHandler == null && (ascendancy.isEmpty() || classHandlers.get(ascendancy) == null)) {
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().warning("No handlers found for player " + player.getName() +
+                        " with class " + playerClass + " and ascendancy " + ascendancy);
                 }
-            }
-            
-            if (handler != null) {
-                handler.handleEntityDeath(event, player, stats);
-            } else if (debuggingFlag == 1) {
-                plugin.getLogger().warning("No handler found for player " + player.getName() + 
-                    " with class " + playerClass + " and ascendancy " + ascendancy);
             }
         }
     }

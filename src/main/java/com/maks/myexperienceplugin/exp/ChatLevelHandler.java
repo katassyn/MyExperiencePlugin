@@ -39,13 +39,7 @@ public class ChatLevelHandler implements Listener {
 
         String bracketedClass = "§3[" + classTag + "§3]§r";
         String displayName = player.getDisplayName();
-        String formatted = String.format(
-                "%s %s %s: %s",
-                levelTag,
-                bracketedClass,
-                displayName,
-                event.getMessage()
-        );
+        String formatted = levelTag + " " + bracketedClass + " " + displayName + ": %2$s";
         event.setFormat(formatted);
     }
 

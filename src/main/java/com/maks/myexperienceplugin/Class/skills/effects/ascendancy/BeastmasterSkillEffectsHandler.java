@@ -1408,7 +1408,7 @@ public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler impl
      * @param skillId The skill ID to check
      * @return Whether the player has purchased the skill
      */
-    private boolean isPurchased(UUID playerId, int skillId) {
+    protected boolean isPurchased(UUID playerId, int skillId) {
         // Get the player's purchased skills from the plugin
         Player player = Bukkit.getPlayer(playerId);
         if (player == null) return false;

@@ -1643,7 +1643,7 @@ public class ScaleGuardianSkillEffectsHandler extends BaseSkillEffectsHandler {
     /**
      * Check if player has purchased a specific skill
      */
-    private boolean isPurchased(UUID playerId, int skillId) {
+    protected boolean isPurchased(UUID playerId, int skillId) {
         Set<Integer> purchased = plugin.getSkillTreeManager().getPurchasedSkills(playerId);
         return purchased.contains(skillId);
     }

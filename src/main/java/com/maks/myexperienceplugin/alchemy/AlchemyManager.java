@@ -136,20 +136,18 @@ public class AlchemyManager {
         // Apply the effect
         effect.apply();
 
-        // Check if this is a basic healing potion (InstantHealingEffect with duration 0)
+        // Check if this is an instant healing effect (InstantHealingEffect with duration 0)
         // If so, remove it from activeEffects immediately after applying
         if (effect instanceof InstantHealingEffect && effect.getDuration() == 0) {
             InstantHealingEffect healingEffect = (InstantHealingEffect) effect;
-            if (healingEffect.isBasicHealingPotion()) {
-                if (debuggingFlag == 1) {
-                    Bukkit.getLogger().info("[DEBUG] Removing basic healing potion effect for " + 
-                            player.getName() + " immediately after applying");
-                }
-                // Remove from activeEffects but keep the cooldown
-                playerEffects.remove(category);
-                if (playerEffects.isEmpty()) {
-                    activeEffects.remove(uuid);
-                }
+            if (debuggingFlag == 1) {
+                Bukkit.getLogger().info("[DEBUG] Removing instant healing potion effect for " +
+                        player.getName() + " immediately after applying (effect: " + effect.getEffectName() + ")");
+            }
+            // Remove from activeEffects but keep the cooldown for ALL instant healing potions
+            playerEffects.remove(category);
+            if (playerEffects.isEmpty()) {
+                activeEffects.remove(uuid);
             }
         }
 

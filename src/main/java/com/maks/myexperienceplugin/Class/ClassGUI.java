@@ -25,8 +25,6 @@ public class ClassGUI {
 // Updated openBaseClassGUI method for ClassGUI.java
 
     public void openBaseClassGUI(Player player) {
-        plugin.getLogger().info("[DEBUG] ClassGUI: Creating base class inventory for " + player.getName());
-
         Inventory inv = Bukkit.createInventory(null, 9, ChatColor.DARK_GREEN + "Choose Your Class");
 
         // Ranger
@@ -65,29 +63,19 @@ public class ClassGUI {
         inv.setItem(4, dragonknight);
         inv.setItem(6, spellweaver);
 
-        plugin.getLogger().info("[DEBUG] ClassGUI: Inventory prepared. Scheduling openInventory on main thread...");
-
         // Force the open call on main thread
         Bukkit.getScheduler().runTask(plugin, () -> {
-            plugin.getLogger().info("[DEBUG] ClassGUI: Running on main thread, opening inventory for " + player.getName());
-
             if (player.getGameMode() == GameMode.SPECTATOR) {
-                plugin.getLogger().warning("[DEBUG] ClassGUI: " + player.getName()
-                        + " is in SPECTATOR mode, cannot open inventory!");
                 return;
             }
 
             player.openInventory(inv);
-            plugin.getLogger().info("[DEBUG] ClassGUI: openInventory call completed for " + player.getName());
         });
     }
     /**
      * Called when the player hits >=20, has a base class, but no ascendancy
      */
     public void openAscendancyGUI(Player player, String baseClass) {
-        plugin.getLogger().info("[DEBUG] ClassGUI: Creating ascendancy inventory for "
-                + player.getName() + " with baseClass=" + baseClass);
-
         Inventory inv = Bukkit.createInventory(null, 9, ChatColor.DARK_BLUE + "Choose Ascendancy");
 
         if ("Ranger".equalsIgnoreCase(baseClass)) {
@@ -131,19 +119,12 @@ public class ClassGUI {
             )));
         }
 
-        plugin.getLogger().info("[DEBUG] ClassGUI: Ascendancy inventory prepared. Scheduling openInventory on main thread...");
-
         Bukkit.getScheduler().runTask(plugin, () -> {
-            plugin.getLogger().info("[DEBUG] ClassGUI: Opening ascendancy GUI on main thread for " + player.getName());
-
             if (player.getGameMode() == GameMode.SPECTATOR) {
-                plugin.getLogger().warning("[DEBUG] ClassGUI: " + player.getName()
-                        + " is in SPECTATOR mode, cannot open inventory!");
                 return;
             }
 
             player.openInventory(inv);
-            plugin.getLogger().info("[DEBUG] ClassGUI: openInventory call done for ascendancy GUI.");
         });
     }
 

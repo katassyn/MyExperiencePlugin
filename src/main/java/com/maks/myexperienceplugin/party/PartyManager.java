@@ -1,3 +1,4 @@
+// ===== PartyManager.java =====
 package com.maks.myexperienceplugin.party;
 
 import com.maks.myexperienceplugin.MyExperiencePlugin;
@@ -16,6 +17,7 @@ public class PartyManager {
     // Maps to keep track of parties and invites
     private final Map<UUID, Party> playerPartyMap = new HashMap<>();
     private final Map<UUID, PartyInvite> pendingInvites = new HashMap<>();
+    private final Set<Party> allParties = new HashSet<>(); // Track all parties for cleanup
 
     // Cooldown for sending invites (in milliseconds)
     private final long inviteCooldown = 60 * 1000; // 60 seconds
@@ -34,9 +36,26 @@ public class PartyManager {
         return playerPartyMap.containsKey(player.getUniqueId());
     }
 
+    // Create or get a party for a player (allows single-player parties)
+    public Party getOrCreateParty(Player player) {
+        Party party = getParty(player);
+        if (party == null) {
+            party = new Party(plugin, player);
+            playerPartyMap.put(player.getUniqueId(), party);
+            allParties.add(party);
+        }
+        return party;
+    }
+
     // Get the party of a player
     public Party getParty(Player player) {
         return playerPartyMap.get(player.getUniqueId());
+    }
+
+    // Check if a player is the party leader
+    public boolean isPartyLeader(Player player) {
+        Party party = getParty(player);
+        return party != null && party.isLeader(player.getUniqueId());
     }
 
     // Invite a player to a party
@@ -44,15 +63,23 @@ public class PartyManager {
         UUID inviterId = inviter.getUniqueId();
         UUID inviteeId = invitee.getUniqueId();
 
-        // Check if inviter is in a party, if not create one
-        Party party = getParty(inviter);
-        if (party == null) {
-            party = new Party(plugin, inviter);
-            playerPartyMap.put(inviterId, party);
+        // Get or create party for inviter
+        Party party = getOrCreateParty(inviter);
+
+        // Only the party leader can invite
+        if (!party.isLeader(inviterId)) {
+            inviter.sendMessage("§cOnly the party leader can invite players.");
+            return;
+        }
+
+        // Check if invitee is already in a party
+        if (isInParty(invitee)) {
+            inviter.sendMessage("§c" + invitee.getName() + " is already in a party.");
+            return;
         }
 
         // Check if party is full
-        if (party.getMembers().size() >= 3) {
+        if (party.getMembers().size() >= 4) {
             inviter.sendMessage("§cYour party is full.");
             return;
         }
@@ -108,7 +135,7 @@ public class PartyManager {
             return;
         }
 
-        if (party.getMembers().size() >= 3) {
+        if (party.getMembers().size() >= 4) {
             player.sendMessage("§cThe party is full.");
             return;
         }
@@ -126,11 +153,6 @@ public class PartyManager {
                     member.sendMessage("§aYou have joined the party.");
                 }
             }
-        }
-
-        // Notify inviter
-        if (!inviter.getUniqueId().equals(player.getUniqueId())) {
-            inviter.sendMessage("§a" + player.getName() + " has accepted your party invite.");
         }
     }
 
@@ -155,18 +177,32 @@ public class PartyManager {
         Party party = getParty(player);
 
         if (party != null) {
+            boolean wasLeader = party.isLeader(playerId);
             party.removeMember(player);
             playerPartyMap.remove(playerId);
 
-            // Notify remaining members
-            for (UUID memberId : party.getMembers()) {
-                Player member = Bukkit.getPlayer(memberId);
-                if (member != null) {
-                    member.sendMessage("§e" + player.getName() + " has left the party.");
+            // Check if party is empty and remove it
+            if (party.isEmpty()) {
+                allParties.remove(party);
+            } else {
+                // Notify remaining members
+                for (UUID memberId : party.getMembers()) {
+                    Player member = Bukkit.getPlayer(memberId);
+                    if (member != null) {
+                        member.sendMessage("§e" + player.getName() + " has left the party.");
+
+                        // Notify about new leader if leadership changed
+                        if (wasLeader && party.isLeader(memberId)) {
+                            member.sendMessage("§6You are now the party leader!");
+                        } else if (wasLeader) {
+                            Player newLeader = Bukkit.getPlayer(party.getLeader());
+                            if (newLeader != null) {
+                                member.sendMessage("§6" + newLeader.getName() + " is now the party leader.");
+                            }
+                        }
+                    }
                 }
             }
-
-            // If party is empty, you can add logic to remove it if needed
         }
     }
 
@@ -179,6 +215,7 @@ public class PartyManager {
         removePlayerFromParty(player);
         player.sendMessage("§aYou have left the party.");
     }
+
     /**
      * Sends a message to all members of a player's party
      */
@@ -196,5 +233,110 @@ public class PartyManager {
                 member.sendMessage(formattedMessage);
             }
         }
+    }
+
+    // Kick a player from party (only for party leader)
+    public boolean kickPlayerFromParty(Player kicker, Player target) {
+        Party kickerParty = getParty(kicker);
+        Party targetParty = getParty(target);
+
+        if (kickerParty == null || targetParty == null || !kickerParty.equals(targetParty)) {
+            kicker.sendMessage("§cYou cannot kick this player.");
+            return false;
+        }
+
+        // Only the party leader can kick
+        if (!kickerParty.isLeader(kicker.getUniqueId())) {
+            kicker.sendMessage("§cOnly the party leader can kick players.");
+            return false;
+        }
+
+        if (kicker.equals(target)) {
+            kicker.sendMessage("§cYou cannot kick yourself. Use /party leave instead.");
+            return false;
+        }
+
+        removePlayerFromParty(target);
+        kicker.sendMessage("§aYou have kicked " + target.getName() + " from the party.");
+        target.sendMessage("§cYou have been kicked from the party by " + kicker.getName() + ".");
+
+        // Notify other party members
+        for (UUID memberId : kickerParty.getMembers()) {
+            if (!memberId.equals(kicker.getUniqueId())) {
+                Player member = Bukkit.getPlayer(memberId);
+                if (member != null) {
+                    member.sendMessage("§e" + target.getName() + " has been kicked from the party.");
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // Transfer party leadership
+    public boolean transferLeadership(Player currentLeader, Player newLeader) {
+        Party party = getParty(currentLeader);
+
+        if (party == null || !party.isLeader(currentLeader.getUniqueId())) {
+            currentLeader.sendMessage("§cYou are not the party leader.");
+            return false;
+        }
+
+        if (!party.getMembers().contains(newLeader.getUniqueId())) {
+            currentLeader.sendMessage("§c" + newLeader.getName() + " is not in your party.");
+            return false;
+        }
+
+        party.setLeader(newLeader.getUniqueId());
+
+        // Notify all party members
+        for (UUID memberId : party.getMembers()) {
+            Player member = Bukkit.getPlayer(memberId);
+            if (member != null) {
+                if (member.equals(newLeader)) {
+                    member.sendMessage("§6You are now the party leader!");
+                } else {
+                    member.sendMessage("§6" + newLeader.getName() + " is now the party leader.");
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // Get all online players not in any party (for invitation GUI)
+    public List<Player> getPlayersNotInParty() {
+        List<Player> availablePlayers = new ArrayList<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!isInParty(player)) {
+                availablePlayers.add(player);
+            }
+        }
+        return availablePlayers;
+    }
+
+    // Disband a party (leader only)
+    public boolean disbandParty(Player leader) {
+        Party party = getParty(leader);
+
+        if (party == null || !party.isLeader(leader.getUniqueId())) {
+            leader.sendMessage("§cYou are not the party leader.");
+            return false;
+        }
+
+        // Notify all members and remove them
+        Set<UUID> members = new HashSet<>(party.getMembers());
+        for (UUID memberId : members) {
+            playerPartyMap.remove(memberId);
+            Player member = Bukkit.getPlayer(memberId);
+            if (member != null) {
+                member.sendMessage("§cThe party has been disbanded by the leader.");
+            }
+        }
+
+        // Remove the party from tracking
+        allParties.remove(party);
+
+        return true;
     }
 }

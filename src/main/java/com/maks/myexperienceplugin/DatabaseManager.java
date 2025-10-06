@@ -28,12 +28,12 @@ public class DatabaseManager {
         config.setUsername(username);
         config.setPassword(password);
 
-        // Essential settings
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(5);
-        config.setIdleTimeout(300000); // 5 minutes
-        config.setMaxLifetime(600000); // 10 minutes
-        config.setConnectionTimeout(10000); // 10 seconds
+        // Essential settings - FIXED for RPG plugin with many players
+        config.setMaximumPoolSize(30); // Increased from 10 to 30 for better concurrent access
+        config.setMinimumIdle(15); // Increased from 5 to 15 to handle base load
+        config.setIdleTimeout(600000); // 10 minutes (increased from 5)
+        config.setMaxLifetime(1200000); // 20 minutes (increased from 10)
+        config.setConnectionTimeout(15000); // 15 seconds (increased from 10)
         config.setPoolName("MyExperiencePlugin-Pool");
 
         // MySQL specific settings

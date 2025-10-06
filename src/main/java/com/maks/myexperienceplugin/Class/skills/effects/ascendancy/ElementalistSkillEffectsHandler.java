@@ -21,6 +21,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -32,6 +33,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler implements Listener {
     private static final int ID_OFFSET = 700000;
+
+    // Debug flag specifically for chance-based effects (separate from base debuggingFlag)
+    private int chanceDebugFlag = 0; // Set to 0 for production
+
+    // DAMAGE SCALING - percentage of original player damage
+    private static final double AOE_DAMAGE_PERCENT = 0.10; // AoE skills do 10% of original damage
+    private static final double CHAIN_DAMAGE_PERCENT = 0.15; // Chain skills do 15% of original damage
+    private static final double EXPLOSION_DAMAGE_PERCENT = 0.20; // Explosions do 20% of original damage
+    private static final double MAX_EXPLOSION_RADIUS = 2.5; // Reduced from 3-5 blocks
+    private static final double MAX_SPELL_DAMAGE_MULTIPLIER = 2.0; // Cap spell damage multiplier
+
+    // Safety cap - never more than 50% of target's current health in one hit
+    private static final double MAX_SINGLE_HIT_PERCENT = 0.50;
+
+    // Anti-recursion system
+    private final Map<UUID, Long> lastDamageTime = new ConcurrentHashMap<>();
+    private static final long MIN_DAMAGE_INTERVAL = 50; // Minimum 50ms between damage instances
+
+    // Prevent infinite recursion in damage events
+    private final Set<String> processingDamage = ConcurrentHashMap.newKeySet();
+
+    // Smart damage system - tracks recursion depth to prevent infinite loops
+    private final ThreadLocal<Integer> skillRecursionDepth = ThreadLocal.withInitial(() -> 0);
+    private final Map<UUID, Long> lastSkillDamageTime = new ConcurrentHashMap<>();
+    private static final long SKILL_DAMAGE_COOLDOWN = 100; // 100ms cooldown between skill damage instances
+    private static final int MAX_RECURSION_DEPTH = 2; // Allow max 2 levels of skill chains
 
     // Maps to track burning enemies
     private final Map<UUID, Map<UUID, Long>> burningEnemies = new ConcurrentHashMap<>();
@@ -56,6 +83,21 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
     private final Map<UUID, Integer> iceSpellCounter = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> lightningSpellCounter = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> stoneSpellCounter = new ConcurrentHashMap<>();
+
+    // Track entities currently exploding to prevent chain reactions
+    private final Set<UUID> currentlyExploding = new HashSet<>();
+
+    // Cooldown tracking for Combustion skill to prevent spam
+    private final Map<UUID, Long> combustionLastUsed = new ConcurrentHashMap<>();
+
+    // Location-based explosion cooldown to prevent area chain reactions
+    private final Map<String, Long> explosionLocationCooldown = new ConcurrentHashMap<>();
+
+    // Track explosions per tick to prevent server lag
+    private final Map<Long, Integer> explosionsPerTick = new ConcurrentHashMap<>();
+
+    // Track entities that have already been damaged by explosions to prevent multiple hits
+    private final Map<UUID, Set<UUID>> explosionDamagedEntities = new ConcurrentHashMap<>();
 
     // Buff tracking for Elemental Surge (skill 26) and Stone Kill Power (skill 20)
     private final Map<UUID, Long> elementalSurgeExpiry = new ConcurrentHashMap<>();
@@ -83,6 +125,8 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
     public ElementalistSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
+        // Schedule cleanup every 5 minutes
+        schedulePeriodicCleanup();
     }
 
     @Override
@@ -120,24 +164,24 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
         switch (originalId) {
             case 1: // Fire Mastery
-                stats.addSpellDamageBonus(5 * purchaseCount);
+                stats.addSpellDamageBonus(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("ELEMENTALIST SKILL 1: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 1: +" + (5 * purchaseCount) + " spell damage (Fire Mastery)");
+                    plugin.getLogger().info("ELEMENTALIST SKILL 1: Added " + (2 * purchaseCount) + " spell damage bonus");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 1: +" + (2 * purchaseCount) + " spell damage (Fire Mastery)");
                 }
                 break;
             case 2: // Ice Mastery
-                stats.addSpellDamageBonus(5 * purchaseCount);
+                stats.addSpellDamageBonus(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("ELEMENTALIST SKILL 2: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 2: +" + (5 * purchaseCount) + " spell damage (Ice Mastery)");
+                    plugin.getLogger().info("ELEMENTALIST SKILL 2: Added " + (2 * purchaseCount) + " spell damage bonus");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 2: +" + (2 * purchaseCount) + " spell damage (Ice Mastery)");
                 }
                 break;
             case 3: // Lightning Mastery
-                stats.addSpellDamageBonus(5 * purchaseCount);
+                stats.addSpellDamageBonus(2 * purchaseCount);
                 if (debuggingFlag == 1) {
-                    plugin.getLogger().info("ELEMENTALIST SKILL 3: Added " + (5 * purchaseCount) + " spell damage bonus");
-                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 3: +" + (5 * purchaseCount) + " spell damage (Lightning Mastery)");
+                    plugin.getLogger().info("ELEMENTALIST SKILL 3: Added " + (2 * purchaseCount) + " spell damage bonus");
+                    ChatNotificationUtils.send(player, ChatColor.DARK_GRAY + "[DEBUG] ELEMENTALIST SKILL 3: +" + (2 * purchaseCount) + " spell damage (Lightning Mastery)");
                 }
                 break;
             case 4: // Flame Burst
@@ -282,7 +326,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Fire Shield (skill 11)
         if (isPurchased(playerId, ID_OFFSET + 11)) {
             // 15% chance to create a fire shield (improved by Elemental Affinity)
-            if (rollChance(player, 0.15)) {
+            if (rollChanceWithDebug(0.15, player, "Fire Shield Activation", false)) {
                 // Activate fire shield
                 fireShieldActive.put(playerId, System.currentTimeMillis() + 3000); // 3s duration
 
@@ -290,7 +334,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 event.setDamage(event.getDamage() * 0.8); // 20% damage reduction
 
                 // Visual effect
-                player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 30, 0.5, 1, 0.5, 0.1);
+                player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 10, 0.5, 1, 0.5, 0.05);
                 ActionBarUtils.sendActionBar(player, ChatColor.RED + "Fire Shield activated!");
             }
         }
@@ -302,7 +346,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     System.currentTimeMillis() - iceBarrierActive.get(playerId) > 30000) { // 30s cooldown
 
                 // 20% chance to activate (improved by Elemental Affinity)
-                if (rollChance(player, 0.2)) {
+                if (rollChanceWithDebug(0.20, player, "Ice Barrier Activation", false)) {
                     // Activate ice barrier
                     iceBarrierActive.put(playerId, System.currentTimeMillis());
 
@@ -310,7 +354,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     event.setDamage(event.getDamage() * 0.7); // 30% damage reduction
 
                     // Visual effect
-                    player.getWorld().spawnParticle(Particle.SNOWFLAKE, player.getLocation().add(0, 1, 0), 30, 0.5, 1, 0.5, 0.1);
+                    player.getWorld().spawnParticle(Particle.SNOWFLAKE, player.getLocation().add(0, 1, 0), 10, 0.5, 1, 0.5, 0.05);
                     ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Ice Barrier activated!");
 
                     // Check for Ice Reflection (skill 14)
@@ -325,7 +369,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                                 double reflectDamage = event.getDamage() * 0.2;
                                 double finalReflect = calculateSpellDamage(reflectDamage, player,
                                         plugin.getSkillEffectsHandler().getPlayerStats(player));
-                                attacker.damage(finalReflect, player);
+                                smartDamage(attacker, player, finalReflect, "IceBarrierReflect", true);
 
                                 // Visual effect
                                 attacker.getWorld().spawnParticle(Particle.SNOWFLAKE, attacker.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
@@ -398,7 +442,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100, 1, false, true, true)); // 5s, Resistance II
 
                 // Visual effect
-                player.getWorld().spawnParticle(Particle.SNOWFLAKE, player.getLocation().add(0, 1, 0), 50, 1, 1, 1, 0.2);
+                player.getWorld().spawnParticle(Particle.SNOWFLAKE, player.getLocation().add(0, 1, 0), 15, 1, 1, 1, 0.1);
                 ActionBarUtils.sendActionBar(player, ChatColor.AQUA + "Winter's Embrace activated!");
             }
         }
@@ -418,17 +462,17 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
                 // Increase spell damage
                 SkillEffectsHandler.PlayerSkillStats playerStats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-                playerStats.addSpellDamageBonus(20); // 20% spell damage bonus
+                playerStats.addSpellDamageBonus(8); // 8 spell damage bonus
 
                 // Schedule removal of spell damage bonus
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                     SkillEffectsHandler.PlayerSkillStats updatedStats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-                    updatedStats.addSpellDamageBonus(-20); // Remove the bonus
+                    updatedStats.addSpellDamageBonus(-8); // Remove the bonus
                     plugin.getSkillEffectsHandler().refreshPlayerStats(player);
                 }, 100); // 5s
 
                 // Visual effect
-                player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1, 0), 50, 1, 1, 1, 0.2);
+                player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1, 0), 15, 1, 1, 1, 0.1);
                 ActionBarUtils.sendActionBar(player, ChatColor.YELLOW + "Storm Shield activated!");
             }
         }
@@ -436,17 +480,17 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Electrified (skill 16)
         if (isPurchased(playerId, ID_OFFSET + 16)) {
             // 20% chance to release a shock wave (improved by Elemental Affinity)
-            if (rollChance(player, 0.2)) {
+            if (rollChanceWithDebug(0.20, player, "Electrified Shock Wave", false)) {
                 // Find nearby enemies
                 List<Entity> nearbyEntities = player.getNearbyEntities(5, 5, 5);
                 for (Entity entity : nearbyEntities) {
                     if (entity instanceof LivingEntity && entity != player) {
                         LivingEntity target = (LivingEntity) entity;
 
-                        // Deal damage scaled by SpellWeaver bonuses
-                        double damage = player.getMaxHealth() * 0.15; // 15% of player's max health
+                        // Deal damage based on incoming damage (Shock Wave = 75% of damage received)
+                        double damage = event.getDamage() * 0.75; // 75% of damage received
                         double finalDamage = calculateSpellDamage(damage, player, stats);
-                        target.damage(finalDamage, player);
+                        smartDamage(target, player, finalDamage, "ShockWave", true);
 
                         // Visual effect
                         target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, target.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
@@ -454,7 +498,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 }
 
                 // Visual effect
-                player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1, 0), 40, 1, 1, 1, 0.2);
+                player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1, 0), 12, 1, 1, 1, 0.1);
                 ActionBarUtils.sendActionBar(player, ChatColor.YELLOW + "Electrified released a shock wave!");
             }
         }
@@ -464,10 +508,27 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
     public void handleEntityDamageByEntity(EntityDamageByEntityEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
 
+        // CRITICAL: Skip processing if we're too deep in recursion to prevent infinite loops
+        if (skillRecursionDepth.get() >= MAX_RECURSION_DEPTH) {
+            return;
+        }
+
         // Check if player is the attacker
         if (event.getDamager() == player && event.getEntity() instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) event.getEntity();
-            UUID targetId = target.getUniqueId();
+            String damageKey = playerId + ":" + target.getUniqueId() + ":" + System.identityHashCode(event);
+
+            // Prevent infinite recursion from AOE/chain damage
+            if (processingDamage.contains(damageKey)) {
+                return;
+            }
+            processingDamage.add(damageKey);
+
+            // Increment recursion depth
+            skillRecursionDepth.set(skillRecursionDepth.get() + 1);
+
+            try {
+                UUID targetId = target.getUniqueId();
 
             // === [MD] Elementalist on-hit (9–23 etc.) ===
             UUID pid = player.getUniqueId();
@@ -492,9 +553,11 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 mdInc(mdLightningVulnStacks, pid, tid, 4);
             }
 
-            // [22] Lightning stacks do 3 (+4% dmg/stack)
             if (isPurchased(pid, ID_OFFSET + 22) && mdCharged(pid, tid)) {
-                mdInc(mdLightningStacks, pid, tid, 3);
+                int currentStacks = mdGet(mdLightningStacks, pid, tid);
+                if (currentStacks < 10) { // LIMIT DO 10 STOSÓW
+                    mdInc(mdLightningStacks, pid, tid, 3);
+                }
             }
 
             // [23] Frost stacking slow +5%/stack do 20%
@@ -521,7 +584,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
             }
 
             // Node 1: 10% szansy na losowy efekt (Lightning / Frost / Stone), bazowo 3s
-            if (isPurchased(pid, ID_OFFSET + 1) && rollChance(player, 0.10)) {
+            if (isPurchased(pid, ID_OFFSET + 1) && rollChanceWithDebug(0.10, player, "Elemental Effect (Node 1)", false)) {
                 int extraSec = (isPurchased(pid, ID_OFFSET + 2) ? 1 : 0);  // Node 2: +1s
                 int durTicks = (3 + extraSec) * 20;
                 long untilMs = System.currentTimeMillis() + (durTicks * 50L);
@@ -550,7 +613,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                         }
 
                         // [17] Lightning chain 20% – dodatkowy skok
-                        if (isPurchased(pid, ID_OFFSET + 17) && rollChance(player, 0.20)) {
+                        if (isPurchased(pid, ID_OFFSET + 17) && rollChanceWithDebug(0.20, player, "Lightning Chain Extra Jump", false)) {
                             LivingEntity extra2 = mdFindNearestEnemy(extra != null ? extra : target, 5.0,
                                     le -> !le.getUniqueId().equals(tid));
                             if (extra2 != null) {
@@ -575,7 +638,9 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                         int vuln = mdGet(mdLightningVulnStacks, pid, tid);
                         double mult = 1.0 + (Math.max(0, shocks - 1) * 0.05) + (lst * 0.04) + (vuln * 0.03);
                         double zap = event.getDamage() * MD_EL_LIGHTNING_BASE_PCT * mult;
-                        if (zap > 0) target.damage(zap, player);
+                        if (zap > 0) {
+                            smartDamage(target, player, zap, "LightningZap", true);
+                        }
 
                         // [26] aktywacja dowolnego efektu → +10% spell /10s
                         if (isPurchased(pid, ID_OFFSET + 26)) {
@@ -625,7 +690,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                         mdStoneDefenseUntil.put(pid, System.currentTimeMillis() + 4000);
 
                         // [10] 10% szansy na ogłuszenie 1s
-                        if (isPurchased(pid, ID_OFFSET + 10) && rollChance(player, 0.10)) {
+                        if (isPurchased(pid, ID_OFFSET + 10) && rollChanceWithDebug(0.10, player, "Stone Stun", false)) {
                             target.addPotionEffect(new org.bukkit.potion.PotionEffect(
                                     org.bukkit.potion.PotionEffectType.SLOW, 20, 10, true, true, true));
                             target.addPotionEffect(new org.bukkit.potion.PotionEffect(
@@ -669,6 +734,10 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     applyStoneEffect(player, target);
                 }
             }
+            } finally {
+                processingDamage.remove(damageKey);
+                skillRecursionDepth.set(skillRecursionDepth.get() - 1);
+            }
         }
     }
 
@@ -702,11 +771,12 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                         if (entity instanceof LivingEntity && entity != player) {
                             LivingEntity target = (LivingEntity) entity;
 
-                            // Deal damage scaled by SpellWeaver bonuses
-                            double damage = player.getMaxHealth() * 0.3; // 30% of player's max health
+                            // Deal damage based on recent damage dealt (Fire Nova = 200% of last hit)
+                            double lastDamage = mdLastDealtDamage.getOrDefault(playerId, 8.0);
+                            double damage = lastDamage * 0.75; // 75% of last damage dealt
                             SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                             double finalDamage = calculateSpellDamage(damage, player, ps);
-                            target.damage(finalDamage, player);
+                            smartDamage(target, player, finalDamage, "FlameLash", true);
 
                             // Apply burning
                             applyBurning(player, target);
@@ -717,7 +787,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     }
 
                     // Visual effect
-                    player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 60, 2, 1, 2, 0.2);
+                    player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 20, 2, 1, 2, 0.1);
                     ActionBarUtils.sendActionBar(player, ChatColor.RED + "Fire Nova released!");
                 }
             }
@@ -745,12 +815,12 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Flame Burst (skill 4)
         if (isPurchased(playerId, ID_OFFSET + 4)) {
             // 10% chance to create explosion (improved by Elemental Affinity)
-            if (rollChance(player, 0.1)) {
+            if (rollChanceWithDebug(0.10, player, "Flame Burst Explosion", false)) {
                 // Deal additional damage
                 double explosionDamage = event.getDamage() * 0.5; // 50% of original damage
                 SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                 double finalDamage = calculateSpellDamage(explosionDamage, player, ps);
-                target.damage(finalDamage, player);
+                smartDamage(target, player, finalDamage, "FlameBurst", true);
 
                 // Visual effect
                 target.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, target.getLocation().add(0, 1, 0), 1, 0, 0, 0, 0);
@@ -771,10 +841,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Inferno (skill 12)
         if (isPurchased(playerId, ID_OFFSET + 12) && isBurning(playerId, targetId)) {
             // Increase damage against burning enemies
-            double increased = event.getDamage() * 1.15; // 15% more damage
-            SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
-            double finalDamage = calculateSpellDamage(increased, player, ps);
-            event.setDamage(finalDamage);
+            event.setDamage(event.getDamage() * 1.15); // 15% more damage
 
             // Visual effect
             target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
@@ -783,30 +850,105 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
         // Check for Combustion (skill 22)
         if (isPurchased(playerId, ID_OFFSET + 22) && event.getDamage() > target.getHealth()) {
-            // Enemy will die from this hit, cause explosion
-            List<Entity> nearbyEntities = target.getNearbyEntities(5, 5, 5);
+            // Check cooldown - 2 second cooldown to prevent spam
+            if (target.isDead() || target.getHealth() <= 0) {
+                return; // Nie eksploduj martwych mobów
+            }
+            long now = System.currentTimeMillis();
+            Long lastUsed = combustionLastUsed.get(playerId);
+            if (lastUsed != null && (now - lastUsed) < 2000) { // 2 second cooldown
+                return; // Skip explosion due to cooldown
+            }
+
+            // Prevent chain reactions: check if this target is already exploding
+            if (currentlyExploding.contains(targetId)) {
+                return; // Skip explosion to prevent infinite chains
+            }
+
+            // Prevent area chain reactions: check location-based cooldown
+            String locationKey = target.getWorld().getName() + ":" +
+                               (int)(target.getLocation().getX() / 5) * 5 + ":" +
+                               (int)(target.getLocation().getZ() / 5) * 5;
+            Long lastExplosion = explosionLocationCooldown.get(locationKey);
+            if (lastExplosion != null && (now - lastExplosion) < 1000) { // 1 second area cooldown
+                return; // Skip explosion due to area cooldown
+            }
+            explosionLocationCooldown.put(locationKey, now);
+
+            // Check explosions per tick limit to prevent server lag
+            long currentTick = now / 50; // 50ms per tick
+            int currentExplosions = explosionsPerTick.getOrDefault(currentTick, 0);
+            if (currentExplosions >= 5) { // Max 5 explosions per tick
+                return; // Skip explosion due to tick limit
+            }
+            explosionsPerTick.put(currentTick, currentExplosions + 1);
+
+            // Clean up old tick data
+            explosionsPerTick.entrySet().removeIf(entry -> entry.getKey() < currentTick - 20);
+
+            // Update cooldown
+            combustionLastUsed.put(playerId, now);
+
+            // Mark this target as currently exploding
+            currentlyExploding.add(targetId);
+
+            // Create unique explosion ID to track which entities have been damaged
+            UUID explosionId = UUID.randomUUID();
+            explosionDamagedEntities.put(explosionId, new HashSet<>());
+
+            // Schedule removal of explosion flag and cleanup
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                currentlyExploding.remove(targetId);
+                explosionDamagedEntities.remove(explosionId);
+            }, 10); // 10 ticks = 0.5 seconds - longer to prevent chain reactions
+
+            // Enemy will die from this hit, cause explosion with SMALLER RADIUS
+            List<Entity> nearbyEntities = target.getNearbyEntities(MAX_EXPLOSION_RADIUS, MAX_EXPLOSION_RADIUS, MAX_EXPLOSION_RADIUS); // Use constant
+            Set<UUID> damagedInThisExplosion = explosionDamagedEntities.get(explosionId);
+
             for (Entity entity : nearbyEntities) {
                 if (entity instanceof LivingEntity && entity != player && entity != target) {
                     LivingEntity nearbyTarget = (LivingEntity) entity;
+                    UUID nearbyId = nearbyTarget.getUniqueId();
+                    // Sprawdź czy cel żyje
+                    if (nearbyTarget.isDead() || nearbyTarget.getHealth() <= 0) {
+                        continue;
+                    }
+                    // Don't damage targets that are already exploding to prevent chains
+                    if (currentlyExploding.contains(nearbyId)) {
+                        continue;
+                    }
 
-                    // Deal damage
-                    double explosionDamage = event.getDamage() * 0.4; // 40% of original damage
+                    // Don't damage the same entity multiple times in one explosion
+                    if (damagedInThisExplosion.contains(nearbyId)) {
+                        continue;
+                    }
+
+                    // Mark this entity as damaged by this explosion
+                    damagedInThisExplosion.add(nearbyId);
+
+                    // Explosion damage is percentage of ORIGINAL player damage, not mob HP
+                    double originalDamage = event.getDamage(); // Get the original damage that killed the target
+                    double explosionDamage = originalDamage * EXPLOSION_DAMAGE_PERCENT; // 20% of original damage
+
                     SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                     double finalDamage = calculateSpellDamage(explosionDamage, player, ps);
-                    nearbyTarget.damage(finalDamage, player);
 
-                    // Apply burning
+                    // Use smart damage with recursion protection - kills will be attributed properly
+                    smartDamage(nearbyTarget, player, finalDamage, "Combustion", true);
+
+                    // Apply burning (but lighter effect)
                     applyBurning(player, nearbyTarget);
 
-                    // Visual effect
-                    nearbyTarget.getWorld().spawnParticle(Particle.FLAME, nearbyTarget.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
+                    // Reduced visual effect
+                    nearbyTarget.getWorld().spawnParticle(Particle.FLAME, nearbyTarget.getLocation().add(0, 1, 0), 8, 0.3, 0.5, 0.3, 0.03);
                 }
             }
 
-            // Visual effect
+            // Reduced visual effect
             target.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, target.getLocation().add(0, 1, 0), 1, 0, 0, 0, 0);
-            target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 40, 1, 1, 1, 0.2);
-            ActionBarUtils.sendActionBar(player, ChatColor.RED + "Combustion caused an explosion!");
+            target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 20, 0.8, 0.8, 0.8, 0.1);
+            ActionBarUtils.sendActionBar(player, ChatColor.RED + "Combustion explosion!");
         }
     }
 
@@ -817,7 +959,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Frost Nova (skill 5)
         if (isPurchased(playerId, ID_OFFSET + 5)) {
             // 10% chance to freeze nearby enemies (improved by Elemental Affinity)
-            if (rollChance(player, 0.1)) {
+            if (rollChanceWithDebug(0.10, player, "Frost Nova Freeze", false)) {
                 // Freeze target
                 applyFreezing(player, target, 1000); // 1s freeze
 
@@ -864,10 +1006,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Deep Freeze (skill 13)
         if (isPurchased(playerId, ID_OFFSET + 13) && isFrozen(playerId, targetId)) {
             // Increase damage against frozen enemies
-            double increased = event.getDamage() * 1.25; // 25% more damage
-            SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
-            double finalDamage = calculateSpellDamage(increased, player, ps);
-            event.setDamage(finalDamage);
+            event.setDamage(event.getDamage() * 1.25); // 25% more damage
 
             // Visual effect
             target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
@@ -877,7 +1016,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Absolute Zero (skill 19)
         if (isPurchased(playerId, ID_OFFSET + 19)) {
             // 15% chance to instantly freeze (improved by Elemental Affinity)
-            if (rollChance(player, 0.15)) {
+            if (rollChanceWithDebug(0.15, player, "Absolute Zero Instant Freeze", false)) {
                 // Apply freezing
                 applyFreezing(player, target, 2000); // 2s freeze
 
@@ -904,7 +1043,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Chain Lightning (skill 6)
         if (isPurchased(playerId, ID_OFFSET + 6)) {
             // 15% chance to chain (improved by Elemental Affinity)
-            if (rollChance(player, 0.15)) {
+            if (rollChanceWithDebug(0.15, player, "Chain Lightning", false)) {
                 // Find nearby entity to chain to
                 List<Entity> nearbyEntities = target.getNearbyEntities(5, 5, 5);
                 for (Entity entity : nearbyEntities) {
@@ -915,7 +1054,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                         double chainDamage = event.getDamage() * 0.5; // 50% of original damage
                         double finalChain = calculateSpellDamage(chainDamage, player,
                                 plugin.getSkillEffectsHandler().getPlayerStats(player));
-                        chainTarget.damage(finalChain, player);
+                        smartDamage(chainTarget, player, finalChain, "ChainLightning", true);
 
                         // Apply charging
                         applyCharging(player, chainTarget);
@@ -946,12 +1085,12 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Thunderstrike (skill 15)
         if (isPurchased(playerId, ID_OFFSET + 15)) {
             // 10% chance to call down thunderbolt (improved by Elemental Affinity)
-            if (rollChance(player, 0.1)) {
+            if (rollChanceWithDebug(0.10, player, "Thunderstrike Thunderbolt", false)) {
                 // Deal additional damage
                 double thunderDamage = event.getDamage() * 0.4; // 40% of original damage
                 SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                 double finalDamage = calculateSpellDamage(thunderDamage, player, ps);
-                target.damage(finalDamage, player);
+                smartDamage(target, player, finalDamage, "ThunderStrike", true);
 
                 // Visual effect
                 target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, target.getLocation().add(0, 1, 0), 40, 0.5, 1, 0.5, 0.1);
@@ -963,12 +1102,9 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Overcharge (skill 20)
         if (isPurchased(playerId, ID_OFFSET + 20)) {
             // 20% chance to critically strike (improved by Elemental Affinity)
-            if (rollChance(player, 0.2)) {
-                // Increase damage scaled with SpellWeaver bonuses
-                double increased = event.getDamage() * 1.5; // 50% more damage
-                SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
-                double finalDamage = calculateSpellDamage(increased, player, ps);
-                event.setDamage(finalDamage);
+            if (rollChanceWithDebug(0.20, player, "Overcharge Critical Strike", false)) {
+                // Increase damage
+                event.setDamage(event.getDamage() * 1.5); // 50% more damage
 
                 // Visual effect
                 target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, target.getLocation().add(0, 1, 0), 30, 0.5, 1, 0.5, 0.1);
@@ -978,14 +1114,15 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
         // Shock Spread (skill 17)
         if (isPurchased(playerId, ID_OFFSET + 17)) {
-            if (rollChance(player, 0.2)) {
+            if (rollChanceWithDebug(0.20, player, "Shock Spread", false)) {
                 for (Entity entity : target.getNearbyEntities(4, 4, 4)) {
                     if (entity instanceof LivingEntity && entity != player && entity != target) {
                         LivingEntity near = (LivingEntity) entity;
                         double spreadDamage = event.getDamage() * 0.3;
                         double finalDmg = calculateSpellDamage(spreadDamage, player,
                                 plugin.getSkillEffectsHandler().getPlayerStats(player));
-                        near.damage(finalDmg, player);
+                        // Use proper damage method for kill attribution
+                        safelyDamageEntity(near, player, finalDmg, "ShockSpread");
                         applyCharging(player, near);
                     }
                 }
@@ -1015,7 +1152,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     double conductionDamage = event.getDamage() * 0.3; // 30% of original damage
                     SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                     double finalDamage = calculateSpellDamage(conductionDamage, player, ps);
-                    nearbyTarget.damage(finalDamage, player);
+                    smartDamage(nearbyTarget, player, finalDamage, "FrostNova", true);
 
                     // Apply charging
                     applyCharging(player, nearbyTarget);
@@ -1114,18 +1251,21 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
         // Stone Burst (skill 6)
         if (isPurchased(playerId, ID_OFFSET + 6)) {
-            double splash = player.getMaxHealth() * 0.03;
+            double lastDamage = mdLastDealtDamage.getOrDefault(playerId, 6.0);
+            double splash = lastDamage * 0.5; // 50% of last damage dealt
             SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
             double finalSplash = calculateSpellDamage(splash, player, ps);
             for (Entity e : target.getNearbyEntities(2, 2, 2)) {
                 if (e instanceof LivingEntity && e != player && e != target) {
-                    ((LivingEntity) e).damage(finalSplash, player);
+                    // Use proper damage method for kill attribution
+                    LivingEntity le = (LivingEntity) e;
+                    safelyDamageEntity(le, player, finalSplash, "StoneSplash");
                 }
             }
         }
 
         // Stone Stun (skill 10)
-        if (isPurchased(playerId, ID_OFFSET + 10) && rollChance(player, 0.10)) {
+        if (isPurchased(playerId, ID_OFFSET + 10) && rollChanceWithDebug(0.10, player, "Stone Effect Stun", false)) {
             if (target instanceof Player) {
                 ((Player) target).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 5, false, true, true));
             }
@@ -1196,6 +1336,16 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
     }
 
     /**
+     * Handle player quit - cleanup data
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID playerId = event.getPlayer().getUniqueId();
+        clearPlayerData(playerId);
+        clearAllPlayerData(playerId); // Clear unified effect system data
+    }
+
+    /**
      * Handle Elemental Explosion when the player dies
      */
     @EventHandler
@@ -1210,7 +1360,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 for (Entity e : c.getWorld().getNearbyEntities(c, 5, 5, 5)) {
                     if (e instanceof LivingEntity && !e.equals(player)) {
                         LivingEntity le = (LivingEntity) e;
-                        le.damage(base, player);
+                        smartDamage(le, player, base, "StormBarrier", true);
                     }
                 }
                 c.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, c, 1, .2,.2,.2, 0.0);
@@ -1248,11 +1398,12 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     if (entity.getUniqueId().equals(targetId) && entity instanceof LivingEntity) {
                         LivingEntity target = (LivingEntity) entity;
 
-                        // Deal damage over time scaled by SpellWeaver bonuses
-                        double damage = player.getMaxHealth() * 0.02; // 2% of player's max health per second
+                        // Deal damage over time based on last damage dealt (Burning = 10% per tick)
+                        double lastDamage = mdLastDealtDamage.getOrDefault(playerId, 4.0);
+                        double damage = lastDamage * 0.10; // 10% of last damage per tick
                         SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                         double finalDamage = calculateSpellDamage(damage, player, ps);
-                        target.damage(finalDamage, player);
+                        smartDamage(target, player, finalDamage, "FrozenBurnDoT", true);
 
                         // Visual effect
                         target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 10, 0.5, 1, 0.5, 0.05);
@@ -1287,7 +1438,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 Player p = plugin.getServer().getPlayer(id);
                 if (p != null) {
                     SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(p);
-                    st.addSpellDamageBonus(-10);
+                    st.addSpellDamageBonus(-4);
                     plugin.getSkillEffectsHandler().refreshPlayerStats(p);
                 }
             }
@@ -1299,7 +1450,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 Player p = plugin.getServer().getPlayer(id);
                 if (p != null) {
                     SkillEffectsHandler.PlayerSkillStats st = plugin.getSkillEffectsHandler().getPlayerStats(p);
-                    st.addSpellDamageBonus(-7);
+                    st.addSpellDamageBonus(-3);
                     plugin.getSkillEffectsHandler().refreshPlayerStats(p);
                 }
             }
@@ -1321,29 +1472,34 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         }
     }
 
-    /**
-     * Calculate damage for ascendancy abilities while applying SpellWeaver bonuses.
-     * @param baseDamage Raw damage before Spellweaver modifiers
-     * @param player The caster
-     * @param stats  Player stats containing spell damage bonuses
-     * @return Final damage after applying bonuses and critical chance
-     */
-    private double calculateSpellDamage(double baseDamage, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
-        double damage = baseDamage + stats.getSpellDamageBonus();
-        damage *= stats.getSpellDamageMultiplier();
-        if (Math.random() * 100 < stats.getSpellCriticalChance()) {
-            damage *= 2.0;
-            ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Spell Critical! x2 dmg");
-        }
-        return damage;
-    }
+    // Note: calculateSpellDamage is now inherited from BaseSkillEffectsHandler
 
     private boolean rollChance(Player player, double baseChance) {
-        UUID id = player.getUniqueId();
-        if (isPurchased(id, ID_OFFSET + 27)) {
-            baseChance += 0.15;
+        // Use unified proc chance calculation with Elementalist Affinity (skill 27)
+        return rollProc(player, baseChance, null, ID_OFFSET + 27);
+    }
+    
+    // Enhanced debug logging for skill activations
+    private void logSkillActivation(Player player, String skillName, String details) {
+        if (chanceDebugFlag == 1) {
+            String msg = "[ELEMENTALIST] " + skillName + ": " + details;
+            ChatNotificationUtils.send(player, ChatColor.GOLD + msg);
+            plugin.getLogger().info("Player " + player.getName() + " - " + msg);
         }
-        return Math.random() < baseChance;
+    }
+    
+    // Override rollChanceWithDebug to use our chanceDebugFlag instead of base debuggingFlag
+    protected boolean rollChanceWithDebug(double chance, Player player, String mechanicName, boolean usePercentage) {
+        double normalizedChance = usePercentage ? chance / 100.0 : chance;
+        boolean success = Math.random() < normalizedChance;
+        
+        if (chanceDebugFlag == 1 && player != null && mechanicName != null) {
+            String msg = String.format("[ELEMENTALIST] %s: %.1f%% chance = %s", 
+                mechanicName, normalizedChance * 100, success ? "SUCCESS" : "FAIL");
+            ChatNotificationUtils.send(player, ChatColor.GOLD + msg);
+        }
+        
+        return success;
     }
 
     private void activateElementalSurge(Player player) {
@@ -1356,7 +1512,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         long expiry = elementalSurgeExpiry.getOrDefault(id, 0L);
         SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
         if (expiry <= now) {
-            ps.addSpellDamageBonus(10);
+            ps.addSpellDamageBonus(4);
         }
         elementalSurgeExpiry.put(id, now + 10000); // 10s duration
         plugin.getSkillEffectsHandler().refreshPlayerStats(player);
@@ -1372,15 +1528,13 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         long expiry = stoneKillBuffExpiry.getOrDefault(id, 0L);
         SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
         if (expiry <= now) {
-            ps.addSpellDamageBonus(7);
+            ps.addSpellDamageBonus(3);
         }
         stoneKillBuffExpiry.put(id, now + 5000); // 5s duration
         plugin.getSkillEffectsHandler().refreshPlayerStats(player);
     }
 
-    private boolean isPurchased(UUID playerId, int skillId) {
-        return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
-    }
+    // Note: isPurchased is now inherited from BaseSkillEffectsHandler
 
     /**
      * Check if player has used all three element types and trigger Elemental Mastery if so
@@ -1415,11 +1569,12 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                     if (entity instanceof LivingEntity && entity != player) {
                         LivingEntity target = (LivingEntity) entity;
 
-                        // Deal combined elemental damage scaled by SpellWeaver bonuses
-                        double damage = player.getMaxHealth() * 0.5; // 50% of player's max health
+                        // Deal combined elemental damage based on recent damage (Mastery = 400% of last hit)
+                        double lastDamage = mdLastDealtDamage.getOrDefault(playerId, 10.0);
+                        double damage = lastDamage * 1.5; // 150% of last damage dealt
                         SkillEffectsHandler.PlayerSkillStats ps = plugin.getSkillEffectsHandler().getPlayerStats(player);
                         double finalDamage = calculateSpellDamage(damage, player, ps);
-                        target.damage(finalDamage, player);
+                        smartDamage(target, player, finalDamage, "MeteorStrike", true);
 
                         // Apply all three elemental effects
                         applyBurning(player, target);
@@ -1427,20 +1582,20 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                         applyCharging(player, target);
 
                         // Visual effects - combine all three elements
-                        target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 15, 0.5, 1, 0.5, 0.05);
-                        target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 15, 0.5, 1, 0.5, 0.05);
-                        target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, target.getLocation().add(0, 1, 0), 15, 0.5, 1, 0.5, 0.05);
+                        target.getWorld().spawnParticle(Particle.FLAME, target.getLocation().add(0, 1, 0), 5, 0.5, 1, 0.5, 0.05);
+                        target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 5, 0.5, 1, 0.5, 0.05);
+                        target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, target.getLocation().add(0, 1, 0), 5, 0.5, 1, 0.5, 0.05);
                     }
                 }
 
                 // Visual effect around player
-                player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 30, 1, 1, 1, 0.2);
-                player.getWorld().spawnParticle(Particle.SNOWFLAKE, player.getLocation().add(0, 1, 0), 30, 1, 1, 1, 0.2);
-                player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1, 0), 30, 1, 1, 1, 0.2);
+                player.getWorld().spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 8, 1, 1, 1, 0.1);
+                player.getWorld().spawnParticle(Particle.SNOWFLAKE, player.getLocation().add(0, 1, 0), 8, 1, 1, 1, 0.1);
+                player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, player.getLocation().add(0, 1, 0), 8, 1, 1, 1, 0.1);
 
                 // Buff player
                 SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-                stats.addSpellDamageBonus(30); // 30% spell damage bonus
+                stats.addSpellDamageBonus(12); // 12 spell damage bonus
                 stats.addSpellCriticalChance(15); // 15% spell critical chance
 
                 // Apply temporary resistance effects
@@ -1450,7 +1605,7 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 // Schedule removal of spell damage bonus
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                     SkillEffectsHandler.PlayerSkillStats updatedStats = plugin.getSkillEffectsHandler().getPlayerStats(player);
-                    updatedStats.addSpellDamageBonus(-30); // Remove the bonus
+                    updatedStats.addSpellDamageBonus(-12); // Remove the bonus
                     updatedStats.addSpellCriticalChance(-15); // Remove the bonus
                     plugin.getSkillEffectsHandler().refreshPlayerStats(player);
                 }, 200); // 10s
@@ -1548,28 +1703,137 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
     }
 
     private LivingEntity mdFindNearestEnemy(LivingEntity origin, double radius, java.util.function.Predicate<LivingEntity> filter) {
-        Location loc = origin.getLocation();
-        LivingEntity best = null; double bestD2 = Double.MAX_VALUE;
-        for (Entity e : origin.getWorld().getNearbyEntities(loc, radius, radius, radius)) {
-            if (!(e instanceof LivingEntity)) continue;
-            LivingEntity le = (LivingEntity)e;
-            if (le.isDead() || le.equals(origin)) continue;
-            if (filter != null && !filter.test(le)) continue;
-            double d2 = le.getLocation().distanceSquared(loc);
-            if (d2 < bestD2) { bestD2 = d2; best = le; }
+        // Add null safety checks
+        if (origin == null || origin.isDead()) {
+            return null;
         }
+        
+        Location loc = origin.getLocation();
+        if (loc == null || loc.getWorld() == null) {
+            return null;
+        }
+        
+        LivingEntity best = null; 
+        double bestD2 = Double.MAX_VALUE;
+        
+        try {
+            for (Entity e : origin.getWorld().getNearbyEntities(loc, radius, radius, radius)) {
+                if (!(e instanceof LivingEntity)) continue;
+                LivingEntity le = (LivingEntity) e;
+                if (le.isDead() || le.equals(origin)) continue;
+                if (filter != null && !filter.test(le)) continue;
+                
+                Location leLocation = le.getLocation();
+                if (leLocation == null) continue;
+                
+                double d2 = leLocation.distanceSquared(loc);
+                if (d2 < bestD2) { 
+                    bestD2 = d2; 
+                    best = le; 
+                }
+            }
+        } catch (Exception e) {
+            // Log the exception for debugging but don't crash
+            plugin.getLogger().warning("Exception in mdFindNearestEnemy: " + e.getMessage());
+            return null;
+        }
+        
         return best;
     }
 
+    /**
+     * FIXED version of AoE damage that properly attributes kills
+     */
     private void mdDoAoeDamage(Player source, Location center, double radius, double damage, LivingEntity exclude) {
-        for (Entity e : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
-            if (!(e instanceof LivingEntity)) continue;
-            LivingEntity le = (LivingEntity)e;
-            if (le.isDead() || le.equals(exclude)) continue;
-            le.damage(damage, source);
+        if (source == null || center == null || center.getWorld() == null || damage <= 0) {
+            return;
+        }
+
+        // Cap on AoE damage - max 10% of target's health per hit
+        // No absolute damage cap - let percentage scaling work
+
+        try {
+            int hitCount = 0;
+            int maxHits = 5; // Maximum 5 targets for AoE
+
+            for (Entity e : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
+                if (hitCount >= maxHits) break;
+
+                if (!(e instanceof LivingEntity)) continue;
+                LivingEntity le = (LivingEntity) e;
+
+                if (le.isDead() || le.getHealth() <= 0 || le.equals(exclude) || le.equals(source)) {
+                    continue;
+                }
+
+                // AoE damage is percentage of original damage, not mob HP
+                double aoeDamage = damage * AOE_DAMAGE_PERCENT; // 10% of original damage
+
+                // Use smart damage system - damage() with recursion protection
+                smartDamage(le, source, aoeDamage, "AoE", true);
+                hitCount++;
+
+                // Visual effect
+                if (!le.isDead()) {
+                    le.getWorld().spawnParticle(Particle.CRIT, le.getLocation().add(0, 1, 0), 3);
+                }
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Exception in mdDoAoeDamage: " + e.getMessage());
         }
     }
 
+    /**
+     * Safely damage an entity with proper attribution and damage caps
+     */
+    private void safelyDamageEntity(LivingEntity target, Player damager, double damage, String source) {
+        smartDamage(target, damager, damage, source, true);
+    }
+
+    /**
+     * Smart damage system that prevents recursion while maintaining kill attribution
+     * @param target The entity to damage
+     * @param damager The player dealing damage
+     * @param damage Amount of damage
+     * @param source Source of damage for logging
+     * @param allowRecursion Whether to use damage() (true) or setHealth() (false)
+     */
+    private void smartDamage(LivingEntity target, Player damager, double damage, String source, boolean allowRecursion) {
+        if (target == null || target.isDead() || damage <= 0) {
+            return;
+        }
+
+        // Safety cap - never more than 50% of target's CURRENT health in one hit
+        double safetyCap = target.getHealth() * MAX_SINGLE_HIT_PERCENT;
+        damage = Math.min(damage, safetyCap);
+
+        try {
+            UUID targetId = target.getUniqueId();
+            long now = System.currentTimeMillis();
+
+            // Check cooldown to prevent spam
+            Long lastTime = lastSkillDamageTime.get(targetId);
+            if (lastTime != null && (now - lastTime) < SKILL_DAMAGE_COOLDOWN) {
+                return; // Skip damage due to cooldown
+            }
+
+            lastSkillDamageTime.put(targetId, now);
+
+            // ALWAYS use damage() for proper kill attribution, but with recursion protection
+            if (skillRecursionDepth.get() < MAX_RECURSION_DEPTH) {
+                // Increment depth before calling damage()
+                skillRecursionDepth.set(skillRecursionDepth.get() + 1);
+                try {
+                    target.damage(damage, damager);
+                } finally {
+                    skillRecursionDepth.set(skillRecursionDepth.get() - 1);
+                }
+            }
+            // If too deep in recursion, skip to prevent infinite loops
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to damage entity (" + source + "): " + e.getMessage());
+        }
+    }
     public void clearPlayerData(UUID playerId) {
         burningEnemies.remove(playerId);
         frozenEnemies.remove(playerId);
@@ -1586,6 +1850,21 @@ public class ElementalistSkillEffectsHandler extends BaseSkillEffectsHandler imp
         resistanceBreakStacks.remove(playerId);
         resistanceBreakExpiry.remove(playerId);
         mdLightningBuffUntil.remove(playerId);
+        combustionLastUsed.remove(playerId);
+        lastSkillDamageTime.remove(playerId);
+
+        // Clean ThreadLocal
+        skillRecursionDepth.remove();
+
+        // Clean up any explosion flags for entities this player might have been killing
+        currentlyExploding.clear(); // Clear all explosion flags when any player leaves (safe approach)
+
+        // Clear any damage processing flags for this player
+        processingDamage.removeIf(key -> key.startsWith(playerId.toString() + ":"));
+
+        // Clean up old location cooldowns (keep only recent ones)
+        long cutoff = System.currentTimeMillis() - 10000; // Remove entries older than 10 seconds
+        explosionLocationCooldown.entrySet().removeIf(entry -> entry.getValue() < cutoff);
 
         plugin.getLogger().info("Cleared all Elementalist data for player ID: " + playerId);
     }

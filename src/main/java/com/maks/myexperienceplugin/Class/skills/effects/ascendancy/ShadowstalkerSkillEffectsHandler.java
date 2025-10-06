@@ -684,11 +684,11 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
         }
     }
 
-    private boolean isPurchased(UUID playerId, int skillId) {
+    protected boolean isPurchased(UUID playerId, int skillId) {
         return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
     }
 
-    private int getSkillPurchaseCount(UUID playerId, int skillId) {
+    protected int getSkillPurchaseCount(UUID playerId, int skillId) {
         return plugin.getSkillTreeManager().getSkillPurchaseCount(playerId, skillId);
     }
 
@@ -739,12 +739,15 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Aplikuj poison damage
         for (Map.Entry<UUID, Map<UUID, PoisonData>> playerEntry : poisonedEntities.entrySet()) {
-            for (Map.Entry<UUID, PoisonData> poisonEntry : playerEntry.getValue().entrySet()) {
-                if (currentTime < poisonEntry.getValue().expiry) {
-                    Entity entity = plugin.getServer().getEntity(poisonEntry.getKey());
-                    if (entity instanceof LivingEntity && entity.isValid()) {
-                        LivingEntity target = (LivingEntity) entity;
-                        target.damage(poisonEntry.getValue().damagePerSecond); // Apply full poison damage per second
+            Player player = plugin.getServer().getPlayer(playerEntry.getKey());
+            if (player != null && player.isOnline()) {
+                for (Map.Entry<UUID, PoisonData> poisonEntry : playerEntry.getValue().entrySet()) {
+                    if (currentTime < poisonEntry.getValue().expiry) {
+                        Entity entity = plugin.getServer().getEntity(poisonEntry.getKey());
+                        if (entity instanceof LivingEntity && entity.isValid()) {
+                            LivingEntity target = (LivingEntity) entity;
+                            target.damage(poisonEntry.getValue().damagePerSecond, player); // Apply full poison damage per second
+                        }
                     }
                 }
             }
@@ -752,16 +755,19 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Aplikuj bleed damage
         for (Map.Entry<UUID, Map<UUID, BleedData>> playerEntry : bleedingEntities.entrySet()) {
-            for (Map.Entry<UUID, BleedData> bleedEntry : playerEntry.getValue().entrySet()) {
-                if (currentTime < bleedEntry.getValue().expiry) {
-                    Entity entity = plugin.getServer().getEntity(bleedEntry.getKey());
-                    if (entity instanceof LivingEntity && entity.isValid()) {
-                        LivingEntity target = (LivingEntity) entity;
-                        target.damage(bleedEntry.getValue().damagePerSecond); // Apply full bleeding damage per second
+            Player player = plugin.getServer().getPlayer(playerEntry.getKey());
+            if (player != null && player.isOnline()) {
+                for (Map.Entry<UUID, BleedData> bleedEntry : playerEntry.getValue().entrySet()) {
+                    if (currentTime < bleedEntry.getValue().expiry) {
+                        Entity entity = plugin.getServer().getEntity(bleedEntry.getKey());
+                        if (entity instanceof LivingEntity && entity.isValid()) {
+                            LivingEntity target = (LivingEntity) entity;
+                            target.damage(bleedEntry.getValue().damagePerSecond, player); // Apply full bleeding damage per second
 
-                        // Efekt wizualny krwawienia
-                        target.getWorld().playEffect(target.getLocation(), 
-                                org.bukkit.Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
+                            // Efekt wizualny krwawienia
+                            target.getWorld().playEffect(target.getLocation(),
+                                    org.bukkit.Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
+                        }
                     }
                 }
             }
@@ -771,7 +777,7 @@ public class ShadowstalkerSkillEffectsHandler extends BaseSkillEffectsHandler {
     private void cleanupExpiredEffects() {
         long currentTime = System.currentTimeMillis();
 
-        // Czyść wygasłe efekty
+        // Cleanup expired effects
         for (Map<UUID, PoisonData> playerPoisons : poisonedEntities.values()) {
             playerPoisons.entrySet().removeIf(entry -> currentTime >= entry.getValue().expiry);
         }

@@ -10,6 +10,8 @@ import com.maks.myexperienceplugin.listener.*;
 import com.maks.myexperienceplugin.party.PartyAPI;
 import com.maks.myexperienceplugin.party.PartyCommand;
 import com.maks.myexperienceplugin.party.PartyManager;
+import com.maks.myexperienceplugin.party.PartyManageCommand;
+import com.maks.myexperienceplugin.tutorial.TutorialManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -73,8 +75,13 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
     private SkillPurchaseManager skillPurchaseManager;
     private LuckPerms luckPerms;
     private com.maks.myexperienceplugin.Class.skills.systems.CriticalStrikeSystem criticalStrikeSystem;
+    private TutorialManager tutorialManager;
     public static MyExperiencePlugin getInstance() {
         return instance;
+    }
+    
+    public DatabaseManager getDatabaseManager() {
+        return databaseManager;
     }
 
     @Override
@@ -136,6 +143,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         playerLevelDisplayHandler = new PlayerLevelDisplayHandler(this);
         alchemyLevelConfig = new AlchemyLevelConfig(this);
         AlchemyManager.getInstance().initialize(this);
+        
+        // Initialize tutorial system
+        tutorialManager = new TutorialManager(this);
 
         // Register the player join alchemy listener
         getServer().getPluginManager().registerEvents(new PlayerJoinAlchemyListener(this), this);
@@ -168,7 +178,7 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new MythicMobXPHandler(this), this);
         getServer().getPluginManager().registerEvents(new ChatLevelHandler(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
-        getServer().getPluginManager().registerEvents(new PlayerDisconnectListener(partyManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerDisconnectListener(partyManager, this), this);
         getServer().getPluginManager().registerEvents(playerLevelDisplayHandler, this);
 
         if (luckPerms != null) {
@@ -207,6 +217,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         PartyCommand partyCommand = new PartyCommand(this, partyManager);
         getCommand("party").setExecutor(partyCommand);
         getCommand("party").setTabCompleter(partyCommand);
+        
+        PartyManageCommand partyManageCommand = new PartyManageCommand(this, partyManager);
+        getCommand("manage_party").setExecutor(partyManageCommand);
 
         // Register commands - XP
         getCommand("exp").setExecutor(this);
@@ -620,9 +633,15 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
             // Play level up effects
             playLevelUpEffects(player, currentLevel);
-            
+
+            // Restore full health on level up
+            player.setHealth(player.getMaxHealth());
+
             broadcastLevelUpMessage(player, currentLevel);
             moneyRewardHandler.onLevelUp(player, currentLevel);
+            
+            // Check for tutorial messages
+            tutorialManager.onPlayerLevelUp(player, currentLevel);
 
             // Add 1 skill point on every level up
             classManager.addSkillPoints(player, 1);
@@ -799,10 +818,6 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         return xpPerLevel;
     }
 
-    public DatabaseManager getDatabaseManager() {
-        return databaseManager;
-    }
-
     public PartyManager getPartyManager() {
         return partyManager;
     }
@@ -828,6 +843,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         
         // Clear EXP boost to prevent memory leak
         playerExpBoosts.remove(uuid);
+        
+        // Clear tutorial data
+        tutorialManager.clearPlayerData(player);
 
         // Clean up skill purchase manager resources
         if (skillPurchaseManager != null) {
@@ -967,6 +985,9 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
 
         // Delay to ensure all data is loaded
         Bukkit.getScheduler().runTaskLater(this, () -> {
+            // Load tutorial progress
+            tutorialManager.loadPlayerTutorialProgress(player);
+            
             // Force recalculation of skill points
             skillTreeManager.updateSkillPoints(player);
 

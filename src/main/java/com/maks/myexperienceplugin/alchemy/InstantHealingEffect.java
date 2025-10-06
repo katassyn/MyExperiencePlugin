@@ -70,26 +70,18 @@ public class InstantHealingEffect extends AlchemyEffect {
         double newHealth = Math.min(maxHealth, player.getHealth() + healingAmount);
         player.setHealth(newHealth);
 
-        // For basic healing potions, we don't call remove() here
+        // For instant healing potions, we don't call remove() here
+        // The AlchemyManager will handle the removal immediately after applying
         // This prevents the issue where the effect is removed before it's fully registered
-        if (!isBasicHealingPotion()) {
-            remove();
-        }
     }
 
     @Override
     public void remove() {
-        // Only send action bar message if it's not a basic healing potion
-        if (!isBasicHealingPotion()) {
-            ActionBarUtils.sendActionBar(player, "§c[" + effectName + "] Effect ended.");
-        } else {
-            // For basic healing potions, explicitly remove the effect from AlchemyManager
-            // This ensures the cooldown is properly reset
-            AlchemyManager.getInstance().removeEffect(player, AlchemyManager.AlchemyCategory.ELIXIR);
-
-            if (debuggingFlag == 1) {
-                Bukkit.getLogger().info("[DEBUG] Explicitly removed basic healing potion effect for " + player.getName());
-            }
+        // For instant healing potions, this method is typically not called
+        // since the effect is removed immediately after applying in AlchemyManager
+        if (debuggingFlag == 1) {
+            Bukkit.getLogger().info("[DEBUG] Remove called for instant healing effect: " + effectName +
+                    " for player " + player.getName());
         }
     }
 }

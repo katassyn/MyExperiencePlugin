@@ -1,4 +1,5 @@
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\PhycisMagnetEffect.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ChronomancerSkillEffectsHandler.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\TonicDamageEffect.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\SkillTreeGUIListener.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\utils\PartyClassIntegration.java
@@ -6,9 +7,9 @@ C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\PartyDamagePreventionListener.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\SkillPurchaseManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\exp\MoneyRewardHandler.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\commands\SkillPerformanceCommand.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\ForceUpdateSkillPointsCommand.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\TotemEffectListener.java
-C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ChromomancerSkillManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ArcaneProtectorSkillManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\SpellWeaverSkillEffectsHandler.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\ranger\RangerSkillManager.java
@@ -32,6 +33,7 @@ C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\ImmunityListener.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyLevelConfig.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ShadowstalkerSkillEffectsHandler.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\spellweaver\ascendancy\ChronomancerSkillManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\exp\TopCommand.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyEffectFactory.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyEffectWithDuration.java
@@ -39,9 +41,11 @@ C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\PhysisExpListener.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\LifestealEffect.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\PeriodicSkillPointReminder.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\ascendancy\EarthwardenSkillEffectsHandler.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\exp\BonusExpCommand.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\dragonknight\ascendancy\ScaleGuardianTestCommand.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\tutorial\TutorialManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\SkillEffectsHandler.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\ClassGUIListener.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\PlayerJoinAlchemyListener.java
@@ -90,10 +94,10 @@ C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\systems\CriticalStrikeSystem.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\utils\DebugUtils.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\PeriodicClassReminder.java
-C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\ascendancy\ChromomancerSkillEffectsHandler.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\listener\PlayerJoinListener.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\SkillIdOffsets.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\SkillTreeCommand.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\PlayerEffectState.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\BeastmasterSkillManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\SkillSystemIntegrator.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\ClassCommand.java
@@ -105,10 +109,11 @@ C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperien
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AbsorptionEffect.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\PhysisPercentageHealthEffect.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\exp\ExperienceCommandHandler.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\party\PartyManageCommand.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyCooldownCommand.java
-C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\SkillTree2Command.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\party\PartyAPI.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\TonicExpEffect.java
+C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\effects\PerformanceMonitor.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\Class\skills\classes\ranger\ascendancy\EarthwardenSkillManager.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\AlchemyResetCommand.java
 C:\Users\mastu\IdeaProjects\MyExperiencePlugin\src\main\java\com\maks\myexperienceplugin\alchemy\TonicMovementSpeedEffect.java

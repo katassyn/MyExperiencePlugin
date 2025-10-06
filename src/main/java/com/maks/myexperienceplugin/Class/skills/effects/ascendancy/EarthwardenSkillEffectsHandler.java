@@ -1049,7 +1049,7 @@ public class EarthwardenSkillEffectsHandler extends BaseSkillEffectsHandler impl
     /**
      * Check if a skill has been purchased
      */
-    private boolean isPurchased(UUID playerId, int skillId) {
+    protected boolean isPurchased(UUID playerId, int skillId) {
         return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
     }
 

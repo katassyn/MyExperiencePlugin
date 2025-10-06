@@ -591,6 +591,13 @@ public class SkillTreeManager {
 
         // Apply skill effects
         manager.applySkillEffects(player, skillId, currentCount + 1);
+        
+        // CRITICAL: Invalidate PerformanceMonitor cache so skill effects work immediately
+        try {
+            com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler.getPerformanceMonitor().invalidateSkillCache(uuid);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Could not invalidate skill cache for " + player.getName() + ": " + e.getMessage());
+        }
 
         // Broadcast an event for skill purchase
         SkillPurchasedEvent event = new SkillPurchasedEvent(player, skillId);
@@ -732,6 +739,13 @@ public class SkillTreeManager {
 
         // Apply skill effects
         manager.applySkillEffects(player, skillId, currentCount + 1);
+        
+        // CRITICAL: Invalidate PerformanceMonitor cache so skill effects work immediately
+        try {
+            com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler.getPerformanceMonitor().invalidateSkillCache(uuid);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Could not invalidate skill cache for " + player.getName() + ": " + e.getMessage());
+        }
 
         // Broadcast an event for skill purchase
         SkillPurchasedEvent event = new SkillPurchasedEvent(player, skillId);

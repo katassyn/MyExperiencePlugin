@@ -565,11 +565,8 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
                 for (Entity nearby : nearbyEntities) {
                     if (nearby instanceof LivingEntity && nearby != player && nearby != target) {
                         LivingEntity nearbyTarget = (LivingEntity) nearby;
-                        // Use CUSTOM damage cause to prevent chaining
-                        nearbyTarget.damage(splashDamage);
-                        // Set the last damage cause to the player for proper attribution
-                        nearbyTarget.setLastDamageCause(new EntityDamageByEntityEvent(player, nearbyTarget, 
-                                EntityDamageEvent.DamageCause.CUSTOM, splashDamage));
+                        // Use proper player attribution for splash damage
+                        nearbyTarget.damage(splashDamage, player);
     
                         if (debuggingFlag == 1) {
                             plugin.getLogger().info("Splash damage of " + splashDamage + " applied to " + 
@@ -1101,7 +1098,7 @@ public class FlameWardenSkillEffectsHandler extends BaseSkillEffectsHandler {
     /**
      * Check if player has purchased a specific skill
      */
-    private boolean isPurchased(UUID playerId, int skillId) {
+    protected boolean isPurchased(UUID playerId, int skillId) {
         Set<Integer> purchased = plugin.getSkillTreeManager().getPurchasedSkills(playerId);
         return purchased.contains(skillId);
     }

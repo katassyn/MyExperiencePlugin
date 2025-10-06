@@ -633,7 +633,7 @@ public class SpellWeaverSkillEffectsHandler extends BaseSkillEffectsHandler {
             plugin.getLogger().info("Cleared all SpellWeaver data for player ID: " + playerId);
         }
     }
-    private double calculateSpellDamage(double baseDamage, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
+    protected double calculateSpellDamage(double baseDamage, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         // Apply flat spell damage bonus
         double damage = baseDamage + stats.getSpellDamageBonus();
 

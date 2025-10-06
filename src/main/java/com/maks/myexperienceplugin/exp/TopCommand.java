@@ -57,7 +57,7 @@ public class TopCommand implements CommandExecutor {
 
             try (Connection connection = plugin.getDatabaseManager().getConnection();
                  PreparedStatement stmt = connection.prepareStatement(
-                         "SELECT name, level, rank_position FROM players ORDER BY rank_position ASC LIMIT 30")) {
+                         "SELECT name, level FROM players WHERE is_admin = 0 OR is_admin IS NULL ORDER BY level DESC, xp DESC LIMIT 10")) {
 
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {

@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -30,6 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler implements Listener {
     private static final int ID_OFFSET = 800000;
+    
+    // Debug flag specifically for chance-based effects (separate from base debuggingFlag)  
+    private int chanceDebugFlag = 1;
 
 
     // Maps to track slowed enemies
@@ -134,6 +138,8 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
 
     public ChronomancerSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
+        // Schedule cleanup every 5 minutes
+        schedulePeriodicCleanup();
     }
 
     @Override
@@ -300,7 +306,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Temporal Shift (skill 7)
         if (isPurchased(playerId, ID_OFFSET + 7)) {
             // 15% chance to teleport away
-            if (Math.random() < 0.15) {
+            if (rollChanceWithDebug(0.15, player, "Temporal Shift", false)) {
                 // Check if not on cooldown
                 if (!temporalShiftCooldowns.containsKey(playerId) || 
                         System.currentTimeMillis() - temporalShiftCooldowns.get(playerId) > 30000) { // 30s cooldown
@@ -340,7 +346,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Rewind (skill 12)
         if (isPurchased(playerId, ID_OFFSET + 12) && player.getHealth() - event.getFinalDamage() <= player.getMaxHealth() * 0.2) {
             // 25% chance to restore health
-            if (Math.random() < 0.25) {
+            if (rollChanceWithDebug(0.25, player, "Rewind Health Restore", false)) {
                 // Check if not on cooldown
                 if (!rewindCooldowns.containsKey(playerId) || 
                         System.currentTimeMillis() - rewindCooldowns.get(playerId) > 60000) { // 60s cooldown
@@ -369,7 +375,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         // Check for Time Loop (skill 10)
         if (isPurchased(playerId, ID_OFFSET + 10) && player.getHealth() - event.getFinalDamage() <= 0) {
             // 20% chance to prevent death
-            if (Math.random() < 0.2) {
+            if (rollChanceWithDebug(0.20, player, "Time Loop Death Prevention", false)) {
                 // Check if not on cooldown
                 if (!timeLoopCooldowns.containsKey(playerId) ||
                         System.currentTimeMillis() - timeLoopCooldowns.get(playerId) > 120000) { // 120s cooldown
@@ -413,7 +419,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             // Check if anchor is still valid
             if (System.currentTimeMillis() < temporalAnchorExpirations.getOrDefault(playerId, 0L)) {
                 // 20% chance to teleport back to anchor when damaged
-                if (Math.random() < 0.2) {
+                if (rollChanceWithDebug(0.20, player, "Temporal Anchor Return", false)) {
                     // Get anchor location
                     Location anchorLoc = temporalAnchorLocations.get(playerId);
 
@@ -481,7 +487,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             }
 
             // [MD][1] 10% szansy: Slow 10% na 3s (60t)
-            if (isPurchased(playerId, ID_OFFSET + 1) && Math.random() < 0.10) {
+            if (isPurchased(playerId, ID_OFFSET + 1) && rollChanceWithDebug(0.10, player, "Slow Strike", false)) {
                 target.addPotionEffect(
                     new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW, 60, 0, true, true, true)
                 );
@@ -571,17 +577,8 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 plugin.getSkillEffectsHandler().refreshPlayerStats(player);
             }
 
-            // Attack Hinder (skill 4)
-            if (isPurchased(playerId, ID_OFFSET + 4)) {
-                Map<UUID, Integer> map = attackHinderStacks.computeIfAbsent(playerId, k -> new HashMap<>());
-                Map<UUID, Long> timers = attackHinderExpiry.computeIfAbsent(playerId, k -> new HashMap<>());
-                int newStacks = Math.min(map.getOrDefault(targetId, 0) + 1, 3);
-                map.put(targetId, newStacks);
-                timers.put(targetId, System.currentTimeMillis() + 4000);
-                if (target instanceof Player) {
-                    ((Player) target).addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 80, newStacks - 1, false, true, true));
-                }
-            }
+            // Note: Skill 4 (Attack Hinder) is already implemented above at line 499-507
+            // This duplicate has been removed
 
             // Triple Slow (skill 5)
             if (isPurchased(playerId, ID_OFFSET + 5)) {
@@ -600,18 +597,8 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 tripleSlowHitCounter.put(playerId, count);
             }
 
-            // Apply Time Slow (skill 4)
-            if (isPurchased(playerId, ID_OFFSET + 4)) {
-                // 10% chance to slow target
-                if (Math.random() < 0.1) {
-                    // Apply slow effect
-                    applySlowEffect(player, target, 3000); // 3s duration
-
-                    // Visual effect
-                    target.getWorld().spawnParticle(Particle.PORTAL, target.getLocation().add(0, 1, 0), 20, 0.5, 1, 0.5, 0.05);
-                    ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Time Slow activated!");
-                }
-            }
+            // Note: Skill 4 (Attack Hinder) is already implemented above at line 499-507
+            // This duplicate implementation has been removed to fix the bug
 
             // Apply Time Flux (skill 9)
             if (isPurchased(playerId, ID_OFFSET + 9) && isSlowed(playerId, targetId)) {
@@ -672,7 +659,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             // Apply Echo (skill 18)
             if (isPurchased(playerId, ID_OFFSET + 18)) {
                 // 20% chance to echo
-                if (Math.random() < 0.2) {
+                if (rollChanceWithDebug(0.20, player, "Echo Attack", false)) {
                     // Set echo active
                     echoEffectActive.put(playerId, System.currentTimeMillis() + 500); // 0.5s duration
 
@@ -697,7 +684,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             // Apply Paradox (skill 16)
             if (isPurchased(playerId, ID_OFFSET + 16)) {
                 // 10% chance to hit twice
-                if (Math.random() < 0.1) {
+                if (rollChanceWithDebug(0.10, player, "Double Strike", false)) {
                     // Apply second hit immediately with SpellWeaver scaling
                     double paradoxDamage = event.getDamage(); // Same damage as original
                     double finalDamage = calculateSpellDamage(paradoxDamage, player, stats);
@@ -710,7 +697,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             }
 
             // Time Freeze (skill 26)
-            if (isPurchased(playerId, ID_OFFSET + 26) && Math.random() < 0.15) {
+            if (isPurchased(playerId, ID_OFFSET + 26) && rollChanceWithDebug(0.15, player, "Time Fracture Creation", false)) {
                 if (target instanceof Player) {
                     Player tp = (Player) target;
                     tp.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 6, false, true, true));
@@ -756,7 +743,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             // Apply Time Fracture (skill 24)
             if (isPurchased(playerId, ID_OFFSET + 24)) {
                 // Check if critical hit (for demonstration, 20% chance)
-                if (Math.random() < 0.2) {
+                if (rollChanceWithDebug(0.20, player, "Temporal Rush Critical", false)) {
                     // Create time fracture
                     Map<UUID, Double> fractures = timeFractures.computeIfAbsent(playerId, k -> new HashMap<>());
                     Map<UUID, Long> fractureTimers = timeFractureExpirations.computeIfAbsent(playerId, k -> new HashMap<>());
@@ -774,7 +761,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             }
 
             // Cooldown Reset (skill 22)
-            if (isPurchased(playerId, ID_OFFSET + 22) && Math.random() < 0.10) {
+            if (isPurchased(playerId, ID_OFFSET + 22) && rollChanceWithDebug(0.10, player, "Temporal Mastery Cooldown Reset", false)) {
                 temporalShiftCooldowns.remove(playerId);
                 rewindCooldowns.remove(playerId);
                 timeStopCooldowns.remove(playerId);
@@ -808,7 +795,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
                 if (hitEvasionBoostExpiry.getOrDefault(playerId, 0L) > System.currentTimeMillis()) {
                     dodgeChance += 0.10;
                 }
-                if (Math.random() < dodgeChance) {
+                if (rollChanceWithDebug(dodgeChance, player, "Dodge Attempt", false)) {
                     // Cancel damage
                     event.setCancelled(true);
 
@@ -1051,7 +1038,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
             // Decay stacks for each target
             for (UUID targetId : new HashSet<>(chainsStacks.keySet())) {
                 // 10% chance to decay a stack each second
-                if (Math.random() < 0.1) {
+                if (rollChanceWithDebug(0.10, player, "Time Fracture Stack Decay", false)) {
                     int currentStacks = chainsStacks.get(targetId);
                     if (currentStacks <= 1) {
                         chainsStacks.remove(targetId);
@@ -1352,15 +1339,7 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
      * @param stats      Player stats containing spell damage bonuses
      * @return Final damage after applying bonuses and critical chance
      */
-    private double calculateSpellDamage(double baseDamage, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
-        double damage = baseDamage + stats.getSpellDamageBonus();
-        damage *= stats.getSpellDamageMultiplier();
-        if (Math.random() * 100 < stats.getSpellCriticalChance()) {
-            damage *= 2.0;
-            ActionBarUtils.sendActionBar(player, ChatColor.LIGHT_PURPLE + "Spell Critical! x2 dmg");
-        }
-        return damage;
-    }
+    // Note: calculateSpellDamage is now inherited from BaseSkillEffectsHandler
 
     private void applyMovementSpeedEffects(Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID id = player.getUniqueId();
@@ -1436,8 +1415,39 @@ public class ChronomancerSkillEffectsHandler extends BaseSkillEffectsHandler imp
         return null;
     }
 
-    private boolean isPurchased(UUID playerId, int skillId) {
-        return plugin.getSkillTreeManager().getPurchasedSkills(playerId).contains(skillId);
+    // Enhanced debug logging for skill activations
+    private void logSkillActivation(Player player, String skillName, String details) {
+        if (chanceDebugFlag == 1) {
+            String msg = "[CHRONOMANCER] " + skillName + ": " + details;
+            ChatNotificationUtils.send(player, ChatColor.LIGHT_PURPLE + msg);
+            plugin.getLogger().info("Player " + player.getName() + " - " + msg);
+        }
+    }
+    
+    // Override rollChanceWithDebug to use our chanceDebugFlag instead of base debuggingFlag
+    protected boolean rollChanceWithDebug(double chance, Player player, String mechanicName, boolean usePercentage) {
+        double normalizedChance = usePercentage ? chance / 100.0 : chance;
+        boolean success = Math.random() < normalizedChance;
+        
+        if (chanceDebugFlag == 1 && player != null && mechanicName != null) {
+            String msg = String.format("[CHRONOMANCER] %s: %.1f%% chance = %s", 
+                mechanicName, normalizedChance * 100, success ? "SUCCESS" : "FAIL");
+            ChatNotificationUtils.send(player, ChatColor.LIGHT_PURPLE + msg);
+        }
+        
+        return success;
+    }
+
+    // Note: isPurchased is now inherited from BaseSkillEffectsHandler
+    
+    /**
+     * Handle player quit - cleanup data
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID playerId = event.getPlayer().getUniqueId();
+        clearPlayerData(playerId);
+        clearAllPlayerData(playerId); // Clear unified effect system data
     }
 
     public void clearPlayerData(UUID playerId) {

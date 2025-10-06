@@ -22,6 +22,10 @@ commands:
   party:
     description: Manage your party
     usage: /party < inv | accept | decline | leave | info > [player]
+  manage_party:
+    description: Open party management GUI
+    usage: /manage_party
+    aliases: [partymanage, pmanage, partygui]
   get_lvl:
     description: Set the level and XP of the player.
     usage: /get_lvl <level>

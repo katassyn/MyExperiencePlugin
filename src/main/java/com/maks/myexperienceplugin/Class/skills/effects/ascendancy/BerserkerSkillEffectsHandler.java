@@ -97,6 +97,88 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
     public BerserkerSkillEffectsHandler(MyExperiencePlugin plugin) {
         super(plugin);
+        
+        // Start periodic cleanup for this handler
+        schedulePeriodicCleanup();
+    }
+    
+    @Override
+    protected void cleanupExpiredData() {
+        // Clean up expired cooldowns
+        cleanupExpiredCooldowns(deathDefianceCooldown);
+        cleanupExpiredTimedEffects(killFrenzyExpiry);
+        cleanupExpiredTimedEffects(battleRageExpiry); 
+        cleanupExpiredTimedEffects(attackSpeedExpiry);
+        
+        // Clean up expired kill frenzy stacks
+        long currentTime = System.currentTimeMillis();
+        killFrenzyExpiry.entrySet().removeIf(entry -> {
+            if (entry.getValue() <= currentTime) {
+                UUID playerId = entry.getKey();
+                
+                // Clean up related data
+                int oldStacks = killFrenzyStacks.getOrDefault(playerId, 0);
+                killFrenzyStacks.remove(playerId);
+                
+                // Cancel task if it exists
+                BukkitTask task = killFrenzyTasks.remove(playerId);
+                if (task != null) {
+                    task.cancel();
+                }
+                
+                // Remove bonuses if player is online
+                Player player = Bukkit.getPlayer(playerId);
+                if (player != null && player.isOnline() && oldStacks > 0) {
+                    removeKillFrenzyBonuses(player, oldStacks);
+                }
+                
+                return true;
+            }
+            return false;
+        });
+        
+        // Clean up expired battle rage stacks
+        battleRageExpiry.entrySet().removeIf(entry -> {
+            if (entry.getValue() <= currentTime) {
+                UUID playerId = entry.getKey();
+                battleRageStacks.remove(playerId);
+                
+                BukkitTask task = battleRageTasks.remove(playerId);
+                if (task != null) {
+                    task.cancel();
+                }
+                
+                return true;
+            }
+            return false;
+        });
+        
+        // Clean up expired attack speed stacks  
+        attackSpeedExpiry.entrySet().removeIf(entry -> {
+            if (entry.getValue() <= currentTime) {
+                UUID playerId = entry.getKey();
+                int oldStacks = attackSpeedStacks.getOrDefault(playerId, 0);
+                attackSpeedStacks.remove(playerId);
+                
+                BukkitTask task = attackSpeedTasks.remove(playerId);
+                if (task != null) {
+                    task.cancel();
+                }
+                
+                // Remove bonuses if player is online
+                Player player = Bukkit.getPlayer(playerId);
+                if (player != null && player.isOnline() && oldStacks > 0) {
+                    removeAttackSpeedBonuses(player, oldStacks);
+                }
+                
+                return true;
+            }
+            return false;
+        });
+        
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("[BERSERKER CLEANUP] Cleaned up expired cooldowns and effects");
+        }
     }
 
     @Override
@@ -292,16 +374,15 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
     public void handleEntityDamage(EntityDamageEvent event, Player player, SkillEffectsHandler.PlayerSkillStats stats) {
         UUID playerId = player.getUniqueId();
 
-        // Get current health percentage
-        double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-        double currentHealth = player.getHealth();
-        double healthPercent = (currentHealth / maxHealth) * 100;
+        // Get current health percentage safely
+        double healthPercent = getHealthPercentageSafely(player);
 
         // Check for Death Defiance (ID 27)
         if (isPurchased(playerId, ID_OFFSET + 27) && healthPercent <= 10 &&
                 !isOnCooldown(playerId, deathDefianceCooldown, DEATH_DEFIANCE_COOLDOWN)) {
 
             // Don't trigger if the damage would kill the player
+            double currentHealth = getCurrentHealthSafely(player);
             if (currentHealth - event.getFinalDamage() > 0) {
                 return;
             }
@@ -309,8 +390,9 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
             // Cancel the damage event
             event.setCancelled(true);
 
-            // Heal to full
-            player.setHealth(maxHealth);
+            // Heal to full safely
+            double maxHealth = getMaxHealthSafely(player);
+            setHealthSafely(player, maxHealth);
 
             // Apply damage and defense modifiers
             applyDeathDefianceBuffs(player);
@@ -588,13 +670,20 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
         // Handle finishing blow (ID 11)
         if (isPurchased(playerId, ID_OFFSET + 11) && event.getEntity() instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) event.getEntity();
-            double targetMaxHealth = target.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-            double targetHealth = target.getHealth();
-            double healthPercent = (targetHealth / targetMaxHealth) * 100;
+            double targetMaxHealth = getAttributeSafely(player, Attribute.GENERIC_MAX_HEALTH, 20.0);
+            double targetHealth = Math.max(0.0, target.getHealth());
+            
+            // Calculate target health percentage safely
+            double healthPercent = targetMaxHealth > 0 ? (targetHealth / targetMaxHealth) * 100.0 : 0.0;
 
             if (healthPercent <= 5) {
-                // Instantly kill the target
-                target.setHealth(0);
+                // Instantly kill the target safely
+                try {
+                    target.setHealth(0);
+                } catch (Exception e) {
+                    // If setting health fails, try damage instead
+                    target.damage(targetHealth + 1, player);
+                }
 
                 // Show notification for this powerful effect
                 ActionBarUtils.sendActionBar(player,
@@ -1119,9 +1208,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
 
         // Additional crit chance when health is below 50% (Skill 23)
         if (isPurchased(playerId, ID_OFFSET + 23)) {
-            double maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-            double currentHealth = player.getHealth();
-            double healthPercent = (currentHealth / maxHealth) * 100;
+            double healthPercent = getHealthPercentageSafely(player);
 
             if (healthPercent < 50) {
                 critChance += 15.0; // +15% from skill 23
@@ -1150,7 +1237,7 @@ public class BerserkerSkillEffectsHandler extends BaseSkillEffectsHandler {
     /**
      * Check if player has purchased a specific skill
      */
-    private boolean isPurchased(UUID playerId, int skillId) {
+    protected boolean isPurchased(UUID playerId, int skillId) {
         Set<Integer> purchased = plugin.getSkillTreeManager().getPurchasedSkills(playerId);
         return purchased.contains(skillId);
     }

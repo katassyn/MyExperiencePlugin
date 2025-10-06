@@ -6,11 +6,39 @@
   <component name="ChangeListManager">
     <list default="true" id="cf7838df-4fe5-4873-9e97-893af63b5618" name="Changes" comment="fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/ClassGUI.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/SkillTreeManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BaseSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/BaseSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/SpellWeaverSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/SpellWeaverSkillEffectsHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ArcaneProtectorSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ArcaneProtectorSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BeastmasterSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BeastmasterSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BerserkerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/BerserkerSkillEffectsHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ChronomancerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ChronomancerSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/EarthwardenSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/EarthwardenSkillEffectsHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ElementalistSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ElementalistSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/FlameWardenSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/FlameWardenSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ScaleGuardianSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ScaleGuardianSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ShadowstalkerSkillEffectsHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/Class/skills/effects/ascendancy/ShadowstalkerSkillEffectsHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/DatabaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/DatabaseManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/MyExperiencePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/MyExperiencePlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/AlchemyManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/ChatLevelHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/ChatLevelHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/TopCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/exp/TopCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PlayerDisconnectListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/listener/PlayerDisconnectListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/Party.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/Party.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyAPI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/maks/myexperienceplugin/party/PartyManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/DatabaseManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/DatabaseManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/MyExperiencePlugin.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/MyExperiencePlugin.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/AlchemyManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/AlchemyManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/maks/myexperienceplugin/alchemy/InstantHealingEffect.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +56,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="fix/spellweaver-nodes-ticks" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -52,13 +85,14 @@
   &quot;isMigrated&quot;: true
 }</component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
   <component name="ProjectId" id="2vSQaDbfiOWvFUp9JEHFj0pxhrB" />
   <component name="ProjectLevelVcsManager">
+    <OptionsSetting value="false" id="Update" />
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
@@ -74,7 +108,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;fix/spellweaver-nodes-ticks&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
@@ -254,7 +288,80 @@
       <workItem from="1754163824829" duration="42000" />
       <workItem from="1754202709968" duration="652000" />
       <workItem from="1754635509465" duration="2190000" />
-      <workItem from="1754638897405" duration="2010000" />
+      <workItem from="1754638897405" duration="2081000" />
+      <workItem from="1754644616110" duration="444000" />
+      <workItem from="1754669586449" duration="167000" />
+      <workItem from="1754670516386" duration="79000" />
+      <workItem from="1754670714785" duration="4000" />
+      <workItem from="1754672208888" duration="24000" />
+      <workItem from="1755265433572" duration="150000" />
+      <workItem from="1755342382829" duration="1430000" />
+      <workItem from="1755513508290" duration="686000" />
+      <workItem from="1755519631117" duration="11000" />
+      <workItem from="1755519913197" duration="69000" />
+      <workItem from="1756020495081" duration="2599000" />
+      <workItem from="1756023483913" duration="515000" />
+      <workItem from="1756038102049" duration="2033000" />
+      <workItem from="1756042659257" duration="19000" />
+      <workItem from="1756101969057" duration="7000" />
+      <workItem from="1756103624716" duration="9000" />
+      <workItem from="1756105198379" duration="243000" />
+      <workItem from="1756396074844" duration="641000" />
+      <workItem from="1756398249650" duration="515000" />
+      <workItem from="1756467040444" duration="82000" />
+      <workItem from="1756573323083" duration="1412000" />
+      <workItem from="1756575025476" duration="730000" />
+      <workItem from="1756729898390" duration="24000" />
+      <workItem from="1756799902534" duration="3341000" />
+      <workItem from="1757061923726" duration="34000" />
+      <workItem from="1757066753173" duration="4988000" />
+      <workItem from="1757092073479" duration="1001000" />
+      <workItem from="1757149608583" duration="1483000" />
+      <workItem from="1757151176176" duration="3956000" />
+      <workItem from="1757171036420" duration="267000" />
+      <workItem from="1757238135208" duration="4747000" />
+      <workItem from="1757243867614" duration="26000" />
+      <workItem from="1757258303822" duration="580000" />
+      <workItem from="1757485720645" duration="198000" />
+      <workItem from="1757486372976" duration="35000" />
+      <workItem from="1757595474623" duration="4797000" />
+      <workItem from="1757601208971" duration="5000" />
+      <workItem from="1757761512705" duration="1293000" />
+      <workItem from="1757762974159" duration="3480000" />
+      <workItem from="1757769845539" duration="235000" />
+      <workItem from="1757775946083" duration="446000" />
+      <workItem from="1757776773742" duration="1771000" />
+      <workItem from="1757780604580" duration="1026000" />
+      <workItem from="1757841426720" duration="6484000" />
+      <workItem from="1757856939723" duration="929000" />
+      <workItem from="1757871240590" duration="1661000" />
+      <workItem from="1757874594774" duration="22000" />
+      <workItem from="1757929323693" duration="380000" />
+      <workItem from="1757938550522" duration="10000" />
+      <workItem from="1757944450893" duration="740000" />
+      <workItem from="1757949201987" duration="1229000" />
+      <workItem from="1758032428980" duration="1679000" />
+      <workItem from="1758037644032" duration="6000" />
+      <workItem from="1758115652470" duration="2219000" />
+      <workItem from="1758125372191" duration="443000" />
+      <workItem from="1758128359563" duration="3000" />
+      <workItem from="1758181969017" duration="815000" />
+      <workItem from="1758182903549" duration="208000" />
+      <workItem from="1758187749228" duration="99000" />
+      <workItem from="1758194479889" duration="982000" />
+      <workItem from="1758195902342" duration="38000" />
+      <workItem from="1758207344961" duration="4964000" />
+      <workItem from="1758270637494" duration="8000" />
+      <workItem from="1758618633954" duration="321000" />
+      <workItem from="1758710914074" duration="104000" />
+      <workItem from="1759234684937" duration="30000" />
+      <workItem from="1759235181664" duration="81000" />
+      <workItem from="1759316730306" duration="681000" />
+      <workItem from="1759399770026" duration="3000" />
+      <workItem from="1759405385525" duration="86000" />
+      <workItem from="1759411634055" duration="5000" />
+      <workItem from="1759414292401" duration="2000" />
+      <workItem from="1759471643675" duration="618000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed ranger skill tree a bit + added new structure of classes + ascendancys">
       <option name="closed" value="true" />
@@ -408,7 +515,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754635523706</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="fix">
+      <option name="closed" value="true" />
+      <created>1754640987114</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1754640987114</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
