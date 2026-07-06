@@ -1,0 +1,283 @@
+package com.maks.myexperienceplugin.Class.skills.classes.ranger.ascendancy;
+
+import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.ascendancy.ShadowstalkerSkillEffectsHandler;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.ChatColor;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.EntityType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.Location;
+
+import java.util.Set;
+
+public class ShadowstalkerTestCommand implements CommandExecutor {
+    private final MyExperiencePlugin plugin;
+    private static final int ID_OFFSET = 500000;
+
+    public ShadowstalkerTestCommand(MyExperiencePlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("This command can only be used by players!");
+            return true;
+        }
+
+        Player player = (Player) sender;
+
+        if (args.length == 0) {
+            showHelp(player);
+            return true;
+        }
+
+        switch (args[0].toLowerCase()) {
+            case "setclass":
+                // Set class to Ranger and ascendancy to Shadowstalker
+                plugin.getClassManager().setPlayerClass(player, "Ranger");
+                plugin.getClassManager().setPlayerAscendancy(player, "Shadowstalker");
+                player.sendMessage(ChatColor.GREEN + "Set your class to Ranger/Shadowstalker!");
+                break;
+
+            case "giveskill":
+                if (args.length < 2) {
+                    player.sendMessage(ChatColor.RED + "Usage: /sstest giveskill <skill_number>");
+                    return true;
+                }
+
+                try {
+                    int skillNum = Integer.parseInt(args[1]);
+                    if (skillNum < 1 || skillNum > 27) {
+                        player.sendMessage(ChatColor.RED + "Skill number must be between 1 and 27!");
+                        return true;
+                    }
+
+                    int skillId = ID_OFFSET + skillNum;
+                    plugin.getSkillTreeManager().purchaseSkill(player, skillId);
+                    player.sendMessage(ChatColor.GREEN + "Granted Shadowstalker skill #" + skillNum);
+                } catch (NumberFormatException e) {
+                    player.sendMessage(ChatColor.RED + "Invalid skill number!");
+                }
+                break;
+
+            case "giveall":
+                // Grant all Shadowstalker skills
+                for (int i = 1; i <= 27; i++) {
+                    plugin.getSkillTreeManager().purchaseSkill(player, ID_OFFSET + i);
+                }
+                player.sendMessage(ChatColor.GREEN + "Granted all 27 Shadowstalker skills!");
+                break;
+
+            case "stats":
+                // Show player stats
+                showPlayerStats(player);
+                break;
+
+            case "debug":
+                // Show debug info
+                ShadowstalkerSkillEffectsHandler handler = getHandler();
+                if (handler != null) {
+                    player.sendMessage(ChatColor.GOLD + "Debug info sent to console");
+                    plugin.getLogger().info("[SHADOWSTALKER DEBUG] Debug info for " + player.getName());
+                    
+                    // Call debug method if it exists
+                    try {
+                        handler.getClass().getMethod("debugPlayerStats", Player.class).invoke(handler, player);
+                    } catch (Exception e) {
+                        // If debugPlayerStats doesn't exist, show basic info
+                        player.sendMessage(ChatColor.YELLOW + "Basic debug info:");
+                        showPlayerStats(player);
+                        plugin.getLogger().info("[SHADOWSTALKER] Debug info for " + player.getName() + " - basic stats shown");
+                    }
+                } else {
+                    player.sendMessage(ChatColor.RED + "Could not find ShadowstalkerSkillEffectsHandler");
+                }
+                break;
+
+            case "simulate":
+                if (args.length < 2) {
+                    player.sendMessage(ChatColor.RED + "Usage: /sstest simulate <scenario>");
+                    showSimulateHelp(player);
+                    return true;
+                }
+                simulateScenario(player, args[1]);
+                break;
+
+            case "gear":
+                // Give testing gear
+                giveTestingGear(player);
+                break;
+
+            default:
+                showHelp(player);
+                break;
+        }
+
+        return true;
+    }
+
+    private void showHelp(Player player) {
+        player.sendMessage(ChatColor.GOLD + "=== Shadowstalker Test Commands ===");
+        player.sendMessage(ChatColor.YELLOW + "/sstest setclass - Set your class to Shadowstalker");
+        player.sendMessage(ChatColor.YELLOW + "/sstest giveskill <1-27> - Grant specific skill");
+        player.sendMessage(ChatColor.YELLOW + "/sstest giveall - Grant all skills");
+        player.sendMessage(ChatColor.YELLOW + "/sstest stats - Show your current stats");
+        player.sendMessage(ChatColor.YELLOW + "/sstest debug - Show debug information");
+        player.sendMessage(ChatColor.YELLOW + "/sstest simulate <scenario> - Simulate scenarios");
+        player.sendMessage(ChatColor.YELLOW + "/sstest gear - Get testing gear");
+    }
+
+    private void showSimulateHelp(Player player) {
+        player.sendMessage(ChatColor.GOLD + "=== Simulation Scenarios ===");
+        player.sendMessage(ChatColor.YELLOW + "lowhealth - Set HP to 30%");
+        player.sendMessage(ChatColor.YELLOW + "criticalhealth - Set HP to 10%");
+        player.sendMessage(ChatColor.YELLOW + "sneak - Force sneak mode for 10 seconds");
+        player.sendMessage(ChatColor.YELLOW + "darkness - Set time to night & add blindness");
+        player.sendMessage(ChatColor.YELLOW + "target - Spawn test zombie to attack");
+        player.sendMessage(ChatColor.YELLOW + "poison - Apply poison to nearby entities");
+        player.sendMessage(ChatColor.YELLOW + "fullhealth - Restore to full health");
+    }
+
+    private void showPlayerStats(Player player) {
+        SkillEffectsHandler.PlayerSkillStats stats = plugin.getSkillEffectsHandler().getPlayerStats(player);
+
+        player.sendMessage(ChatColor.GOLD + "=== Your Shadowstalker Stats ===");
+        player.sendMessage(ChatColor.AQUA + "Critical Hit Chance: " + stats.getCriticalChance() + "%");
+        player.sendMessage(ChatColor.AQUA + "Critical Damage: " + String.format("%.1f", stats.getCriticalDamage()) + "x");
+        player.sendMessage(ChatColor.AQUA + "Evade Chance: " + stats.getEvadeChance() + "%");
+        player.sendMessage(ChatColor.AQUA + "Damage Multiplier: " + String.format("%.2f", stats.getDamageMultiplier()) + "x");
+        player.sendMessage(ChatColor.AQUA + "Movement Speed Bonus: " + stats.getMovementSpeedBonus() + "%");
+        player.sendMessage(ChatColor.AQUA + "Poison Chance: " + stats.getPoisonChance() + "%");
+
+        // Show active skills
+        player.sendMessage(ChatColor.GOLD + "=== Active Skills ===");
+        int activeSkills = 0;
+        Set<Integer> purchasedSkills = plugin.getSkillTreeManager().getPurchasedSkills(player.getUniqueId());
+        for (int i = 1; i <= 27; i++) {
+            if (purchasedSkills.contains(Integer.valueOf(ID_OFFSET + i))) {
+                activeSkills++;
+            }
+        }
+        player.sendMessage(ChatColor.GREEN + "Active Skills: " + activeSkills + "/27");
+
+        // Show some key skills status
+        showKeySkillsStatus(player, purchasedSkills);
+    }
+
+    private void showKeySkillsStatus(Player player, Set<Integer> skills) {
+        player.sendMessage(ChatColor.GOLD + "=== Key Skills Status ===");
+        
+        // Check important skills
+        if (skills.contains(ID_OFFSET + 1)) {
+            player.sendMessage(ChatColor.GREEN + "✓ Shadow Movement (Night speed bonus)");
+        }
+        if (skills.contains(ID_OFFSET + 3)) {
+            player.sendMessage(ChatColor.GREEN + "✓ First Strike Damage");
+        }
+        if (skills.contains(ID_OFFSET + 5)) {
+            player.sendMessage(ChatColor.GREEN + "✓ Bleeding on Critical");
+        }
+        if (skills.contains(ID_OFFSET + 9)) {
+            player.sendMessage(ChatColor.GREEN + "✓ Poison Application");
+        }
+        if (skills.contains(ID_OFFSET + 23)) {
+            player.sendMessage(ChatColor.GREEN + "✓ Precision Strike (every 3rd attack = crit)");
+        }
+        if (skills.contains(ID_OFFSET + 27)) {
+            player.sendMessage(ChatColor.GREEN + "✓ Armor Penetration at full health");
+        }
+    }
+
+    private void simulateScenario(Player player, String scenario) {
+        switch (scenario.toLowerCase()) {
+            case "lowhealth":
+                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() * 0.3);
+                player.sendMessage(ChatColor.YELLOW + "Set health to 30% - Stealth bonuses should activate!");
+                break;
+
+            case "criticalhealth":
+                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() * 0.1);
+                player.sendMessage(ChatColor.RED + "Set health to 10% - Emergency evasion should activate!");
+                break;
+
+            case "sneak":
+                player.setSneaking(true);
+                player.sendMessage(ChatColor.YELLOW + "Forced sneak mode - sneak bonuses active!");
+                // Auto-remove after 10 seconds
+                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                    if (player.isOnline()) {
+                        player.setSneaking(false);
+                        player.sendMessage(ChatColor.GRAY + "Sneak mode ended.");
+                    }
+                }, 200L);
+                break;
+
+            case "darkness":
+                player.getWorld().setTime(18000); // Night time
+                player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 200, 0));
+                player.sendMessage(ChatColor.YELLOW + "Applied darkness - shadow bonuses should activate!");
+                break;
+
+            case "target":
+                Location loc = player.getLocation().add(3, 0, 0);
+                player.getWorld().spawnEntity(loc, EntityType.ZOMBIE);
+                player.sendMessage(ChatColor.YELLOW + "Spawned test zombie - practice your skills!");
+                break;
+
+            case "poison":
+                // Apply poison to nearby entities for testing
+                player.getWorld().getNearbyEntities(player.getLocation(), 5, 5, 5).forEach(entity -> {
+                    if (entity instanceof org.bukkit.entity.LivingEntity && entity != player) {
+                        org.bukkit.entity.LivingEntity livingEntity = (org.bukkit.entity.LivingEntity) entity;
+                        livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, 0));
+                    }
+                });
+                player.sendMessage(ChatColor.GREEN + "Applied poison to nearby entities!");
+                break;
+
+            case "fullhealth":
+                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                player.sendMessage(ChatColor.GREEN + "Restored to full health!");
+                break;
+
+            default:
+                player.sendMessage(ChatColor.RED + "Unknown scenario: " + scenario);
+                showSimulateHelp(player);
+                break;
+        }
+    }
+
+    private void giveTestingGear(Player player) {
+        // Give appropriate gear for testing
+        ItemStack sword = new ItemStack(Material.IRON_SWORD);
+        ItemStack bow = new ItemStack(Material.BOW);
+        ItemStack arrows = new ItemStack(Material.ARROW, 64);
+        ItemStack boots = new ItemStack(Material.LEATHER_BOOTS);
+        
+        // Add some enchants for testing
+        sword.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.DAMAGE_ALL, 2);
+        bow.addUnsafeEnchantment(org.bukkit.enchantments.Enchantment.ARROW_DAMAGE, 2);
+        
+        player.getInventory().addItem(sword, bow, arrows, boots);
+        player.sendMessage(ChatColor.GREEN + "Received testing gear!");
+    }
+
+    private ShadowstalkerSkillEffectsHandler getHandler() {
+        try {
+            return (ShadowstalkerSkillEffectsHandler) plugin.getAscendancySkillEffectIntegrator()
+                .getHandler("Shadowstalker");
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error getting ShadowstalkerSkillEffectsHandler: " + e.getMessage());
+            return null;
+        }
+    }
+}

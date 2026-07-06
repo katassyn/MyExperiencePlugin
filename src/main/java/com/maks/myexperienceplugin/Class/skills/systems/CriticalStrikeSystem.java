@@ -1,6 +1,7 @@
 package com.maks.myexperienceplugin.Class.skills.systems;
 
 import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.trinketsplugin.TrinketsStatsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -29,23 +30,37 @@ public class CriticalStrikeSystem {
     }
 
     /**
-     * Get total critical chance for a player
+     * Get total critical chance for a player (includes trinkets bonus)
      */
     public double getCriticalChance(Player player) {
         UUID playerId = player.getUniqueId();
         double baseChance = baseCritChance.getOrDefault(playerId, 0.0);
         double tempChance = tempCritChance.getOrDefault(playerId, 0.0);
-        return Math.min(100.0, baseChance + tempChance); // Cap at 100%
+
+        // Add Critical Chance from equipped trinkets
+        double trinketBonus = 0.0;
+        if (TrinketsStatsAPI.isAvailable()) {
+            trinketBonus = TrinketsStatsAPI.getCritChance(player);
+        }
+
+        return Math.min(100.0, baseChance + tempChance + trinketBonus); // Cap at 100%
     }
 
     /**
-     * Get critical damage multiplier for a player
+     * Get critical damage multiplier for a player (includes trinkets bonus)
      */
     public double getCriticalDamageMultiplier(Player player) {
         UUID playerId = player.getUniqueId();
         double baseMultiplier = critDamageMultiplier.getOrDefault(playerId, 2.0); // Default 2x
         double tempMultiplier = tempCritMultiplier.getOrDefault(playerId, 0.0);
-        return baseMultiplier + tempMultiplier;
+
+        // Add Critical Damage from equipped trinkets (converted from percentage to decimal)
+        double trinketBonus = 0.0;
+        if (TrinketsStatsAPI.isAvailable()) {
+            trinketBonus = TrinketsStatsAPI.getCritDamageDecimal(player); // e.g., 20% -> 0.20
+        }
+
+        return baseMultiplier + tempMultiplier + trinketBonus;
     }
 
     /**

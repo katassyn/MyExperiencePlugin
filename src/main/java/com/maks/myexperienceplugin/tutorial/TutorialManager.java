@@ -75,7 +75,7 @@ public class TutorialManager {
             "§6§lBIOLOGIST UNLOCKED!\n" +
             "§e========================================\n" +
             "§aThe Biologist mechanic is now available!\n\n" +
-            "§2» §fFind the §6§lBiologist§f in §bHiraja§f (the city)\n" +
+            "§2» §fFind the §6§lBiologist§f in §bSunlit Bazaar§f (the city)\n" +
             "§2» §fHe gives research quests requiring materials from specific mobs\n" +
             "§2» §fEach item has a chance of acceptance when turned in\n" +
             "§2» §fYou can attempt submission once every §c24 hours§f\n" +
@@ -130,7 +130,7 @@ public class TutorialManager {
             "§e========================================\n" +
             "§6§lBEEKEEPER & AUGMENTER UNLOCKED!\n" +
             "§e========================================\n" +
-            "§aBoth systems are now available in §bHiraja§f!\n\n" +
+            "§aBoth systems are now available in §bSunlit Bazaar§f!\n\n" +
             "§6§lBEEKEEPER:\n" +
             "§2» §fPurchase §ehives§f that passively collect §6honey§f and create §alarvae§f\n" +
             "§2» §fGrow larvae into adult §ebees§f, §5queens§f, or §7drones§f\n" +
@@ -158,7 +158,7 @@ public class TutorialManager {
             "§e========================================\n" +
             "§6§lFARMER UNLOCKED!\n" +
             "§e========================================\n" +
-            "§aFarming system available in §bHiraja§f!\n\n" +
+            "§aFarming system available in §bSunlit Bazaar§f!\n\n" +
             "§2» §fVisit your own §apersonal farm§f\n" +
             "§2» §fTend to different types of §2crops§f\n" +
             "§2» §fPurchase additional §efarm installations§f and upgrades\n" +
@@ -171,7 +171,7 @@ public class TutorialManager {
             "§e========================================\n" +
             "§6§lDUNGEON MASTER UNLOCKED!\n" +
             "§e========================================\n" +
-            "§aGroup dungeons are now available in §bHiraja§f!\n\n" +
+            "§aGroup dungeons are now available in §bSunlit Bazaar§f!\n\n" +
             "§2» §fFind the §5§lDungeon Master§f to access dungeons\n" +
             "§2» §fRequires a §dparty§f of appropriate size\n" +
             "§2» §fNeed specific §6dungeon keys§f for entry\n" +
@@ -191,7 +191,7 @@ public class TutorialManager {
                 "§e========================================\n" +
                         "§6§lTHREAD WEAVING UNLOCKED!\n" +
                         "§e========================================\n" +
-                        "§aThread weaving system is now available in §bHiraja§f!\n\n" +
+                        "§aThread weaving system is now available in §bSunlit Bazaar§f!\n\n" +
                         "§2» §fFind the §5§lElf Taylor§f to enhance your armor\n" +
                         "§2» §fOnly §echestplates§f and §eleggings§f can be enhanced\n" +
                         "§2» §fChoose from 6 thread types: §7Shadow§f, §8Undead§f, §cFire§f, §9Water§f, §aWild§f, §2Poison§f\n" +
@@ -204,7 +204,7 @@ public class TutorialManager {
                         "§e========================================");
         tutorialMessages.put(55,
                 "§e========================================\n" +
-                "§6§lBLOOD CHEST \n" +
+                "§6§lBLOOD CHEST UNLOCKED\n" +
                 "§e========================================\n" +
                 "§aReady to face the Blood Chest arena? Here's what to know:\n\n" +
                 "§2» §fUse §cWizdar on spawn§f to enter the arena\n" +
@@ -212,6 +212,18 @@ public class TutorialManager {
                 "§2» §fOpen every chest to secure your loot before the arena seals\n" +
                 "§2» §fA hidden timer will close the arena after §c10 minutes§f\n" +
                 "§2» §fLeaving early or running out of time will end the challenge\n" +
+                "§e========================================");
+        tutorialMessages.put(45,
+                "§e========================================\n" +
+                "§6§lSCIENTIST LABORATORY UNLOCKED!\n" +
+                "§e========================================\n" +
+                "§aAbyssal modification system is now available!\n\n" +
+                "§2» §fVisit the §5§lScientist§f in §bSunlit Bazaar§f\n" +
+                "§2» §fPlace your target item and a matching §3Abyssal Bone§f in the interface\n" +
+                "§2» §fRoll two modifiers and §eDouble-Click§f an option to embed it into the item\n" +
+                "§2» §fAbyssal modifiers add powerful §6scaling bonuses§f\n" +
+                "§2» §fEach item can hold only §cone Abyssal modifier§f—choose wisely!\n" +
+                "§2» §fKeep rare bones for higher tiers to boost the modifier’s final value\n" +
                 "§e========================================");
     }
 

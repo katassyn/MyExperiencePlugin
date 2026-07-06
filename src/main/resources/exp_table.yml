@@ -1,3 +1,591 @@
 xp_per_mob:
-  serpent_fighter: 10
-  undead_villager: 10
+  # Mapa 1-5
+  _Undead_Villager_: 40
+  _Undead_Knight_: 80  # ELITA
+  # Mapa 6-10
+  _arisen_warrior: 100
+  _arisen_archer: 110
+  _nefertari_snooper: 220  # ELITA
+  _nefertari_priest: 450  # MINI_BOSS
+  # Mapa 11-15
+  bog_beast: 380  # ELITA
+  black_furred_berserk: 190
+  black_furred_piercer: 210
+  black_furred_mauler: 230
+  talking_sekeleton: 750  # MINI_BOSS
+  # Mapa 16-20
+  soulless_dragon_warrior: 380
+  soulless_dragon_archer: 420
+  dragon_berserk_thug: 840  # ELITA
+  dragon_brood_militarist: 900  # ELITA
+  commander_emberwing: 1500  # MINI_BOSS
+  # Mapa 21-25
+  norse_gnome: 700
+  frost_wolf_agitator: 1400  # ELITA
+  frost_catcher: 1500  # ELITA
+  frost_paw: 2800  # MINI_BOSS
+  # Mapa 26-30
+  horned_satyr_warrior: 1100
+  horned_satyr_archer: 1200
+  drunken_cyclops: 2400  # ELITA
+  horned_satyr_general: 4800  # MINI_BOSS
+  # Mapa 31-35
+  gorgon_soldier: 1800
+  jellyfish: 3600  # ELITA
+  gorgon_heretic: 3900  # ELITA
+  high_priest_baran: 7500  # MINI_BOSS
+  # Mapa 36-40
+  longhelm_evil_guard: 2800
+  walking_saw: 3100
+  technik_engineer: 6200  # ELITA
+  t_1000: 6800  # ELITA
+  high_priest_danzo: 14000  # MINI_BOSS
+  # Mapa 41-45
+  temple_mummy: 4500
+  furious_fiend: 9000  # ELITA
+  crushing_monster: 10000  # ELITA
+  protector_life_death: 22000  # MINI_BOSS
+  # Mapa 46-50
+  serpent_fighter: 7000
+  serpent_spitter: 14000  # ELITA
+  scarab_knephre: 35000  # MINI_BOSS
+  # Mapa 51-60
+  LunkyFireDemon: 10000
+  ShadowGazer: 20000  # ELITA
+  HungrynorseWolf: 11000
+  ShadowNorseman: 22000  # ELITA
+  DemonWarden: 55000  # MINI_BOSS
+  # Mapa 61-70
+  obstinate_toltec_warrior: 17000
+  obstinate_toltec_hunter: 18000
+  obstinate_toltec_shaman: 36000  # ELITA
+  quacking_orbax: 90000  # MINI_BOSS
+  # Mapy 71-80 (Telepolos)
+  shade_crawler: 30000
+  shadow_gazer: 30000
+  soul_collector: 150000  # MINI_BOSS
+  adamant_lava_hound: 60000  # ELITA
+  elite_imperial_swordsman: 65000  # ELITA
+  traitorous_imperial_lancer: 33000
+  traitorous_imperial_swordsman: 33000
+  # Mapy 81-90 (Tywil)
+  twisted_roots: 110000  # ELITA
+  leechbeast: 55000
+  orbax: 55000
+  thunder_beech: 250000  # MINI_BOSS
+  # Mapy 91-100 (OceanBones)
+  mean_souls: 85000
+  cold_skeleton_warrior: 90000
+  cold_skeleton_archer: 95000
+  cold_death_knight: 190000  # ELITA
+  death_knight_of_the_watch: 450000  # MINI_BOSS
+  # Q1-INF 50lv
+  flamecult_servant_inf: 4000
+  flamecult_archer_inf: 4500
+  flamecult_worshipper_inf: 9000  # ELITA
+  perral_world_dragonknight_inf: 22000  # MINI_BOSS
+  raazghul_the_corruptor_inf: 25000  # MINI_BOSS
+  grimmag_inf: 60000  # BOSS
+  # Q1-HELL 65lv
+  flamecult_servant_hell: 12000
+  flamecult_archer_hell: 13000
+  flamecult_worshipper_hell: 26000  # ELITA
+  perral_world_dragonknight_hell: 65000  # MINI_BOSS
+  raazghul_the_corruptor_hell: 75000  # MINI_BOSS
+  grimmag_hell: 180000  # BOSS
+  # Q1-BLOOD 80lv
+  flamecult_servant_blood: 40000
+  flamecult_archer_blood: 45000
+  flamecult_worshipper_blood: 90000  # ELITA
+  perral_world_dragonknight_blood: 225000  # MINI_BOSS
+  raazghul_the_corruptor_blood: 250000  # MINI_BOSS
+  grimmag_blood: 600000  # BOSS
+  # Q2-INF 50lv
+  gremlin_marauder_inf: 4200
+  death_witch_inf: 4700
+  poisonous_spider_inf: 5000
+  corrupted_root_creature_inf: 10000  # ELITA
+  xerib_the_hunchback_inf: 24000  # MINI_BOSS
+  archus_the_mad_inf: 24000  # MINI_BOSS
+  arachna_scourge_of_duria_inf: 65000  # BOSS
+  # Q2-HELL 65lv
+  gremlin_marauder_hell: 12500
+  death_witch_hell: 14000
+  poisonous_spider_hell: 15000
+  corrupted_root_creature_hell: 30000  # ELITA
+  xerib_the_hunchback_hell: 70000  # MINI_BOSS
+  archus_the_mad_hell: 70000  # MINI_BOSS
+  arachna_scourge_of_duria_hell: 190000  # BOSS
+  # Q2-BLOOD 80lv
+  gremlin_marauder_blood: 42000
+  death_witch_blood: 47000
+  poisonous_spider_blood: 50000
+  corrupted_root_creature_blood: 100000  # ELITA
+  xerib_the_hunchback_blood: 240000  # MINI_BOSS
+  archus_the_mad_blood: 240000  # MINI_BOSS
+  arachna_scourge_of_duria_blood: 650000  # BOSS
+  # Q3-INF
+  cursed_farmer_inf: 4400
+  cursed_troll_inf: 10500  # ELITA
+  cursed_archer_inf: 4900
+  parallel_world_evil_miller_inf: 26000  # MINI_BOSS
+  slain_assassin_inf: 11000  # ELITA
+  slain_warrior_inf: 5200
+  slain_archer_inf: 5200
+  the_bloody_arrow_inf: 26000  # MINI_BOSS
+  undead_parallel_world_king_heredur_inf: 70000  # BOSS
+  # Q3-HELL
+  cursed_farmer_hell: 13000
+  cursed_troll_hell: 31000  # ELITA
+  cursed_archer_hell: 14500
+  parallel_world_evil_miller_hell: 75000  # MINI_BOSS
+  slain_assassin_hell: 33000  # ELITA
+  slain_warrior_hell: 15500
+  slain_archer_hell: 15500
+  the_bloody_arrow_hell: 75000  # MINI_BOSS
+  undead_parallel_world_king_heredur_hell: 200000  # BOSS
+  # Q3-BLOOD
+  cursed_farmer_blood: 44000
+  cursed_troll_blood: 105000  # ELITA
+  cursed_archer_blood: 49000
+  parallel_world_evil_miller_blood: 255000  # MINI_BOSS
+  slain_assassin_blood: 110000  # ELITA
+  slain_warrior_blood: 52000
+  slain_archer_blood: 52000
+  the_bloody_arrow_blood: 255000  # MINI_BOSS
+  undead_parallel_world_king_heredur_blood: 700000  # BOSS
+  # Q4-INF
+  sanguine_clan_raging_guardian_inf: 4700
+  raging_hunting_hound_inf: 4700
+  sanguine_clan_raging_snooper_inf: 11500  # ELITA
+  sanguine_clan_raging_hunter_inf: 11500  # ELITA
+  parallel_world_ancient_stag_inf: 28000  # MINI_BOSS
+  eternal_satyr_warrior_inf: 5500
+  eternal_root_creature_inf: 12000  # ELITA
+  eternal_hunter_inf: 12000  # ELITA
+  eternal_hunting_hound_inf: 5500
+  ulgar_the_master_butcher_phase1_inf: 9500  # MINI_BOSS Faza
+  ulgar_the_master_butcher_phase2_inf: 9500  # MINI_BOSS Faza
+  ulgar_the_master_butcher_phase3_inf: 9500  # MINI_BOSS
+  bearach_champion_of_wilds_inf: 75000  # BOSS
+  lightning_wolf_inf: 1200
+  # Q4-HELL
+  sanguine_clan_raging_guardian_hell: 14000
+  raging_hunting_hound_hell: 14000
+  sanguine_clan_raging_snooper_hell: 34000  # ELITA
+  sanguine_clan_raging_hunter_hell: 34000  # ELITA
+  parallel_world_ancient_stag_hell: 80000  # MINI_BOSS
+  eternal_satyr_warrior_hell: 16000
+  eternal_root_creature_hell: 36000  # ELITA
+  eternal_hunter_hell: 36000  # ELITA
+  eternal_hunting_hound_hell: 16000
+  ulgar_the_master_butcher_phase1_hell: 27000  # MINI_BOSS Faza
+  ulgar_the_master_butcher_phase2_hell: 27000  # MINI_BOSS Faza
+  ulgar_the_master_butcher_phase3_hell: 27000  # MINI_BOSS
+  bearach_champion_of_wilds_hell: 210000  # BOSS
+  lightning_wolf_hell: 3500
+  # Q4-BLOOD
+  sanguine_clan_raging_guardian_blood: 47000
+  raging_hunting_hound_blood: 47000
+  sanguine_clan_raging_snooper_blood: 115000  # ELITA
+  sanguine_clan_raging_hunter_blood: 115000  # ELITA
+  parallel_world_ancient_stag_blood: 270000  # MINI_BOSS
+  eternal_satyr_warrior_blood: 54000
+  eternal_root_creature_blood: 120000  # ELITA
+  eternal_hunter_blood: 120000  # ELITA
+  eternal_hunting_hound_blood: 54000
+  ulgar_the_master_butcher_phase1_blood: 92000  # MINI_BOSS Faza
+  ulgar_the_master_butcher_phase2_blood: 92000  # MINI_BOSS Faza
+  ulgar_the_master_butcher_phase3_blood: 92000  # MINI_BOSS
+  bearach_champion_of_wilds_blood: 750000  # BOSS
+  lightning_wolf_blood: 12000
+  # Q5-INF
+  furious_maggot_inf: 5100
+  furious_flagrancy_inf: 5600
+  furious_andermagic_inf: 12500  # ELITA
+  parallel_world_old_jabbax_shaman_inf: 30000  # MINI_BOSS
+  andermagic_guardian_inf: 6000
+  living_andermagic_inf: 6000
+  wailing_andermagic_ghost_inf: 13000  # ELITA
+  andermagic_scoropitl_inf: 13000  # ELITA
+  wandering_experiment_inf: 30000  # MINI_BOSS
+  khalys_leader_of_cultists_inf: 80000  # BOSS
+  khalys_clone_inf: 16000  # ELITA (Klon Bossa)
+  # Q5-HELL
+  furious_maggot_hell: 15000
+  furious_flagrancy_hell: 16500
+  furious_andermagic_hell: 37000  # ELITA
+  parallel_world_old_jabbax_shaman_hell: 85000  # MINI_BOSS
+  andermagic_guardian_hell: 18000
+  living_andermagic_hell: 18000
+  wailing_andermagic_ghost_hell: 39000  # ELITA
+  andermagic_scoropitl_hell: 39000  # ELITA
+  wandering_experiment_hell: 85000  # MINI_BOSS
+  khalys_leader_of_cultists_hell: 220000  # BOSS
+  khalys_clone_hell: 45000  # ELITA (Klon Bossa)
+  # Q5-BLOOD
+  furious_maggot_blood: 51000
+  furious_flagrancy_blood: 56000
+  furious_andermagic_blood: 125000  # ELITA
+  parallel_world_old_jabbax_shaman_blood: 285000  # MINI_BOSS
+  andermagic_guardian_blood: 60000
+  living_andermagic_blood: 60000
+  wailing_andermagic_ghost_blood: 130000  # ELITA
+  andermagic_scoropitl_blood: 130000  # ELITA
+  wandering_experiment_blood: 285000  # MINI_BOSS
+  khalys_leader_of_cultists_blood: 800000  # BOSS
+  khalys_clone_blood: 160000  # ELITA (Klon Bossa)
+  # Q6-INF
+  fallen_warrior_inf: 5500
+  fallen_archer_inf: 6000
+  death_knight_inf: 13500  # ELITA
+  mortis_death_knight_inf: 32000  # MINI_BOSS
+  elite_skeleton_archer_inf: 14000  # ELITA
+  death_archer_inf: 14000  # ELITA
+  raging_soul_inf: 6500
+  elite_skeleton_warrior_inf: 14000  # ELITA
+  murot_high_priest_inf: 32000  # MINI_BOSS
+  skeledragon_phase1_inf: 29000  # BOSS Faza
+  skeledragon_phase2_inf: 29000  # BOSS Faza
+  mortis_phase3_inf: 29000  # BOSS
+  # Q6-HELL
+  fallen_warrior_hell: 16500
+  fallen_archer_hell: 18000
+  death_knight_hell: 40000  # ELITA
+  mortis_death_knight_hell: 90000  # MINI_BOSS
+  elite_skeleton_archer_hell: 42000  # ELITA
+  death_archer_hell: 42000  # ELITA
+  raging_soul_hell: 19500
+  elite_skeleton_warrior_hell: 42000  # ELITA
+  murot_high_priest_hell: 90000  # MINI_BOSS
+  skeledragon_phase1_hell: 77000  # BOSS Faza
+  skeledragon_phase2_hell: 77000  # BOSS Faza
+  mortis_phase3_hell: 77000  # BOSS
+  # Q6-BLOOD
+  fallen_warrior_blood: 55000
+  fallen_archer_blood: 60000
+  death_knight_blood: 135000  # ELITA
+  mortis_death_knight_blood: 300000  # MINI_BOSS
+  elite_skeleton_archer_blood: 140000  # ELITA
+  death_archer_blood: 140000  # ELITA
+  raging_soul_blood: 65000
+  elite_skeleton_warrior_blood: 140000  # ELITA
+  murot_high_priest_blood: 300000  # MINI_BOSS
+  skeledragon_phase1_blood: 280000  # BOSS Faza
+  skeledragon_phase2_blood: 280000  # BOSS Faza
+  mortis_phase3_blood: 280000  # BOSS
+  # Q7-INF
+  bone_warder_inf: 6000
+  b1000_combat_mechanoid_inf: 6500
+  thundering_cyclops_inf: 14500  # ELITA
+  dark_sentinel_inf: 14500  # ELITA
+  iron_creeper_gate_guard_inf: 34000  # MINI_BOSS
+  wild_razorclaw_inf: 7000
+  flamescale_defender_inf: 7000
+  fireclaw_mercenary_inf: 15000  # ELITA
+  angry_flamespawn_inf: 7500
+  commander_embersword_inf: 34000  # MINI_BOSS
+  herald_of_anderworld_inf: 90000  # BOSS
+  # Q7-HELL
+  bone_warder_hell: 18000
+  b1000_combat_mechanoid_hell: 19500
+  thundering_cyclops_hell: 43000  # ELITA
+  dark_sentinel_hell: 43000  # ELITA
+  iron_creeper_gate_guard_hell: 95000  # MINI_BOSS
+  wild_razorclaw_hell: 21000
+  flamescale_defender_hell: 21000
+  fireclaw_mercenary_hell: 45000  # ELITA
+  angry_flamespawn_hell: 22500
+  commander_embersword_hell: 95000  # MINI_BOSS
+  herald_of_anderworld_hell: 240000  # BOSS
+  # Q7-BLOOD
+  bone_warder_blood: 60000
+  b1000_combat_mechanoid_blood: 65000
+  thundering_cyclops_blood: 145000  # ELITA
+  dark_sentinel_blood: 145000  # ELITA
+  iron_creeper_gate_guard_blood: 315000  # MINI_BOSS
+  wild_razorclaw_blood: 70000
+  flamescale_defender_blood: 70000
+  fireclaw_mercenary_blood: 150000  # ELITA
+  angry_flamespawn_blood: 75000
+  commander_embersword_blood: 315000  # MINI_BOSS
+  herald_of_anderworld_blood: 880000  # BOSS
+  # Q8-INF
+  electrified_ferocity_inf: 6500
+  charged_drone_inf: 7000
+  big_heap_of_ice_inf: 15500  # ELITA
+  bloodthirsty_frostwolf_inf: 15500  # ELITA
+  shocking_forocity_inf: 36000  # MINI_BOSS
+  pale_pillager_inf: 7500
+  simple_troll_inf: 7500
+  frost_magician_inf: 16000  # ELITA
+  frost_bringer_inf: 16000  # ELITA
+  pale_enforcer_inf: 36000  # MINI_BOSS
+  sigrismarr_priest_of_fjalnir_inf: 95000  # BOSS
+  # Q8-HELL
+  electrified_ferocity_hell: 19500
+  charged_drone_hell: 21000
+  big_heap_of_ice_hell: 46000  # ELITA
+  bloodthirsty_frostwolf_hell: 46000  # ELITA
+  shocking_forocity_hell: 100000  # MINI_BOSS
+  pale_pillager_hell: 22500
+  simple_troll_hell: 22500
+  frost_magician_hell: 48000  # ELITA
+  frost_bringer_hell: 48000  # ELITA
+  pale_enforcer_hell: 100000  # MINI_BOSS
+  sigrismarr_priest_of_fjalnir_hell: 250000  # BOSS
+  # Q8-BLOOD
+  electrified_ferocity_blood: 65000
+  charged_drone_blood: 70000
+  big_heap_of_ice_blood: 155000  # ELITA
+  bloodthirsty_frostwolf_blood: 155000  # ELITA
+  shocking_forocity_blood: 330000  # MINI_BOSS
+  pale_pillager_blood: 75000
+  simple_troll_blood: 75000
+  frost_magician_blood: 160000  # ELITA
+  frost_bringer_blood: 160000  # ELITA
+  pale_enforcer_blood: 330000  # MINI_BOSS
+  sigrismarr_priest_of_fjalnir_blood: 920000  # BOSS
+  # Q9-INF
+  agile_satyr_warrior_inf: 7000
+  perfidious_satyr_archer_inf: 7500
+  cohort_swordsman_inf: 16500  # ELITA
+  stone_golem_inf: 16500  # ELITA
+  asterion_inf: 38000  # MINI_BOSS
+  jabbax_inf: 8000
+  zorlobb_warrior_inf: 17000  # ELITA
+  gorgon_acolyte_inf: 8000
+  minotaur_inf: 17000  # ELITA
+  ebicarus_inf: 38000  # MINI_BOSS
+  medusa_inf: 100000  # BOSS
+  snake_minion_inf: 1500
+  # Q9-HELL
+  agile_satyr_warrior_hell: 21000
+  perfidious_satyr_archer_hell: 22500
+  cohort_swordsman_hell: 49000  # ELITA
+  stone_golem_hell: 49000  # ELITA
+  asterion_hell: 105000  # MINI_BOSS
+  jabbax_hell: 24000
+  zorlobb_warrior_hell: 51000  # ELITA
+  gorgon_acolyte_hell: 24000
+  minotaur_hell: 51000  # ELITA
+  ebicarus_hell: 105000  # MINI_BOSS
+  medusa_hell: 260000  # BOSS
+  snake_minion_hell: 4500
+  # Q9-BLOOD
+  agile_satyr_warrior_blood: 70000
+  perfidious_satyr_archer_blood: 75000
+  cohort_swordsman_blood: 165000  # ELITA
+  stone_golem_blood: 165000  # ELITA
+  asterion_blood: 345000  # MINI_BOSS
+  jabbax_blood: 80000
+  zorlobb_warrior_blood: 170000  # ELITA
+  gorgon_acolyte_blood: 80000
+  minotaur_blood: 170000  # ELITA
+  ebicarus_blood: 345000  # MINI_BOSS
+  medusa_blood: 960000  # BOSS
+  snake_minion_blood: 15000
+  # Q10-INF
+  scheming_gorgon_inf: 17500  # ELITA
+  poisonous_jitterjelly_inf: 17500  # ELITA
+  anderworld_jitterjelly_inf: 8500
+  combat_ready_zorlobb_inf: 9000
+  melas_the_swift_footed_inf: 40000  # MINI_BOSS
+  anderworld_jabbax_inf: 9500
+  patrolling_jabbax_inf: 18000  # ELITA
+  armed_khaross_inf: 9500
+  mordacious_khaross_inf: 10000
+  akheilos_inf: 40000  # MINI_BOSS
+  parallel_world_gorga_inf: 110000  # BOSS
+  # Q10-HELL
+  scheming_gorgon_hell: 52000  # ELITA
+  poisonous_jitterjelly_hell: 52000  # ELITA
+  anderworld_jitterjelly_hell: 25500
+  combat_ready_zorlobb_hell: 27000
+  melas_the_swift_footed_hell: 110000  # MINI_BOSS
+  anderworld_jabbax_hell: 28500
+  patrolling_jabbax_hell: 54000  # ELITA
+  armed_khaross_hell: 28500
+  mordacious_khaross_hell: 30000
+  akheilos_hell: 110000  # MINI_BOSS
+  parallel_world_gorga_hell: 280000  # BOSS
+  # Q10-BLOOD
+  scheming_gorgon_blood: 175000  # ELITA
+  poisonous_jitterjelly_blood: 175000  # ELITA
+  anderworld_jitterjelly_blood: 85000
+  combat_ready_zorlobb_blood: 90000
+  melas_the_swift_footed_blood: 360000  # MINI_BOSS
+  anderworld_jabbax_blood: 95000
+  patrolling_jabbax_blood: 180000  # ELITA
+  armed_khaross_blood: 95000
+  mordacious_khaross_blood: 100000
+  akheilos_blood: 360000  # MINI_BOSS
+  parallel_world_gorga_blood: 1000000  # BOSS
+
+  # T1 MYTHOLOGICAL DUNGEONS - The Odyssey of Shadows (Level 40)
+  shadow_wisp: 9000  # NORMAL (temple_mummy 4500 x2)
+  umbral_shade: 9000  # NORMAL
+  void_stalker: 9000  # NORMAL
+  dark_wraith: 9000  # NORMAL
+  shadow_assassin: 18000  # ELITE (furious_fiend 9000 x2)
+  umbral_wraith: 18000  # ELITE
+  void_champion: 20000  # ELITE
+  umbral_guardian: 44000  # MINI_BOSS (protector_life_death 22000 x2)
+  umbraxis_shadowlord: 120000  # BOSS (estimated 2x boss level)
+
+  # T2 MYTHOLOGICAL DUNGEONS - Poseidon Isle of Mist (Level 50)
+  aquatic_guardian: 8400  # NORMAL (gremlin_marauder_inf 4200 x2)
+  sea_wraith: 9400  # NORMAL (death_witch_inf 4700 x2)
+  coral_defender: 10000  # NORMAL (poisonous_spider_inf 5000 x2)
+  abyssal_hunter: 8400  # NORMAL
+  poseidons_champion: 20000  # ELITE (corrupted_root_creature_inf 10000 x2)
+  tidal_leviathan: 20000  # ELITE
+  depths_warden: 20000  # ELITE
+  kraken_spawn: 48000  # MINI_BOSS (xerib_the_hunchback_inf 24000 x2)
+  poseidon_sea_lord: 130000  # BOSS (arachna_scourge_of_duria_inf 65000 x2)
+
+  # T3 MYTHOLOGICAL DUNGEONS - Mount Olympus (Level 65)
+  celestial_sentinel: 24000  # NORMAL (flamecult_servant_hell 12000 x2)
+  olympian_guard: 26000  # NORMAL (flamecult_archer_hell 13000 x2)
+  divine_herald: 24000  # NORMAL
+  storm_bringer: 26000  # NORMAL
+  zeus_champion: 52000  # ELITE (flamecult_worshipper_hell 26000 x2)
+  divine_arbiter: 52000  # ELITE
+  olympian_warlord: 52000  # ELITE
+  divine_colossus: 130000  # MINI_BOSS (perral_world_dragonknight_hell 65000 x2)
+  zeus_king_of_gods: 360000  # BOSS (grimmag_hell 180000 x2)
+
+  # T4 MYTHOLOGICAL DUNGEONS - Daedalus Eternal Labyrinth (Level 75)
+  bronze_automaton: 80000  # NORMAL (flamecult_servant_blood 40000 x2)
+  labyrinth_guardian: 90000  # NORMAL (flamecult_archer_blood 45000 x2)
+  ancient_construct: 80000  # NORMAL
+  daedalus_creation: 90000  # NORMAL
+  master_artificer: 180000  # ELITE (flamecult_worshipper_blood 90000 x2)
+  clockwork_titan: 180000  # ELITE
+  labyrinth_overseer: 180000  # ELITE
+  minotaur_mechanicus: 450000  # MINI_BOSS (perral_world_dragonknight_blood 225000 x2)
+  daedalus_master_architect: 1200000  # BOSS (grimmag_blood 600000 x2)
+
+  # T5 MYTHOLOGICAL DUNGEONS - Fields of Immortal Souls (Level 85)
+  wandering_soul: 170000  # NORMAL (cold_skeleton_warrior 85000 x2)
+  ethereal_specter: 180000  # NORMAL (cold_skeleton_archer 90000 x2)
+  immortal_wraith: 190000  # NORMAL (cold_death_knight 95000 x2)
+  soul_reaper: 170000  # NORMAL
+  harbinger_of_death: 380000  # ELITE (cold_death_knight 190000 x2)
+  eternal_guardian: 380000  # ELITE
+  immortal_lich: 380000  # ELITE
+  thanatos_avatar: 900000  # MINI_BOSS (death_knight_of_the_watch 450000 x2)
+  hades_lord_of_underworld: 2000000  # BOSS (estimated highest tier boss)
+
+  werewolf_normal: 15000
+  wolf_normal: 15000
+  werewolf_commander_normal: 25000
+  amarok_normal: 50000
+
+  werewolf_hard: 100000
+  wolf_hard: 100000
+  werewolf_commander_hard: 150000
+  amarok_hard: 250000
+
+  bloody_werewolf_normal: 25000
+  werewolf_blood_mage_disciple_normal: 25000
+  sanguis_normal: 100000
+
+  bloody_werewolf_hard: 100000
+  werewolf_blood_mage_disciple_hard: 100000
+  sanguis_hard: 250000
+
+  # NEW MOON EVENT (matching full_moon mob structure)
+  # Normal difficulty
+  lunatic_goblin_normal: 15000
+  nighty_witch_normal: 15000
+  walking_wood_normal: 15000
+  lords_squire_normal: 15000
+  lords_legionnaire_normal: 15000
+  patriarch_of_the_lords_normal: 50000  # MINI_BOSS
+  lords_guard_normal: 50000  # MINI_BOSS
+  lord_silvanus_normal: 100000  # BOSS
+  lord_malachai_normal: 100000  # BOSS
+
+  # Hard difficulty
+  lunatic_goblin_hard: 100000
+  nighty_witch_hard: 100000
+  walking_wood_hard: 100000
+  lords_squire_hard: 100000
+  lords_legionnaire_hard: 100000
+  patriarch_of_the_lords_hard: 250000  # MINI_BOSS
+  lords_guard_hard: 250000  # MINI_BOSS
+  lord_silvanus_hard: 250000  # BOSS
+  lord_malachai_hard: 250000  # BOSS
+
+  # WINTER EVENT (X-MAS) - INFERNAL (matching Q10-INF values)
+  winter_cave_mob: 9000
+  sugar_goblin_miner_inf: 9000
+  snow_wolf_inf: 9000
+  dough_troll_kneader_inf: 9000
+  cookie_commander_wolf_inf: 17500  # ELITA
+  cookie_thief_goblin_inf: 40000  # MINI_BOSS
+  cookie_destroyer_sludge_inf: 40000  # MINI_BOSS
+  walking_christmas_tree_inf: 40000  # MINI_BOSS
+  gluttonous_bear_inf: 110000  # BOSS
+  krampus_spirit_inf: 110000  # BOSS
+
+  # WINTER EVENT (X-MAS) - HELL (matching Q10-HELL values)
+  sugar_goblin_miner_hell: 27000
+  snow_wolf_hell: 27000
+  dough_troll_kneader_hell: 27000
+  cookie_commander_wolf_hell: 52000  # ELITA
+  cookie_thief_goblin_hell: 110000  # MINI_BOSS
+  cookie_destroyer_sludge_hell: 110000  # MINI_BOSS
+  walking_christmas_tree_hell: 110000  # MINI_BOSS
+  gluttonous_bear_hell: 280000  # BOSS
+  krampus_spirit_hell: 280000  # BOSS
+
+  # WINTER EVENT (X-MAS) - BLOOD (matching Q10-BLOOD values)
+  sugar_goblin_miner_blood: 90000
+  snow_wolf_blood: 90000
+  dough_troll_kneader_blood: 90000
+  cookie_commander_wolf_blood: 175000  # ELITA
+  cookie_thief_goblin_blood: 360000  # MINI_BOSS
+  cookie_destroyer_sludge_blood: 360000  # MINI_BOSS
+  walking_christmas_tree_blood: 360000  # MINI_BOSS
+  gluttonous_bear_blood: 1000000  # BOSS
+  krampus_spirit_blood: 1000000  # BOSS
+
+  # DEMON TOWER I - Valgroth's Domain (level ~60-70)
+  hellfire_imp_dt1: 18000
+  infernal_guard_dt1: 18000
+  flame_cultist_dt1: 18000
+  shadow_knight_dt1: 36000  # ELITA
+  hellborn_berserker_dt1: 36000  # ELITA
+  infernal_champion_dt1: 90000  # MINI_BOSS
+  valgroth_dark_monarch: 240000  # BOSS
+
+  # DEMON TOWER II - Azhra'Morth's Throne (level ~70-80)
+  legion_footsoldier_dt2: 33000
+  hellhound_dt2: 33000
+  throne_acolyte_dt2: 33000
+  legion_centurion_dt2: 65000  # ELITA
+  infernal_warden_dt2: 65000  # ELITA
+  throne_guardian_dt2: 150000  # MINI_BOSS
+  azhramorth_throne_lord: 400000  # BOSS
+
+  # DEMON TOWER III - Korthamoth's Abyss (level ~80-90)
+  void_spawn_dt3: 55000
+  abyssal_warrior_dt3: 55000
+  shattered_horror_dt3: 55000
+  void_knight_dt3: 110000  # ELITA
+  abyss_walker_dt3: 110000  # ELITA
+  rift_guardian_dt3: 250000  # MINI_BOSS
+  korthamoth_abyss_guardian: 700000  # BOSS
+
+  # DEMON TOWER IV - Primordial Abyss (level ~90-100, ULTIMATE ENDGAME)
+  primordial_shade_dt4: 90000
+  ancient_tormentor_dt4: 90000
+  shadow_ripper_dt4: 90000
+  primordial_knight_dt4: 190000  # ELITA
+  eternal_executioner_dt4: 190000  # ELITA
+  shadow_prophet_dt4: 190000  # ELITA
+  ancient_warden_dt4: 450000  # MINI_BOSS
+  vharzhul_ancient_ripper: 1200000  # BOSS
+  acheron_buried_in_shadows: 2500000  # FINAL_BOSS (Ultimate Endgame)

@@ -118,5 +118,11 @@
           <version>2.20.0</version>
           <scope>provided</scope>
       </dependency>
+      <dependency>
+          <groupId>com.maks</groupId>
+          <artifactId>TrinketsPlugin</artifactId>
+          <version>1.0-SNAPSHOT</version>
+          <scope>provided</scope>
+      </dependency>
   </dependencies>
 </project>

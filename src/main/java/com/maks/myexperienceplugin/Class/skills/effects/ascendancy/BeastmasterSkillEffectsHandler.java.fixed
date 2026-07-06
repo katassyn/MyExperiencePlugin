@@ -1,0 +1,585 @@
+package com.maks.myexperienceplugin.Class.skills.effects.ascendancy;
+
+import com.maks.myexperienceplugin.Class.skills.SkillEffectsHandler;
+import com.maks.myexperienceplugin.Class.skills.effects.BaseSkillEffectsHandler;
+import com.maks.myexperienceplugin.MyExperiencePlugin;
+import com.maks.myexperienceplugin.utils.ActionBarUtils;
+import com.maks.myexperienceplugin.utils.DebugUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Wolf;
+import org.bukkit.entity.Pig;
+import org.bukkit.entity.PolarBear;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitTask;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+/**
+ * Handler for Beastmaster-specific skill effects
+ */
+public class BeastmasterSkillEffectsHandler extends BaseSkillEffectsHandler implements Listener {
+    // Constants
+    private static final int WOLF_SUMMON_ID = 100001;
+    private static final int BOAR_SUMMON_ID = 100002;
+    private static final int BEAR_SUMMON_ID = 100003;
+    private static final long WOLF_SUMMON_COOLDOWN = 60000; // 60 seconds
+    private static final long BOAR_SUMMON_COOLDOWN = 60000; // 60 seconds (unified cooldown)
+    private static final long BEAR_SUMMON_COOLDOWN = 60000; // 60 seconds (unified cooldown)
+    private static final long SUMMON_CHECK_DELAY = 60L; // 3 seconds delay for summon checks
+    private static final long RATE_LIMIT_DELAY = 1000L; // 1 second rate limiting for summon checks
+
+    // Track active summons by player
+    private final Map<UUID, UUID> playerWolf = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> playerBoar = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> playerBear = new ConcurrentHashMap<>();
+
+    // Track active summon skills for each player (for 2-summon limit)
+    private final Map<UUID, Set<Integer>> activeSummonSkills = new ConcurrentHashMap<>();
+
+    // Track additional wolves for Wolf Pack skill
+    private final Map<UUID, List<UUID>> additionalWolves = new ConcurrentHashMap<>();
+
+    // Track summon stats
+    private final Map<UUID, Double> summonDamageMultiplier = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> summonHealthMultiplier = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> summonDefenseMultiplier = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> summonAttackSpeedMultiplier = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> summonMovementSpeedMultiplier = new ConcurrentHashMap<>();
+    private final Map<UUID, Double> summonCritChance = new ConcurrentHashMap<>();
+
+    // Track cooldowns for summon respawns
+    private final Map<UUID, Long> wolfRespawnCooldowns = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> boarRespawnCooldowns = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> bearRespawnCooldowns = new ConcurrentHashMap<>();
+
+    // Track cooldown notification tasks
+    private final Map<UUID, BukkitTask> cooldownNotificationTasks = new ConcurrentHashMap<>();
+
+    // Track bear guardian buffs
+    private final Map<UUID, Boolean> bearGuardianActive = new ConcurrentHashMap<>();
+
+    // Track boar frenzy stacks
+    private final Map<UUID, Map<UUID, Long>> boarFrenzyExpiration = new ConcurrentHashMap<>();
+
+    // Anti-duplication tracking
+    private final Map<UUID, Boolean> summonInProgress = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastSummonCheck = new ConcurrentHashMap<>();
+
+    // Random for critical hit calculations
+    private final Random random = new Random();
+    
+    /**
+     * Roll a chance with debug output
+     * @param chance Chance of success (0-100)
+     * @param player Player to send debug message to
+     * @param mechanicName Name of the mechanic being rolled
+     * @return Whether the roll was successful
+     */
+    private boolean rollChance(double chance, Player player, String mechanicName) {
+        if (debuggingFlag == 1) {
+            return DebugUtils.rollChanceWithDebug(player, mechanicName, chance);
+        } else {
+            return Math.random() * 100 < chance;
+        }
+    }
+
+    public BeastmasterSkillEffectsHandler(MyExperiencePlugin plugin) {
+        super(plugin);
+        // Register this class as a listener for events
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    /**
+     * Finds and removes duplicate summons that aren't being tracked properly
+     * @param player The player to check for duplicate summons
+     */
+    public void cleanupDuplicateSummons(Player player) {
+        UUID playerId = player.getUniqueId();
+        World world = player.getWorld();
+        
+        // Get all wolves in the player's world
+        List<Entity> wolves = world.getEntities().stream()
+            .filter(e -> e instanceof Wolf)
+            .filter(e -> ((Wolf) e).isTamed())
+            .filter(e -> ((Wolf) e).getOwner() != null && ((Wolf) e).getOwner().equals(player))
+            .collect(Collectors.toList());
+        
+        // Get all pigs in the player's world (potential boar summons)
+        List<Entity> pigs = world.getEntities().stream()
+            .filter(e -> e instanceof Pig)
+            .filter(e -> e.getCustomName() != null && e.getCustomName().contains(player.getName()))
+            .collect(Collectors.toList());
+        
+        // Get all polar bears in the player's world (potential bear summons)
+        List<Entity> polarBears = world.getEntities().stream()
+            .filter(e -> e instanceof PolarBear)
+            .filter(e -> e.getCustomName() != null && e.getCustomName().contains(player.getName()))
+            .collect(Collectors.toList());
+        
+        // Combine all potential summons
+        List<Entity> allPotentialSummons = new ArrayList<>();
+        allPotentialSummons.addAll(wolves);
+        allPotentialSummons.addAll(pigs);
+        allPotentialSummons.addAll(polarBears);
+        
+        // Get tracked summons
+        Set<UUID> trackedSummons = new HashSet<>();
+        if (playerWolf.containsKey(playerId)) trackedSummons.add(playerWolf.get(playerId));
+        if (playerBoar.containsKey(playerId)) trackedSummons.add(playerBoar.get(playerId));
+        if (playerBear.containsKey(playerId)) trackedSummons.add(playerBear.get(playerId));
+        
+        // Add additional wolves
+        if (additionalWolves.containsKey(playerId)) {
+            trackedSummons.addAll(additionalWolves.get(playerId));
+        }
+        
+        // Remove untracked summons
+        int removedCount = 0;
+        for (Entity entity : allPotentialSummons) {
+            if (!trackedSummons.contains(entity.getUniqueId())) {
+                entity.remove();
+                removedCount++;
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Removed untracked summon for " + player.getName() + 
+                        ": " + entity.getType() + " at " + entity.getLocation());
+                }
+            }
+        }
+        
+        if (removedCount > 0 && debuggingFlag == 1) {
+            plugin.getLogger().info("Cleaned up " + removedCount + " untracked summons for " + player.getName());
+            player.sendMessage(ChatColor.YELLOW + "Cleaned up " + removedCount + " duplicate summons.");
+        }
+    }
+
+    /**
+     * Handle player logout and clean up all summons
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        UUID playerId = player.getUniqueId();
+        
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info("Player " + player.getName() + " quit, cleaning up summons");
+        }
+        
+        // Clean up all summons and data
+        clearPlayerData(playerId);
+    }
+
+    /**
+     * Summons a wolf for the player
+     * @param player The player
+     */
+    public void summonWolves(Player player) {
+        UUID playerId = player.getUniqueId();
+
+        // Check if summon is already in progress to prevent duplicates
+        if (summonInProgress.getOrDefault(playerId, false)) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Summon already in progress for " + player.getName());
+            }
+            return;
+        }
+
+        // Rate limiting check
+        long currentTime = System.currentTimeMillis();
+        if (lastSummonCheck.containsKey(playerId)) {
+            long lastCheck = lastSummonCheck.get(playerId);
+            if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                }
+                return;
+            }
+        }
+        lastSummonCheck.put(playerId, currentTime);
+
+        // Check if player has the skill
+        if (!isPurchased(playerId, WOLF_SUMMON_ID)) {
+            player.sendMessage(ChatColor.RED + "You haven't learned to summon wolves yet!");
+            return;
+        }
+
+        // Check summon type limit
+        if (!canAddSummonType(playerId, WOLF_SUMMON_ID)) {
+            player.sendMessage(ChatColor.RED + "You can only have 2 types of summons at once!");
+            return;
+        }
+
+        // Check if wolf is already summoned
+        if (hasActiveSummon(playerId, playerWolf)) {
+            player.sendMessage(ChatColor.YELLOW + "You already have a wolf summoned!");
+            return;
+        }
+
+        // Check cooldown
+        if (isOnCooldown(playerId, wolfRespawnCooldowns, WOLF_SUMMON_COOLDOWN)) {
+            long timeLeft = (wolfRespawnCooldowns.get(playerId) + WOLF_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
+            player.sendMessage(ChatColor.RED + "Wolf summon on cooldown (" + timeLeft + "s)");
+            return;
+        }
+
+        // Set summon in progress flag
+        summonInProgress.put(playerId, true);
+
+        // Clean up any duplicate summons first
+        cleanupDuplicateSummons(player);
+
+        // Determine how many wolves to summon
+        int wolfCount = 1;
+        if (isPurchased(playerId, 100025)) {
+            wolfCount = 2; // Additional wolf with skill 25
+        }
+
+        // Array to track all wolves spawned
+        List<Wolf> spawnedWolves = new ArrayList<>();
+
+        // Summon wolves
+        try {
+            for (int i = 0; i < wolfCount; i++) {
+                Wolf wolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
+                wolf.setTamed(true);
+                wolf.setOwner(player);
+                spawnedWolves.add(wolf);
+
+                // Apply wolf-specific bonuses
+                setWolfStats(player, wolf);
+
+                // Set custom name with player name and HP
+                updateSummonNameTag(wolf, player, "Wolf");
+            }
+
+            // Store all wolves - with Wolf Pack we need to handle multiple wolves
+            if (!spawnedWolves.isEmpty()) {
+                // Store reference to the primary wolf
+                playerWolf.put(playerId, spawnedWolves.get(0).getUniqueId());
+
+                // Store additional wolves if any
+                if (spawnedWolves.size() > 1) {
+                    additionalWolves.put(playerId, spawnedWolves.stream()
+                        .skip(1)
+                        .map(Entity::getUniqueId)
+                        .collect(Collectors.toList()));
+                }
+            }
+
+            // Show notification
+            ActionBarUtils.sendActionBar(player,
+                    ChatColor.GREEN + "Summoned " + wolfCount + " wolf" + (wolfCount > 1 ? "ves" : ""));
+
+            // Track this summon type
+            trackSummonSkill(playerId, WOLF_SUMMON_ID);
+
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error spawning wolf: " + e.getMessage());
+            e.printStackTrace();
+            player.sendMessage(ChatColor.RED + "Error summoning wolf: " + e.getMessage());
+        } finally {
+            // Clear summon in progress flag
+            summonInProgress.put(playerId, false);
+        }
+
+        if (debuggingFlag == 1) {
+            plugin.getLogger().info(player.getName() + " summoned " + wolfCount + " wolves");
+            player.sendMessage(ChatColor.DARK_GRAY + "[DEBUG] Summoned " + wolfCount + " wolves");
+        }
+    }
+
+    /**
+     * Summons a boar for the player
+     * @param player The player
+     */
+    public void summonBoars(Player player) {
+        UUID playerId = player.getUniqueId();
+
+        // Check if summon is already in progress to prevent duplicates
+        if (summonInProgress.getOrDefault(playerId, false)) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Summon already in progress for " + player.getName());
+            }
+            return;
+        }
+
+        // Rate limiting check
+        long currentTime = System.currentTimeMillis();
+        if (lastSummonCheck.containsKey(playerId)) {
+            long lastCheck = lastSummonCheck.get(playerId);
+            if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                }
+                return;
+            }
+        }
+        lastSummonCheck.put(playerId, currentTime);
+
+        // Check if player has the skill
+        if (!isPurchased(playerId, BOAR_SUMMON_ID)) {
+            player.sendMessage(ChatColor.RED + "You haven't learned to summon boars yet!");
+            return;
+        }
+
+        // Check summon type limit
+        if (!canAddSummonType(playerId, BOAR_SUMMON_ID)) {
+            player.sendMessage(ChatColor.RED + "You can only have 2 types of summons at once!");
+            return;
+        }
+
+        // Check if boar is already summoned
+        if (hasActiveSummon(playerId, playerBoar)) {
+            player.sendMessage(ChatColor.YELLOW + "You already have a boar summoned!");
+            return;
+        }
+
+        // Check cooldown
+        if (isOnCooldown(playerId, boarRespawnCooldowns, BOAR_SUMMON_COOLDOWN)) {
+            long timeLeft = (boarRespawnCooldowns.get(playerId) + BOAR_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
+            player.sendMessage(ChatColor.RED + "Boar summon on cooldown (" + timeLeft + "s)");
+            return;
+        }
+
+        // Set summon in progress flag
+        summonInProgress.put(playerId, true);
+
+        // Clean up any duplicate summons first
+        cleanupDuplicateSummons(player);
+
+        try {
+            Entity boarEntity;
+            
+            // Try to use LibsDisguises if available
+            if (Bukkit.getPluginManager().isPluginEnabled("LibsDisguises")) {
+                // Summon a wolf that will be disguised as a boar
+                Wolf boar = player.getWorld().spawn(player.getLocation(), Wolf.class);
+                boar.setTamed(true);
+                boar.setOwner(player);
+                
+                // Apply boar-specific bonuses
+                setBoarStats(player, boar);
+                
+                // Set custom name with player name and HP
+                updateSummonNameTag(boar, player, "Boar");
+                
+                // Store boar in map
+                playerBoar.put(playerId, boar.getUniqueId());
+                
+                boarEntity = boar;
+                
+                // Use reflection to avoid direct dependency
+                try {
+                    Class<?> disguiseAPIClass = Class.forName("me.libraryaddict.disguise.DisguiseAPI");
+                    Class<?> pigDisguiseClass = Class.forName("me.libraryaddict.disguise.disguisetypes.MobDisguise");
+                    Class<?> disguiseTypeClass = Class.forName("me.libraryaddict.disguise.disguisetypes.DisguiseType");
+                    
+                    // Get the PIG enum value
+                    Object pigType = disguiseTypeClass.getField("PIG").get(null);
+                    
+                    // Create a new PigDisguise
+                    Object pigDisguise = pigDisguiseClass.getConstructor(disguiseTypeClass).newInstance(pigType);
+                    
+                    // Disguise the entity
+                    disguiseAPIClass.getMethod("disguiseEntity", org.bukkit.entity.Entity.class, Class.forName("me.libraryaddict.disguise.disguisetypes.Disguise"))
+                        .invoke(null, boar, pigDisguise);
+                        
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Successfully applied pig disguise to boar for " + player.getName());
+                    }
+                } catch (Exception e) {
+                    // Error with LibsDisguises
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().warning("Error applying pig disguise: " + e.getMessage());
+                    }
+                }
+            } else {
+                // LibsDisguises not available, use native Pig
+                Pig pig = player.getWorld().spawn(player.getLocation(), Pig.class);
+                
+                // Set custom name with player name and HP
+                updateSummonNameTag(pig, player, "Boar");
+                
+                // Store boar in map
+                playerBoar.put(playerId, pig.getUniqueId());
+                
+                boarEntity = pig;
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("LibsDisguises not available, using native Pig for " + player.getName());
+                }
+            }
+
+            // Show notification for important ability
+            ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Summoned a boar");
+
+            // Track this summon type
+            trackSummonSkill(playerId, BOAR_SUMMON_ID);
+            
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error spawning boar: " + e.getMessage());
+            e.printStackTrace();
+            player.sendMessage(ChatColor.RED + "Error summoning boar: " + e.getMessage());
+        } finally {
+            // Clear summon in progress flag
+            summonInProgress.put(playerId, false);
+        }
+    }
+
+    /**
+     * Summons a bear for the player
+     * @param player The player
+     */
+    public void summonBears(Player player) {
+        UUID playerId = player.getUniqueId();
+
+        // Check if summon is already in progress to prevent duplicates
+        if (summonInProgress.getOrDefault(playerId, false)) {
+            if (debuggingFlag == 1) {
+                plugin.getLogger().info("Summon already in progress for " + player.getName());
+            }
+            return;
+        }
+
+        // Rate limiting check
+        long currentTime = System.currentTimeMillis();
+        if (lastSummonCheck.containsKey(playerId)) {
+            long lastCheck = lastSummonCheck.get(playerId);
+            if (currentTime - lastCheck < RATE_LIMIT_DELAY) {
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("Rate limiting summon check for " + player.getName());
+                }
+                return;
+            }
+        }
+        lastSummonCheck.put(playerId, currentTime);
+
+        // Check if player has the skill
+        if (!isPurchased(playerId, BEAR_SUMMON_ID)) {
+            player.sendMessage(ChatColor.RED + "You haven't learned to summon bears yet!");
+            return;
+        }
+
+        // Check summon type limit
+        if (!canAddSummonType(playerId, BEAR_SUMMON_ID)) {
+            player.sendMessage(ChatColor.RED + "You can only have 2 types of summons at once!");
+            return;
+        }
+
+        // Check if bear is already summoned
+        if (hasActiveSummon(playerId, playerBear)) {
+            player.sendMessage(ChatColor.YELLOW + "You already have a bear summoned!");
+            return;
+        }
+
+        // Check cooldown
+        if (isOnCooldown(playerId, bearRespawnCooldowns, BEAR_SUMMON_COOLDOWN)) {
+            long timeLeft = (bearRespawnCooldowns.get(playerId) + BEAR_SUMMON_COOLDOWN - System.currentTimeMillis()) / 1000;
+            player.sendMessage(ChatColor.RED + "Bear summon on cooldown (" + timeLeft + "s)");
+            return;
+        }
+
+        // Set summon in progress flag
+        summonInProgress.put(playerId, true);
+
+        // Clean up any duplicate summons first
+        cleanupDuplicateSummons(player);
+
+        try {
+            Entity bearEntity;
+            
+            // Try to use LibsDisguises if available
+            if (Bukkit.getPluginManager().isPluginEnabled("LibsDisguises")) {
+                // Summon a wolf that will be disguised as a bear
+                Wolf bear = player.getWorld().spawn(player.getLocation(), Wolf.class);
+                bear.setTamed(true);
+                bear.setOwner(player);
+                
+                // Apply bear-specific bonuses
+                setBearStats(player, bear);
+                
+                // Set custom name with player name and HP
+                updateSummonNameTag(bear, player, "Bear");
+                
+                // Store bear in map
+                playerBear.put(playerId, bear.getUniqueId());
+                
+                bearEntity = bear;
+                
+                // Use reflection to avoid direct dependency
+                try {
+                    Class<?> disguiseAPIClass = Class.forName("me.libraryaddict.disguise.DisguiseAPI");
+                    Class<?> bearDisguiseClass = Class.forName("me.libraryaddict.disguise.disguisetypes.MobDisguise");
+                    Class<?> disguiseTypeClass = Class.forName("me.libraryaddict.disguise.disguisetypes.DisguiseType");
+                    
+                    // Get the POLAR_BEAR enum value
+                    Object polarBearType = disguiseTypeClass.getField("POLAR_BEAR").get(null);
+                    
+                    // Create a new PolarBearDisguise
+                    Object polarBearDisguise = bearDisguiseClass.getConstructor(disguiseTypeClass).newInstance(polarBearType);
+                    
+                    // Disguise the entity
+                    disguiseAPIClass.getMethod("disguiseEntity", org.bukkit.entity.Entity.class, Class.forName("me.libraryaddict.disguise.disguisetypes.Disguise"))
+                        .invoke(null, bear, polarBearDisguise);
+                        
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().info("Successfully applied polar bear disguise to bear for " + player.getName());
+                    }
+                } catch (Exception e) {
+                    // Error with LibsDisguises
+                    if (debuggingFlag == 1) {
+                        plugin.getLogger().warning("Error applying polar bear disguise: " + e.getMessage());
+                    }
+                }
+            } else {
+                // LibsDisguises not available, use native PolarBear
+                PolarBear polarBear = player.getWorld().spawn(player.getLocation(), PolarBear.class);
+                
+                // Set custom name with player name and HP
+                updateSummonNameTag(polarBear, player, "Bear");
+                
+                // Store bear in map
+                playerBear.put(playerId, polarBear.getUniqueId());
+                
+                bearEntity = polarBear;
+                
+                if (debuggingFlag == 1) {
+                    plugin.getLogger().info("LibsDisguises not available, using native PolarBear for " + player.getName());
+                }
+            }
+
+            // Show notification for important ability
+            ActionBarUtils.sendActionBar(player, ChatColor.GREEN + "Summoned a bear");
+
+            // Track this summon type
+            trackSummonSkill(playerId, BEAR_SUMMON_ID);
+            
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error spawning bear: " + e.getMessage());
+            e.printStackTrace();
+            player.sendMessage(ChatColor.RED + "Error summoning bear: " + e.getMessage());
+        } finally {
+            // Clear summon in progress flag
+            summonInProgress.put(playerId, false);
+        }
+    }
+}

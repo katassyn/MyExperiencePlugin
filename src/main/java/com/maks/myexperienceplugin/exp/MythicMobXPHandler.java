@@ -5,6 +5,7 @@ import com.maks.myexperienceplugin.MyExperiencePlugin;
 import com.maks.myexperienceplugin.alchemy.PhysisExpManager;
 import com.maks.myexperienceplugin.alchemy.TonicExpManager;
 import com.maks.myexperienceplugin.party.Party;
+import com.maks.trinketsplugin.TrinketsStatsAPI;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -81,8 +82,12 @@ public class MythicMobXPHandler implements Listener {
             double requiredXP = plugin.getXpPerLevel().getOrDefault(playerLevel, 100.0);
             double tonicBonusXP = requiredXP * tonicBonusPercentage;
 
-            // Apply Player Exp Boost (individual player boost)
+            // Apply Player Exp Boost (individual player boost + trinkets XP boost)
             double playerExpBoost = plugin.getPlayerExpBoost(killer);
+            // Add XP Boost from equipped trinkets
+            if (TrinketsStatsAPI.isAvailable()) {
+                playerExpBoost += TrinketsStatsAPI.getXpBoost(killer);
+            }
             double playerBoostMultiplier = 1.0 + (playerExpBoost / 100.0);
 
             // Calculate final XP reward with all bonuses

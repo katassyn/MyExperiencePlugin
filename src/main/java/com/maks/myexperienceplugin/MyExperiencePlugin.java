@@ -278,7 +278,8 @@ public class MyExperiencePlugin extends JavaPlugin implements Listener {
         getCommand("updateskillpoints").setTabCompleter(forceUpdateSkillPointsCommand);
         // Start periodic tasks
         new PeriodicClassReminder(this).runTaskTimer(this, 20L, 1200L); // 20L = 1s, 1200L = 60s
-        new PeriodicSkillPointReminder(this).runTaskTimer(this, 20L, 6000L); // remind every 5 minutes
+        // Skill point reminder moved to PlayerJoinListener - only shows on login, not periodically
+        // new PeriodicSkillPointReminder(this).runTaskTimer(this, 20L, 6000L);
         PlayerSkillEffectsListener playerSkillEffectsListener = new PlayerSkillEffectsListener(
                 this,
                 skillTreeManager,
